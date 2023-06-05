@@ -63,7 +63,7 @@ paths:
                     example: "1234567890"
                   requestType:
                     type: string
-                    description: "APIリードリクエストタイプ(ExploreCaategories, Ranking, Search)"
+                    description: "APIリードレスポンスタイプ(ExploreCaategories, Ranking, )"
                     example: "Search"
                   requestValue:
                     type: string
@@ -107,7 +107,7 @@ paths:
                   example: "1234567890"
                 requestType:
                   type: string
-                  description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity)"
+                  description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)"
                   example: "Feed"
                 requestValue:
                   type: string
