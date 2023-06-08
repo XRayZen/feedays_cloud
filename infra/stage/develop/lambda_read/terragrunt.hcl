@@ -20,10 +20,10 @@ dependency "ecr" {
 }
 
 inputs = {
-    lambda_function_name = "hello-world"
-    lambda_function_description = "world-lambda-function"
+    lambda_function_name = "feedays-cloud-read"
+    lambda_function_description = "feedays-cloud-read-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "world"
+    image_tag= "feedays-cloud-read"
     memory_size = 128
     timeout = 3
     lambda_function_architecture = "arm64"
