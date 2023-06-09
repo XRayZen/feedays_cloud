@@ -14,7 +14,6 @@ servers:
 tags:
   - name: "read"
     description: "DBを読み出すだけの処理"
-    # externalDocs: リクエストを受け取ってDBに書き込む
   - name: "write"
     description: "リクエストを受け取ってDBに書き込む処理"
 
@@ -24,7 +23,6 @@ paths:
       # メタデータ
       tags:
         - "read"
-      summary: "DBを読み出すだけの処理"
       description: "DBを読み出すだけの処理"
       deprecated: false
       # リクエスト
@@ -42,37 +40,19 @@ paths:
                   example: "1234567890"
                 requestType:
                   type: string
-                  description: "APIリードリクエストタイプ(ExploreCaategories, Ranking, Search)"
+                  description: "APIリードリクエストタイプ(ExploreCategories, Ranking, Search)"
                   example: "Search"
                 requestValue:
                   type: string
                   description: "APIリードリクエスト値"
                   example: "ハンバーガー"
-                
       responses:
         "200":
-          description: "OK"
+          description: Response of the API Read
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  userId:
-                    type: string
-                    description: "ユーザーID"
-                    example: "1234567890"
-                  requestType:
-                    type: string
-                    description: "APIリードリクエストタイプ(ExploreCaategories, Ranking, Search)"
-                    example: "Search"
-                  requestValue:
-                    type: string
-                    description: "APIリードリクエスト値"
-                    example: "ハンバーガー"
-                  response:
-                    type: string
-                    description: "APIレスポンス JSONデータを入れる"
-                    example: "検索ならば検索結果のJSONデータを入れる"
+                $ref: "#/components/schemas/APIReadResponse"
         "400":
           description: "Bad Request"
           content:
@@ -107,41 +87,19 @@ paths:
                   example: "1234567890"
                 requestType:
                   type: string
-                  description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity)"
+                  description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)"
                   example: "Feed"
                 requestValue:
                   type: string
-                  description: "API Warite Request Value"
+                  description: "API Write Request Value"
                   example: "ハンバーガー"
-                response:
-                  type: string
-                  description: "APIレスポンス JSONデータを入れる"
-                  example: "feedならばfeedリクエストのJSONデータ（サイトURL）を入れる"
-                
       responses:
         "200":
           description: "OK"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  userId:
-                    type: string
-                    description: "ユーザーID"
-                    example: "1234567890"
-                  requestType:
-                    type: string
-                    description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity)"
-                    example: "Search"
-                  requestValue:
-                    type: string
-                    description: "API Warite Request Value"
-                    example: "ハンバーガー"
-                  response:
-                    type: string
-                    description: "APIレスポンス JSONデータを入れる"
-                    example: "検索ならば検索結果のJSONデータを入れる"
+                $ref: "#/components/schemas/APIWriteResponse"
         "400":
           description: "Bad Request"
           content:
@@ -153,4 +111,35 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
-
+components:
+  schemas:
+    APIReadResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "ユーザーID"
+          example: "1234567890"
+        requestType:
+          type: string
+          description: "APIリードレスポンスタイプ(ExploreCategories, Ranking, )"
+          example: "Search"
+        responseValue:
+          type: string
+          description: "データをjsonにして返してクライアント側で処理をする"
+          example: "ハンバーガー"
+    APIWriteResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "ユーザーID"
+          example: "1234567890"
+        requestType:
+          type: string
+          description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity)"
+          example: "Search"
+        responseValue:
+          type: string
+          description: "APIレスポンス JSONデータを入れる"
+          example: "検索ならば検索結果のJSONデータを入れる"

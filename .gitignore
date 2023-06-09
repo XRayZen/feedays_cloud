@@ -1,0 +1,8 @@
+.terraform
+.DS_Store
+.terraform.lock.hcl
+*.tfstate
+_provider.tf
+.terragrunt
+.terragrunt-cache
+backend.tf
