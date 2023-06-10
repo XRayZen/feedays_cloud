@@ -37,8 +37,8 @@ type ExploreCategories struct {
 	CategoryDescription string `json:"categoryDescription"`
 	// カテゴリーのID
 	CategoryID string `json:"categoryID"`
-	// カテゴリーのURLs
-	CategoryURLs []WebSite `json:"categoryURLs"`
+	// カテゴリーのURLはない
+	// ユーザーがタップしたら＃カテゴリー名のキーワード検索が走り、その結果を表示する
 }
 
 type RankingWebSite struct {

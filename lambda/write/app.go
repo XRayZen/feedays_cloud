@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"read/DBRepo"
-	"read/RequestHandler"
-	"read/api_gen_code"
+	"write/DBRepo"
+	"write/RequestHandler"
+	"write/api_gen_code"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -30,7 +30,8 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// 変換されたらリクエストタイプに応じて処理を分岐する
 	// 別のパッケージに移して処理を書く
 	// ここでDIする
-	res, err := RequestHandler.ParseRequestType(DBRepo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId)
+	res, err := RequestHandler.ParseRequestType(DBRepo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,
+		*api_req.RequestArgumentJson1, *api_req.RequestArgumentJson2)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}

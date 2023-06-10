@@ -41,11 +41,14 @@ type PostReadJSONBody struct {
 
 // PostWriteJSONBody defines parameters for PostWrite.
 type PostWriteJSONBody struct {
+	// RequestArgumentJson1 API Write Request Argument 1 Value
+	RequestArgumentJson1 *string `json:"requestArgumentJson1,omitempty"`
+
+	// RequestArgumentJson2 API Write Request Argument 2 Value
+	RequestArgumentJson2 *string `json:"requestArgumentJson2,omitempty"`
+
 	// RequestType API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)
 	RequestType *string `json:"requestType,omitempty"`
-
-	// RequestValue API Write Request Value
-	RequestValue *string `json:"requestValue,omitempty"`
 
 	// UserId ユーザーID
 	UserId *string `json:"userId,omitempty"`

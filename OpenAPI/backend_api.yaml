@@ -89,10 +89,17 @@ paths:
                   type: string
                   description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)"
                   example: "Feed"
-                requestValue:
+                # API開発中はしょっちゅう仕様が変わるので引数はJSONで渡して自由度を高めておく
+                requestArgumentJson1:
                   type: string
-                  description: "API Write Request Value"
-                  example: "ハンバーガー"
+                  description: "API Write Request Argument 1 Value"
+                  example: "json 1 arg"
+                # 引数は二つ渡しておく
+                requestArgumentJson2:
+                  type: string
+                  description: "API Write Request Argument 2 Value"
+                  example: "Json 2 arg"
+
       responses:
         "200":
           description: "OK"
