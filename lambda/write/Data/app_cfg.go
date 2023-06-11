@@ -1,32 +1,42 @@
 package Data
 
+type UserConfig struct {
+	UserName      string    `json:"userName"`
+	Password      string    `json:"password"`
+	UserID        string    `json:"userID"`
+	IsGuest       bool      `json:"isGuest"`
+	AppConfig     AppConfig `json:"appConfig"`
+	AccountType   string    `json:"accountType"`
+	SearchHistory []string  `json:"searchHistory"`
+}
+
 type AppConfig struct {
-	ApiRequestConfig ApiRequestLimitConfig
-	RssFeedConfig    RssFeedConfig
-	MobileUiConfig   MobileUiConfig
+	ApiRequestConfig ApiRequestLimitConfig `json:"apiRequestConfig"`
+	RssFeedConfig    RssFeedConfig         `json:"rssFeedConfig"`
+	MobileUiConfig   MobileUiConfig        `json:"mobileUiConfig"`
 }
 
 type ApiRequestLimitConfig struct {
-	TrendRequestLimit        int
-	FetchRssFeedRequestLimit int
-	SendActivityMinute       int
+	TrendRequestLimit        int `json:"trendRequestLimit"`
+	FetchRssFeedRequestLimit int `json:"fetchRssFeedRequestLimit"`
+	SendActivityMinute       int `json:"sendActivityMinute"`
 }
 
 type RssFeedConfig struct {
-	LimitLastFetchTime int
+	LimitLastFetchTime int `json:"limitLastFetchTime"`
 }
 
 type MobileUiConfig struct {
-	ThemeColorValue int
+	ThemeColorValue int `json:"themeColorValue"`
 	// light, dark, system
-	ThemeMode            string
-	DrawerMenuOpacity    float64
-	SiteFeedListFontSize UiResponsiveFontSize
-	FeedDetailFontSize   UiResponsiveFontSize
+	ThemeMode            string               `json:"themeMode"`
+	DrawerMenuOpacity    float64              `json:"drawerMenuOpacity"`
+	SiteFeedListFontSize UiResponsiveFontSize `json:"siteFeedListFontSize"`
+	FeedDetailFontSize   UiResponsiveFontSize `json:"feedDetailFontSize"`
 }
 
 type UiResponsiveFontSize struct {
-	Mobile      float64
-	Tablet      float64
-	DefaultSize float64
+	Mobile      float64 `json:"mobile"`
+	Tablet      float64 `json:"tablet"`
+	DefaultSize float64 `json:"defaultSize"`
 }
