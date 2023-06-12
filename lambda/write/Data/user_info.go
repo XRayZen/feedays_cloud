@@ -1,7 +1,5 @@
 package Data
 
-import ()
-
 type UserInfo struct {
 	// ユーザー名
 	UserName string
@@ -25,34 +23,28 @@ type UserInfo struct {
 
 type UserAccessIdentInfo struct {
 	// 端末で取得出来たら
-	UUid string
+	UUid string `json:"uuid"`
 	//accessPlatform
-	AccessPlatform string
+	AccessPlatform string `json:"accessPlatform"`
 	//platformType
-	PlatformType string
+	PlatformType string `json:"platformType"`
 	//brand
-	Brand string
+	Brand string `json:"brand"`
 	//deviceName
-	DeviceName string
+	DeviceName string `json:"deviceName"`
 	//OSのバージョン
-	OsVersion string
+	OsVersion string `json:"osVersion"`
 	//isPhysics
-	IsPhysics bool
+	IsPhysics bool `json:"isPhysics"`
 }
 
-type UserActivity struct {
+type ReadActivity struct {
 	// ユーザーID
 	UserID string `json:"userID"`
-	// IPアドレス
-	IP string `json:"ip"`
 	// タイトル
 	Title string `json:"title"`
 	// リンク
 	Link string `json:"link"`
-	// カテゴリー
-	Category string `json:"category"`
-	// タグ
-	Tags []string `json:"tags"`
-	// アクティビティタイプ (  read,subscribe,search,other,)
+	// アクティビティタイプ (  read Article or Site,)
 	Type string `json:"type"`
 }

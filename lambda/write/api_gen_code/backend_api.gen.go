@@ -5,7 +5,7 @@ package api_gen_code
 
 // APIReadResponse defines model for APIReadResponse.
 type APIReadResponse struct {
-	// RequestType APIリードレスポンスタイプ(ExploreCategories, Ranking, )
+	// RequestType API Read RequestType (ExploreCategories, Ranking)
 	RequestType *string `json:"requestType,omitempty"`
 
 	// ResponseValue データをjsonにして返してクライアント側で処理をする
@@ -27,13 +27,28 @@ type APIWriteResponse struct {
 	UserId *string `json:"userId,omitempty"`
 }
 
-// PostReadJSONBody defines parameters for PostRead.
-type PostReadJSONBody struct {
-	// RequestType APIリードリクエストタイプ(ExploreCategories, Ranking, Search)
+// PostHeavyJSONBody defines parameters for PostHeavy.
+type PostHeavyJSONBody struct {
+	// RequestArgumentJson1 API Heavy Request Argument 1 Value
+	RequestArgumentJson1 *string `json:"requestArgumentJson1,omitempty"`
+
+	// RequestArgumentJson2 API Heavy Request Argument 2 Value
+	RequestArgumentJson2 *string `json:"requestArgumentJson2,omitempty"`
+
+	// RequestArgumentJson3 API Heavy Request Argument 3 Value
+	RequestArgumentJson3 *string `json:"requestArgumentJson3,omitempty"`
+
+	// RequestType API Heavy RequestType:(Feed,Search,SubscribeSite)
 	RequestType *string `json:"requestType,omitempty"`
 
-	// RequestValue APIリードリクエスト値
-	RequestValue *string `json:"requestValue,omitempty"`
+	// UserId ユーザーID
+	UserId *string `json:"userId,omitempty"`
+}
+
+// PostReadJSONBody defines parameters for PostRead.
+type PostReadJSONBody struct {
+	// RequestType API Read RequestType (ExploreCategories, Ranking)
+	RequestType *string `json:"requestType,omitempty"`
 
 	// UserId ユーザーID
 	UserId *string `json:"userId,omitempty"`
@@ -47,12 +62,18 @@ type PostWriteJSONBody struct {
 	// RequestArgumentJson2 API Write Request Argument 2 Value
 	RequestArgumentJson2 *string `json:"requestArgumentJson2,omitempty"`
 
+	// RequestArgumentJson3 API Write Request Argument 3 Value
+	RequestArgumentJson3 *string `json:"requestArgumentJson3,omitempty"`
+
 	// RequestType API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)
 	RequestType *string `json:"requestType,omitempty"`
 
 	// UserId ユーザーID
 	UserId *string `json:"userId,omitempty"`
 }
+
+// PostHeavyJSONRequestBody defines body for PostHeavy for application/json ContentType.
+type PostHeavyJSONRequestBody PostHeavyJSONBody
 
 // PostReadJSONRequestBody defines body for PostRead for application/json ContentType.
 type PostReadJSONRequestBody PostReadJSONBody
