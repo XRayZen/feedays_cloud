@@ -15,8 +15,8 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 	switch requestType {
 	case "GenUserID":
 		return GenRandomUserID(argumentJson_1)
-	case "CodeSync":
-		return functions.CodeSync(argumentJson_1)
+	case "ConfigSync":
+		return functions.ConfigSync(userId,argumentJson_1)
 	case "GetUserInfo":
 		// この機能はDB読み書きテスト用
 		return functions.GetUserInfo(userId)
@@ -29,9 +29,9 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 	case "ModifySearchHistory":
 		return functions.ModifySearchHistory(userId, argumentJson_1, argumentJson_2)
 	case "FavoriteSite":
-		return functions.favoriteSite(userId, argumentJson_1, argumentJson_2)
+		return functions.ModifyFavoriteSite(userId, argumentJson_1, argumentJson_2)
 	case "FavoriteArticle":
-		return functions.favoriteArticle(userId, argumentJson_1, argumentJson_2)
+		return functions.ModifyFavoriteArticle(userId, argumentJson_1, argumentJson_2)
 	case "GetAPIRequestLimit":
 		return functions.GetAPIRequestLimit(userId, argumentJson_1)
 	default:

@@ -1,15 +1,5 @@
 package Data
 
-type UserConfig struct {
-	UserName      string    `json:"userName"`
-	Password      string    `json:"password"`
-	UserID        string    `json:"userID"`
-	IsGuest       bool      `json:"isGuest"`
-	AppConfig     AppConfig `json:"appConfig"`
-	AccountType   string    `json:"accountType"`
-	SearchHistory []string  `json:"searchHistory"`
-}
-
 type AppConfig struct {
 	ApiRequestConfig ApiRequestLimitConfig `json:"apiRequestConfig"`
 	RssFeedConfig    RssFeedConfig         `json:"rssFeedConfig"`
