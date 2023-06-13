@@ -34,16 +34,20 @@ func (s APIFunctions) ConfigSync(userId string, identInfoJson string) (string, e
 	if err != nil {
 		return "", err
 	}
-	// ユーザー設定をjsonに変換する
-	userConfigJson, err := json.Marshal(userConfig)
-	if err != nil {
-		return "", err
-	}
 	// アクテビティレコードに設定同期イベントを追加する
 	if err := ReportAPIActivity(s.ip, s.repo, userId, identInfo, "ConfigSync"); err != nil {
 		return "", err
 	}
-	return GenAPIResponse("accept", "Success ConfigSync", string(userConfigJson))
+	// レスポンスを返す
+	response, err := json.Marshal(Data.ConfigSyncResponse{
+		UserConfig:   userConfig,
+		ResponseType: "accept",
+		Error:        "",
+	})
+	if err != nil {
+		return "", err
+	}
+	return string(response), nil
 }
 
 func (s APIFunctions) RegisterUser(userId string, userCfgJson string, identInfoJson string) (string, error) {
@@ -85,8 +89,8 @@ func (s APIFunctions) UpdateConfig(userId string, userCfgJson string, identInfoJ
 	if err := json.Unmarshal([]byte(userCfgJson), &userConfig); err != nil {
 		return "", err
 	}
-	var identInfo Data.UserAccessIdentInfo
-	if err := json.Unmarshal([]byte(identInfoJson), &identInfoJson); err != nil {
+	identInfo := Data.UserAccessIdentInfo{}
+	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
 		return "", err
 	}
 	if err := s.repo.UpdateConfig(userId, userConfig); err != nil {

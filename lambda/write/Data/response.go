@@ -12,9 +12,8 @@ type FetchCloudFeedResponse struct {
 	Error        string    `json:"error"`
 }
 
-type CodeSyncResponse struct {
+type ConfigSyncResponse struct {
 	ResponseType string     `json:"responseType"`
 	UserConfig   UserConfig `json:"userConfig"`
-	WebSites     []WebSite  `json:"webSites"`
 	Error        string     `json:"error"`
 }

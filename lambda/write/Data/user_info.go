@@ -2,40 +2,40 @@ package Data
 
 type UserInfo struct {
 	// ユーザー名
-	UserName string
+	UserName string `json:"userName"`
 	// ユーザーID
-	UserID string
+	UserID string `json:"userId"`
 	// ユーザーがゲストかどうか
-	IsGuest bool
+	IsGuest bool `json:"isGuest"`
 	// ユーザーの設定
-	Config AppConfig
+	Config AppConfig `json:"config"`
 	// ユーザーのアカウントタイプ(ゲスト, フリー, プロ, アルティメット)
 	//
 	// 本来enumだが、stringで保存する
-	AccountType string
+	AccountType string `json:"accountType"`
 	// ユーザーの検索履歴
-	SearchHistory []string
+	SearchHistory []string `json:"searchHistory"`
 	// ユーザーの国
-	UserCountry string
+	UserCountry string `json:"userCountry"`
 	// ユーザー情報でカテゴリーを持たせる必要がないので削除
 	// ユーザーのパスワードも必要ないので削除
 }
 
 type UserAccessIdentInfo struct {
 	// 端末で取得出来たら
-	UUid string `json:"uuid"`
+	UUid string 			`json:"UUID"`
 	//accessPlatform
-	AccessPlatform string `json:"accessPlatform"`
+	AccessPlatform string 	`json:"accessPlatform"`
 	//platformType
-	PlatformType string `json:"platformType"`
+	PlatformType string 	`json:"platformType"`
 	//brand
-	Brand string `json:"brand"`
+	Brand string 			`json:"brand"`
 	//deviceName
-	DeviceName string `json:"deviceName"`
+	DeviceName string 		`json:"deviceName"`
 	//OSのバージョン
-	OsVersion string `json:"osVersion"`
+	OsVersion string 		`json:"osVersion"`
 	//isPhysics
-	IsPhysics bool `json:"isPhysics"`
+	IsPhysics bool 			`json:"isPhysics"`
 }
 
 type ReadActivity struct {
