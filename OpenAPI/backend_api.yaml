@@ -16,6 +16,8 @@ tags:
     description: "DBを読み出すだけの処理"
   - name: "write"
     description: "リクエストを受け取ってDBに書き込む処理"
+  - name: "heavy"
+    description: "データ処理などの重い処理"
 
 paths:
   "/read":
@@ -40,12 +42,9 @@ paths:
                   example: "1234567890"
                 requestType:
                   type: string
-                  description: "APIリードリクエストタイプ(ExploreCategories, Ranking, Search)"
+                  description: "API Read RequestType (ExploreCategories, Ranking)"
                   example: "Search"
-                requestValue:
-                  type: string
-                  description: "APIリードリクエスト値"
-                  example: "ハンバーガー"
+
       responses:
         "200":
           description: Response of the API Read
@@ -89,10 +88,20 @@ paths:
                   type: string
                   description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)"
                   example: "Feed"
-                requestValue:
+                # API開発中はしょっちゅう仕様が変わるので引数はJSONで渡して自由度を高めておく
+                requestArgumentJson1:
                   type: string
-                  description: "API Write Request Value"
-                  example: "ハンバーガー"
+                  description: "API Write Request Argument 1 Value"
+                  example: "json 1 arg"
+                requestArgumentJson2:
+                  type: string
+                  description: "API Write Request Argument 2 Value"
+                  example: "Json 2 arg"
+                requestArgumentJson3:
+                  type: string
+                  description: "API Write Request Argument 3 Value"
+                  example: "Json 3 arg"
+
       responses:
         "200":
           description: "OK"
@@ -111,6 +120,65 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
+
+  "/heavy":
+    post:
+      # メタデータ
+      tags:
+        - "heavy"
+      summary: "データ収集など重い処理"
+      description: "重い処理"
+      deprecated: false
+      # リクエスト
+      requestBody:
+        description: "リクエストボディ"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: "ユーザーID"
+                  example: "1234567890"
+                requestType:
+                  type: string
+                  description: "API Heavy RequestType:(Feed,Search,SubscribeSite)"
+                  example: "Feed"
+                # API開発中はしょっちゅう仕様が変わるので引数はJSONで渡して自由度を高めておく
+                requestArgumentJson1:
+                  type: string
+                  description: "API Heavy Request Argument 1 Value"
+                  example: "json 1 arg"
+                requestArgumentJson2:
+                  type: string
+                  description: "API Heavy Request Argument 2 Value"
+                  example: "Json 2 arg"
+                requestArgumentJson3:
+                  type: string
+                  description: "API Heavy Request Argument 3 Value"
+                  example: "Json 3 arg"
+
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIWriteResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "エラーメッセージ"
+                    example: "Bad Request"
+
 components:
   schemas:
     APIReadResponse:
@@ -122,8 +190,8 @@ components:
           example: "1234567890"
         requestType:
           type: string
-          description: "APIリードレスポンスタイプ(ExploreCategories, Ranking, )"
-          example: "Search"
+          description: "API Read RequestType (ExploreCategories, Ranking)"
+          example: "ExploreCategories"
         responseValue:
           type: string
           description: "データをjsonにして返してクライアント側で処理をする"
@@ -139,6 +207,21 @@ components:
           type: string
           description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity)"
           example: "Search"
+        responseValue:
+          type: string
+          description: "APIレスポンス JSONデータを入れる"
+          example: "検索ならば検索結果のJSONデータを入れる"
+    APIHeavyResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "ユーザーID"
+          example: "1234567890"
+        requestType:
+          type: string
+          description: "API Heavy RequestType:(Feed,Search,SubscribeSite)"
+          example: "Feed"
         responseValue:
           type: string
           description: "APIレスポンス JSONデータを入れる"

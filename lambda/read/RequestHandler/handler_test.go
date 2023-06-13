@@ -18,6 +18,7 @@ func TestParseRequestType(t *testing.T) {
 	})
 	want_RsStr := string(want_Rs)
 	type args struct {
+		// ここでDIしても良い
 		diDBRepo    DBRepo.DBRepository
 		requestType string
 		userID      string
@@ -31,6 +32,7 @@ func TestParseRequestType(t *testing.T) {
 		{
 			name: "正常系 ExploreCategories",
 			args: args{
+				// ここでDIしているがargsでした方が良いかも
 				diDBRepo:    DBRepo.MockDBRepo{},
 				requestType: "ExploreCategories",
 				userID:      "userID",
@@ -69,5 +71,4 @@ func TestParseRequestType(t *testing.T) {
 			}
 		})
 	}
-
 }
