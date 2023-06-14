@@ -1,0 +1,12 @@
+version: 'latest'
+services:
+  develop:
+    build: .
+    tty: true
+    stdin_open: true
+    working_dir: /feedays_cloud
+    command: /bin/bash
+    # image: golang:latest
+    volumes:
+      - .:/feedays_cloud
+    image: feedays_cloud
