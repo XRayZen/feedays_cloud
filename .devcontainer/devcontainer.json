@@ -1,18 +1,17 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-docker-compose
 {
-	"name": "既存のDocker Compose(エクステンド)",
-	// コンポーズファイルが増えたり、異なる名前を使用する場合は、「dockerComposeFile」リストを更新してください。
-	// .devcontainer/docker-compose.yml ファイルには、必要な/作りたいオーバーライドが含まれています。
+	"name": "feedays_cloud_develop_env",
+	// コンポーズファイルが増えたり、異なる名前を使用する場合は、「dockerComposeFile」リストを更新してください
 	"dockerComposeFile": [
 		"../docker-compose.yml",
 		"docker-compose.yml"
 	],
-	// The 'service' property is the name of the service for the container that VS Code should
-	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
+	// 'service'プロパティは、VS Codeが使用するコンテナ用のサービス名です。
+	// この値と .devcontainer/docker-compose.yml を実際のサービス名に更新します。
 	"service": "develop",
-	// The optional 'workspaceFolder' property is the path VS Code should open by default when
-	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
+	// オプションの「workspaceFolder」プロパティは、接続時に VS Code がデフォルトで開くべきパスです。
+	// これは通常、.devcontainer/docker-compose.yml のファイルマウントになります。
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
 		"ghcr.io/devcontainers/features/terraform:1": {}
@@ -35,12 +34,17 @@
 				"ms-azuretools.vscode-docker"
 			],
 			"settings": {
-				// "terminal.integrated.shell.linux": "/bin/bash",
+				"go.goroot": "/usr/local/go",
 				"go.toolsManagement.checkForUpdates": "off",
 				"go.gopath": "/go",
-				// "go.gocodeAutoBuild": true,
+				"go.toolsGopath": "/go",
 				"go.formatTool": "gofmt",
 				"go.useLanguageServer": true,
+				"go.lintTool": "golangci-lint",
+				"go.lintFlags": [
+					"--fast",
+					"--skip-dirs=vendor"
+				],
 				"editor.formatOnSave": false,
 				"[go]": {
 					"editor.formatOnSave": true
