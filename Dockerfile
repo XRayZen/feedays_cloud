@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y docker-ce-cli
 
 # oh-my-bashをインストール
 RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+# oh-my-bashのテーマを変更
+RUN sed -i 's/OSH_THEME=.*/OSH_THEME="powerline-multiline"/g' ~/.bashrc
 
 # oapi-codegenをインストール
 RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
