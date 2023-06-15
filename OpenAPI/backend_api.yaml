@@ -51,7 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIReadResponse"
+                $ref: "#/components/schemas/APIResponse"
         "400":
           description: "Bad Request"
           content:
@@ -108,7 +108,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIWriteResponse"
+                $ref: "#/components/schemas/APIResponse"
         "400":
           description: "Bad Request"
           content:
@@ -166,7 +166,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIWriteResponse"
+                $ref: "#/components/schemas/APIResponse"
         "400":
           description: "Bad Request"
           content:
@@ -181,7 +181,7 @@ paths:
 
 components:
   schemas:
-    APIReadResponse:
+    APIResponse:
       type: object
       properties:
         userId:
@@ -190,39 +190,9 @@ components:
           example: "1234567890"
         requestType:
           type: string
-          description: "API Read RequestType (ExploreCategories, Ranking)"
+          description: "API RequestType"
           example: "ExploreCategories"
         responseValue:
           type: string
           description: "データをjsonにして返してクライアント側で処理をする"
           example: "ハンバーガー"
-    APIWriteResponse:
-      type: object
-      properties:
-        userId:
-          type: string
-          description: "ユーザーID"
-          example: "1234567890"
-        requestType:
-          type: string
-          description: "API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity)"
-          example: "Search"
-        responseValue:
-          type: string
-          description: "APIレスポンス JSONデータを入れる"
-          example: "検索ならば検索結果のJSONデータを入れる"
-    APIHeavyResponse:
-      type: object
-      properties:
-        userId:
-          type: string
-          description: "ユーザーID"
-          example: "1234567890"
-        requestType:
-          type: string
-          description: "API Heavy RequestType:(Feed,Search,SubscribeSite)"
-          example: "Feed"
-        responseValue:
-          type: string
-          description: "APIレスポンス JSONデータを入れる"
-          example: "検索ならば検索結果のJSONデータを入れる"
