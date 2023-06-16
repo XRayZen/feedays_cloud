@@ -39,7 +39,7 @@ type Article struct {
 	// 記事が既読かどうか
 	IsReedLate bool `json:"isReedLate"`
 	// 記事のカテゴリー
-	Category string `json:"category"`
+	Category []string `json:"category"`
 }
 
 type RssFeedImage struct {

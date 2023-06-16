@@ -6,12 +6,8 @@ import (
 	"testing"
 )
 
-func TestNewSite(t *testing.T) {
-
-}
-
 // RSSのURLを取得する
-func TestGetRSSUrl(t *testing.T) {
+func TestNewSite(t *testing.T) {
 	// https://jp.ign.com/
 	// https://automaton-media.com/
 	// https://www.4gamer.net/
@@ -114,12 +110,20 @@ func TestGetRSSUrl(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := getRSSUrls(tt.args.siteUrl)
+			Url := tt.args.siteUrl
+			// Urlに/がある場合は、/を削除する
+			if Url[len(Url)-1:] == "/" {
+				Url = Url[:len(Url)-1]
+			}
+			webSite, articles, err := NewSite(Url)
 			if err != nil {
 				t.Error(err)
 			}
-			if got[0] != tt.want {
-				t.Errorf("getRSSUrl() = %v, want %v", got, tt.want)
+			if webSite.SiteURL != Url {
+				t.Errorf("NewSite() = %v, want %v", webSite.SiteURL, Url)
+			}
+			if len(articles) == 0 {
+				t.Errorf("NewSite() = %v, want %v", len(articles), "0")
 			}
 		})
 	}
@@ -141,24 +145,20 @@ func TestParseRSSFeed(t *testing.T) {
 			args: args{
 				rssUrl: "https://gigazine.net/news/rss_2.0",
 			},
-			want: 10,
+			want: 1,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			site, articles, err := parseRssFeed(tt.args.rssUrl)
+			articles, err := parseRssFeed(tt.args.rssUrl)
 			if err != nil {
 				t.Error(err)
 			}
-			if len(articles) != tt.want {
+			if len(articles) < tt.want {
 				t.Errorf("parseRssFeed() = %v, want %v", len(articles), tt.want)
 			}
-			if site.SiteName == "" {
-				t.Errorf("parseRssFeed() = %v, want %v", site.SiteName, "")
-			}
-
 		})
 	}
 

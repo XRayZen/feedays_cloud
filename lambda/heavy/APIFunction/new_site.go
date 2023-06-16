@@ -11,7 +11,7 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// サイトのRSSを取得してWebSiteを返す
+// 新規サイトを調べて、サイト情報と記事情報を返す
 func NewSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 	doc, err := getHtmlGoQueryDoc(siteUrl)
 	if err != nil {
@@ -23,15 +23,17 @@ func NewSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 		return Data.WebSite{}, nil, fmt.Errorf("getRSSUrl error: %v", err)
 	}
 	// サイトメタデータを取得する
-	siteMeta, err := getSiteMeta(doc,siteUrl)
+	siteMeta, err := getSiteMeta(doc, siteUrl)
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("getSiteMeta error: %v", err)
 	}
 	// RSSをパースする
-	articles := []Data.Article{}
-	
-
-	return Data.WebSite{}, nil, nil
+	articles, err := parseRssFeed(rssUrls[0])
+	if err != nil {
+		return Data.WebSite{}, nil, fmt.Errorf("parseRssFeed error: %v", err)
+	}
+	siteMeta.SiteRssURL = rssUrls[0]
+	return siteMeta, articles, nil
 }
 
 // SiteのRSSを取得してsliceの記事を返す
@@ -86,8 +88,8 @@ func getRSSUrls(doc *goquery.Document, siteUrl string) ([]string, error) {
 			rssUrl[i] = siteUrl + v
 		}
 	}
-	// 最後のURLに/がある場合は消す
 	for i, v := range rssUrl {
+		// 最後のURLに/がある場合は消す
 		if v[len(v)-1] == '/' {
 			rssUrl[i] = v[:len(v)-1]
 		}
@@ -96,7 +98,7 @@ func getRSSUrls(doc *goquery.Document, siteUrl string) ([]string, error) {
 }
 
 // RssFeedをパースする
-func parseRssFeed(rssUrl string) (Data.WebSite, []Data.Article, error) {
+func parseRssFeed(rssUrl string) ([]Data.Article, error) {
 	fp := gofeed.NewParser()
 	feed, _ := fp.ParseURL(rssUrl)
 	articles := []Data.Article{}
@@ -111,22 +113,7 @@ func parseRssFeed(rssUrl string) (Data.WebSite, []Data.Article, error) {
 		}
 		articles = append(articles, article)
 	}
-	cate := ""
-	if len(feed.Categories) != 0 {
-		cate = feed.Categories[0]
-	}
-	imageUrl := ""
-	if feed.Image != nil {
-		imageUrl = feed.Image.URL
-	}
-	return Data.WebSite{
-		SiteName:        feed.Title,
-		SiteImage:       imageUrl,
-		SiteDescription: feed.Description,
-		SiteURL:         feed.Link,
-		SiteRssURL:      rssUrl,
-		SiteCategory:    cate,
-	}, articles, nil
+	return articles, nil
 }
 
 // サイトのHTMLを取得してパースしてメタ情報を取得する
@@ -146,11 +133,13 @@ func getSiteMeta(doc *goquery.Document, siteUrl string) (Data.WebSite, error) {
 				siteImage = s.AttrOr("content", "")
 			case "og:description":
 				siteDescription = s.AttrOr("content", "")
-			}
-			// カテゴリーも取得する
-			if name == "keywords" {
+			case "keywords":
 				siteTags = append(siteTags, s.AttrOr("content", ""))
 			}
+			// // カテゴリーも取得する
+			// if name == "keywords" {
+			// 	siteTags = append(siteTags, s.AttrOr("content", ""))
+			// }
 			return
 		}
 
