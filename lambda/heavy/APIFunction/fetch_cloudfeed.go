@@ -1,10 +1,96 @@
 package APIFunction
 
+import (
+	"read/Data"
+	"sort"
+	"time"
 
-
+	"github.com/PuerkitoBio/goquery"
+	"github.com/mmcdole/gofeed"
+)
 
 func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
 	return "", nil
 }
+
+// RssFeedをパースする
+func parseRssFeed(rssUrl string) ([]Data.Article, error) {
+	fp := gofeed.NewParser()
+	feed, _ := fp.ParseURL(rssUrl)
+	articles := []Data.Article{}
+	for _, v := range feed.Items {
+		article := Data.Article{
+			Title:        v.Title,
+			Link:         v.Link,
+			Description:  v.Description,
+			Category:     v.Categories,
+			Site:         feed.Title,
+			LastModified: v.PublishedParsed.Format(time.RFC3339),
+		}
+		articles = append(articles, article)
+	}
+	return articles, nil
+}
+
+// 並列処理で記事のイメージURLを取得する
+func getArticleImageURLs(articles []Data.Article) ([]Data.Article, error) {
+	// 並列処理で記事のイメージURLを取得する
+	// 1. og:imageを取得する
+	// 3. それでもなければfavicon.icoを取得する
+	ch := make(chan Data.Article)
+	for _, article := range articles {
+		go func(article Data.Article) {
+			// 1. og:imageを取得する
+			doc, err := getHtmlGoQueryDoc(article.Link)
+			if err != nil {
+				ch <- article
+				return
+			}
+			imageUrl, err := getArticleImageURL(doc, article.Link)
+			if err != nil {
+				ch <- article
+				return
+			}
+			article.Image = Data.RssFeedImage{
+				Link: imageUrl,
+			}
+			ch <- article
+		}(article)
+	}
+	for i := 0; i < len(articles); i++ {
+		articles[i] = <-ch
+	}
+	// articleを日時でソートする
+	sort.Slice(articles, func(i, j int) bool {
+		return articles[i].LastModified > articles[j].LastModified
+	})
+	return articles, nil
+}
+
+
+// 記事のイメージURLを取得する
+func getArticleImageURL(doc *goquery.Document, articleUrl string) (string, error) {
+	// 記事のイメージURLを取得する
+	// 1. og:imageを取得する
+	// 3. それでもなければfavicon.icoを取得する
+	imageUrl := ""
+	// 1. og:imageを取得する
+	doc.Find("meta").Each(func(_ int, s *goquery.Selection) {
+		property, exists := s.Attr("property")
+		if exists {
+			if property == "og:image" {
+				imageUrl = s.AttrOr("content", "")
+				return
+			}
+		}
+	})
+	// 2. それでもなければfavicon.icoを取得する
+	if imageUrl == "" {
+		imageUrl = articleUrl + "/favicon.ico"
+	}
+	return imageUrl, nil
+}
+
+
 
 

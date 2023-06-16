@@ -3,12 +3,9 @@ package APIFunction
 import (
 	"fmt"
 	"read/Data"
-	// "heavy/Data"
 	"net/http"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mmcdole/gofeed"
 )
 
 // 新規サイトを調べて、サイト情報と記事情報を返す
@@ -95,25 +92,6 @@ func getRSSUrls(doc *goquery.Document, siteUrl string) ([]string, error) {
 		}
 	}
 	return rssUrl, nil
-}
-
-// RssFeedをパースする
-func parseRssFeed(rssUrl string) ([]Data.Article, error) {
-	fp := gofeed.NewParser()
-	feed, _ := fp.ParseURL(rssUrl)
-	articles := []Data.Article{}
-	for _, v := range feed.Items {
-		article := Data.Article{
-			Title:        v.Title,
-			Link:         v.Link,
-			Description:  v.Description,
-			Category:     v.Categories,
-			Site:         feed.Title,
-			LastModified: v.PublishedParsed.Format(time.RFC3339),
-		}
-		articles = append(articles, article)
-	}
-	return articles, nil
 }
 
 // サイトのHTMLを取得してパースしてメタ情報を取得する

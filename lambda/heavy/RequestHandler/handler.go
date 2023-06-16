@@ -11,7 +11,7 @@ func ParseRequestType(access_ip string, db_repo Repo.DBRepo, request_type string
 	}
 	switch request_type {
 	case "Search":
-		return functions.Search(access_ip, user_id, request_argument_json1, request_argument_json2)
+		return functions.Search(access_ip, user_id, request_argument_json1)
 	case "SubscribeSite":
 		return functions.SubscribeSite(access_ip, user_id, request_argument_json1, request_argument_json2)
 	case "fetchCloudFeed":
