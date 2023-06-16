@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:1.20.5
 
 WORKDIR /feedays_cloud
 # WORKDIR /workspace
@@ -12,7 +12,7 @@ RUN go install github.com/fatih/gomodifytags@latest
 RUN go install github.com/josharian/impl@latest
 RUN go install github.com/haya14busa/goplay/cmd/goplay@latest
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
-# div-dap のインストール方法は次のドキュメントを参考にしました:
+# div-dap のインストール方法は次のドキュメントを参考:
 # https://github.com/golang/vscode-go/blob/v0.26.0/docs/dlv-dap.md#updating-dlv-dap
 RUN GOBIN=/tmp/ go install github.com/go-delve/delve/cmd/dlv@master \
   && mv /tmp/dlv $GOPATH/bin/dlv-dap
@@ -33,4 +33,4 @@ RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/
 RUN sed -i 's/OSH_THEME=.*/OSH_THEME="powerline-multiline"/g' ~/.bashrc
 
 # oapi-codegenをインストール
-RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0

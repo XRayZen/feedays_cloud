@@ -38,7 +38,7 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		return events.APIGatewayProxyResponse{}, err
 	}
 	// ここでレスポンスを作る
-	response := api_gen_code.APIWriteResponse{
+	response := api_gen_code.APIResponse{
 		RequestType:   api_req.RequestType,
 		UserId:        api_req.UserId,
 		ResponseValue: &res,
