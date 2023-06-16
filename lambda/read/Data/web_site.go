@@ -1,5 +1,6 @@
 package Data
 
+
 // WebSiteの構造体
 type WebSite struct {
 	// サイト名
@@ -16,6 +17,8 @@ type WebSite struct {
 	SiteCategory string `json:"siteCategory"`
 	// サイトのRSS URL
 	SiteRssURL string `json:"siteRssURL"`
+	// サイトのタグ
+	SiteTags []string `json:"siteTags"`
 }
 
 type Article struct {
@@ -38,7 +41,6 @@ type Article struct {
 	// 記事のカテゴリー
 	Category string `json:"category"`
 }
-
 
 type RssFeedImage struct {
 	// 画像のリンク

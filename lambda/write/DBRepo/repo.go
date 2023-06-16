@@ -1,6 +1,6 @@
 package DBRepo
 
-import "write/Data"
+import "read/Data"
 
 // DBRepo はDBにアクセスするためのインターフェース
 type DBRepo interface {

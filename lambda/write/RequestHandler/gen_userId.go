@@ -3,7 +3,7 @@ package RequestHandler
 import (
 	"encoding/json"
 	"write/DBRepo"
-	"write/Data"
+	"read/Data"
 
 	// "fmt"
 	"math/rand"

@@ -1,6 +1,6 @@
 package DBRepo
 
-import "write/Data"
+import "read/Data"
 
 type MockDBRepo struct {
 }
