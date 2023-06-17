@@ -2,10 +2,10 @@ package RequestHandler
 
 import (
 	"heavy/APIFunction"
-	"heavy/Repo"
+	"read/Repo"
 )
 
-func ParseRequestType(access_ip string, db_repo Repo.DBRepo, request_type string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
+func ParseRequestType(access_ip string, db_repo Repo.DBRepository, request_type string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
 	functions := APIFunction.APIFunctions{
 		DBRepo: db_repo,
 	}
@@ -15,7 +15,7 @@ func ParseRequestType(access_ip string, db_repo Repo.DBRepo, request_type string
 	case "SubscribeSite":
 		return functions.SubscribeSite(access_ip, user_id, request_argument_json1, request_argument_json2)
 	case "fetchCloudFeed":
-		return functions.FetchCloudFeed(access_ip, user_id, request_argument_json1, request_argument_json2)
+		return functions.FetchCloudFeed(access_ip, user_id, request_argument_json1)
 	default:
 		return "", nil
 	}

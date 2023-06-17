@@ -9,7 +9,7 @@ import (
 )
 
 // 新規サイトを調べて、サイト情報と記事情報を返す
-func NewSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
+func newSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 	doc, err := getHtmlGoQueryDoc(siteUrl)
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("getHtmlGoQueryDoc error: %v", err)
@@ -31,12 +31,6 @@ func NewSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 	}
 	siteMeta.SiteRssURL = rssUrls[0]
 	return siteMeta, articles, nil
-}
-
-// SiteのRSSを取得してsliceの記事を返す
-func GetFeedArticle(siteUrl string) ([]Data.Article, error) {
-
-	return nil, nil
 }
 
 func getHtmlGoQueryDoc(url string) (*goquery.Document, error) {

@@ -3,11 +3,11 @@ package RequestHandler
 // ハンドラーからゆーざーID とリクエストタイプを受け取って、DBからデータを取得して返す
 import (
 	"encoding/json"
-	"read/DBRepo"
+	"read/Repo"
 )
 
 type Explore struct {
-	DBrepo DBRepo.DBRepository
+	DBrepo Repo.DBRepository
 }
 
 func (e Explore) GetExploreCategories(userID string) (ExploreJson string, err error) {

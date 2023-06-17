@@ -1,96 +1,78 @@
 package APIFunction
 
 import (
+	"encoding/json"
+	"errors"
 	"read/Data"
-	"sort"
+	"read/Repo"
+	// "sort"
 	"time"
-
-	"github.com/PuerkitoBio/goquery"
-	"github.com/mmcdole/gofeed"
 )
 
-func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
-	return "", nil
+func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_argument_json1 string) (string, error) {
+	// jsonからURLを取得する
+	var request Data.FetchFeedRequest
+	err := json.Unmarshal([]byte(request_argument_json1), &request)
+	if err != nil {
+		return "", err
+	}
+	clientLastModified, err := time.Parse(time.RFC3339, request.LastModified)
+	if err != nil {
+		return "", err
+	}
+	articles, err := getSiteArticles(s.DBRepo, request.SiteUrl, request.IntervalMinutes, clientLastModified)
+	if err != nil {
+		return "", err
+	}
+	var response Data.FetchCloudFeedResponse
+	response.Feeds = articles
+	response.ResponseType = "success"
+	responseJson, err := json.Marshal(response)
+	if err != nil {
+		return "", err
+	}
+	return string(responseJson), nil
 }
 
-// RssFeedをパースする
-func parseRssFeed(rssUrl string) ([]Data.Article, error) {
-	fp := gofeed.NewParser()
-	feed, _ := fp.ParseURL(rssUrl)
-	articles := []Data.Article{}
-	for _, v := range feed.Items {
-		article := Data.Article{
-			Title:        v.Title,
-			Link:         v.Link,
-			Description:  v.Description,
-			Category:     v.Categories,
-			Site:         feed.Title,
-			LastModified: v.PublishedParsed.Format(time.RFC3339),
+// 指定したサイトURLの記事が指定された間隔より古くなっていたら更新する
+// まだ鮮度があるのなら更新せずそのままクライアント側更新日時より新しい記事を返す
+func getSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes int, clientLastModified time.Time) ([]Data.Article, error) {
+	if repo.IsExistSite(siteUrl) {
+		// サイトの記事更新日時を取得する
+		lastModified, err := repo.GetSiteLastModified(siteUrl)
+		if err != nil {
+			return nil, err
 		}
-		articles = append(articles, article)
-	}
-	return articles, nil
-}
-
-// 並列処理で記事のイメージURLを取得する
-func getArticleImageURLs(articles []Data.Article) ([]Data.Article, error) {
-	// 並列処理で記事のイメージURLを取得する
-	// 1. og:imageを取得する
-	// 3. それでもなければfavicon.icoを取得する
-	ch := make(chan Data.Article)
-	for _, article := range articles {
-		go func(article Data.Article) {
-			// 1. og:imageを取得する
-			doc, err := getHtmlGoQueryDoc(article.Link)
+		// 記事更新日時にIntervalMinutesを足した日時に現時間が過ぎていたら記事更新をする
+		if isOverIntervalMinutes(lastModified, intervalMinutes) {
+			// サイトを取得する
+			site, err := repo.GetSite(siteUrl)
 			if err != nil {
-				ch <- article
-				return
+				return nil, err
 			}
-			imageUrl, err := getArticleImageURL(doc, article.Link)
+			// サイトの記事を取得する
+			articles, err := parseRssFeed(site.SiteRssURL)
 			if err != nil {
-				ch <- article
-				return
+				return nil, err
 			}
-			article.Image = Data.RssFeedImage{
-				Link: imageUrl,
-			}
-			ch <- article
-		}(article)
-	}
-	for i := 0; i < len(articles); i++ {
-		articles[i] = <-ch
-	}
-	// articleを日時でソートする
-	sort.Slice(articles, func(i, j int) bool {
-		return articles[i].LastModified > articles[j].LastModified
-	})
-	return articles, nil
-}
-
-
-// 記事のイメージURLを取得する
-func getArticleImageURL(doc *goquery.Document, articleUrl string) (string, error) {
-	// 記事のイメージURLを取得する
-	// 1. og:imageを取得する
-	// 3. それでもなければfavicon.icoを取得する
-	imageUrl := ""
-	// 1. og:imageを取得する
-	doc.Find("meta").Each(func(_ int, s *goquery.Selection) {
-		property, exists := s.Attr("property")
-		if exists {
-			if property == "og:image" {
-				imageUrl = s.AttrOr("content", "")
-				return
+			// サイトの記事をDBに登録する
+			err = repo.UpdateArticles(siteUrl, articles)
+			if err != nil {
+				return nil, err
 			}
 		}
-	})
-	// 2. それでもなければfavicon.icoを取得する
-	if imageUrl == "" {
-		imageUrl = articleUrl + "/favicon.ico"
+		// クライアント側更新日時より新しい記事を返す
+		articles, err := repo.GetArticlesByTme(siteUrl, clientLastModified)
+		if err != nil {
+			return nil, err
+		}
+		return articles, nil
 	}
-	return imageUrl, nil
+	return nil, errors.New("サイトが存在しません")
 }
 
-
-
-
+// 記事更新日時にIntervalMinutesを足した日時に現時間が過ぎているか確認する
+func isOverIntervalMinutes(lastModified time.Time, intervalMinutes int) bool {
+	lastModifiedInterval := lastModified.Add(time.Duration(time.Duration(intervalMinutes).Minutes()))
+	return time.Now().After(lastModifiedInterval)
+}

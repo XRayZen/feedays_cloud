@@ -19,6 +19,8 @@ type WebSite struct {
 	SiteRssURL string `json:"siteRssURL"`
 	// サイトのタグ
 	SiteTags []string `json:"siteTags"`
+	// サイトの最終更新日時
+	LastModified string `json:"lastModified"`
 }
 
 type Article struct {

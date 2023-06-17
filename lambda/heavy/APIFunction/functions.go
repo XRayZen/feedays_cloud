@@ -1,10 +1,12 @@
 package APIFunction
 
-import "heavy/Repo"
+import (
+	"read/Repo"
+)
 
 
 type APIFunctions struct{
-	DBRepo Repo.DBRepo
+	DBRepo Repo.DBRepository
 }
 
 

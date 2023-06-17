@@ -9,7 +9,7 @@ func TestFetchCloudFeed(t *testing.T) {
 }
 
 func Test_getArticleImageUrls(t *testing.T) {
-	_, arg_articles, err := NewSite("https://www.4gamer.net/")
+	_, arg_articles, err := newSite("https://www.4gamer.net/")
 	if err != nil {
 		t.Errorf("NewSite error: %v", err)
 	}

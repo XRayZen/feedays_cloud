@@ -115,7 +115,7 @@ func TestNewSite(t *testing.T) {
 			if Url[len(Url)-1:] == "/" {
 				Url = Url[:len(Url)-1]
 			}
-			webSite, articles, err := NewSite(Url)
+			webSite, articles, err := newSite(Url)
 			if err != nil {
 				t.Error(err)
 			}
