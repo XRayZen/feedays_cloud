@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 	"write/DBRepo"
-	"write/Data"
+	"read/Data"
 )
 
 // 正常系のテスト

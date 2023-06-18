@@ -2,7 +2,7 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"read/DBRepo"
+	"read/Repo"
 	"read/Data"
 	"testing"
 )
@@ -19,7 +19,7 @@ func TestParseRequestType(t *testing.T) {
 	want_RsStr := string(want_Rs)
 	type args struct {
 		// ここでDIしても良い
-		diDBRepo    DBRepo.DBRepository
+		diDBRepo    Repo.DBRepository
 		requestType string
 		userID      string
 	}
@@ -33,7 +33,7 @@ func TestParseRequestType(t *testing.T) {
 			name: "正常系 ExploreCategories",
 			args: args{
 				// ここでDIしているがargsでした方が良いかも
-				diDBRepo:    DBRepo.MockDBRepo{},
+				diDBRepo:    Repo.MockDBRepo{},
 				requestType: "ExploreCategories",
 				userID:      "userID",
 			},
@@ -42,7 +42,7 @@ func TestParseRequestType(t *testing.T) {
 		{
 			name: "正常系 Ranking",
 			args: args{
-				diDBRepo:    DBRepo.MockDBRepo{},
+				diDBRepo:    Repo.MockDBRepo{},
 				requestType: "Ranking",
 				userID:      "userID",
 			},
@@ -51,7 +51,7 @@ func TestParseRequestType(t *testing.T) {
 		{
 			name: "異常系 invalid request type",
 			args: args{
-				diDBRepo:    DBRepo.MockDBRepo{},
+				diDBRepo:    Repo.MockDBRepo{},
 				requestType: "invalid request type",
 				userID:      "userID",
 			},

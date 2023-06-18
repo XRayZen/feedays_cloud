@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"read/DBRepo"
+	"read/Repo"
 	"read/RequestHandler"
 	"read/api_gen_code"
 
@@ -30,12 +30,12 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// 変換されたらリクエストタイプに応じて処理を分岐する
 	// 別のパッケージに移して処理を書く
 	// ここでDIする
-	res, err := RequestHandler.ParseRequestType(DBRepo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,)
+	res, err := RequestHandler.ParseRequestType(Repo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 	// ここでレスポンスを作る
-	response := api_gen_code.APIReadResponse{
+	response := api_gen_code.APIResponse{
 		RequestType:   api_req.RequestType,
 		UserId:        api_req.UserId,
 		ResponseValue: &res,

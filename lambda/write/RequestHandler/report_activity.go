@@ -3,7 +3,7 @@ package RequestHandler
 import (
 	"time"
 	"write/DBRepo"
-	"write/Data"
+	"read/Data"
 )
 
 func ReportAPIActivity(ip string, dbRepo DBRepo.DBRepo, userId string, identInfo Data.UserAccessIdentInfo,

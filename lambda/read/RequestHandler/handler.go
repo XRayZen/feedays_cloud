@@ -4,11 +4,11 @@ package RequestHandler
 
 import (
 	"errors"
-	"read/DBRepo"
+	"read/Repo"
 	// "read/Data"
 )
 
-func ParseRequestType(diDBRepo DBRepo.DBRepository, requestType string, userID string) (res string, err error) {
+func ParseRequestType(diDBRepo Repo.DBRepository, requestType string, userID string) (res string, err error) {
 	// DBからデータを取得するだけの処理をする
 	switch requestType {
 	case "ExploreCategories":

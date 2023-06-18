@@ -3,11 +3,11 @@ package RequestHandler
 import (
 	// "errors"
 	"encoding/json"
-	"read/DBRepo"
+	"read/Repo"
 )
 
 type Ranking struct {
-	DBrepo DBRepo.DBRepository
+	DBrepo Repo.DBRepository
 }
 
 func (e Ranking) GetRanking(userID string) (RankingJson string, err error) {
