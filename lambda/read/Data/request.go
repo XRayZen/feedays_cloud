@@ -1,7 +1,8 @@
 package Data
 
 type ApiSearchRequest struct {
-	// addContent, exploreWeb, powerSearch
+	// URL or Keyword orSiteName
+	// クライアント側でキーワードにURLが入力された場合は検索タイプをURLにしてURL検索を行う
 	SearchType  string `json:"searchType"`
 	Word        string `json:"word"`
 	UserID      string `json:"userID"`

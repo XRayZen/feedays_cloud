@@ -29,6 +29,16 @@ func (s MockDBRepo) GetRanking(userID string, country string) (resRanking Data.R
 
 // heavyで使う
 func (s MockDBRepo) IsExistSite(site_url string) bool {
+	switch site_url {
+	case "https://automaton-media.com/":
+		return true
+	case "https://gigazine.net/":
+		return true
+	}
+	return false
+}
+
+func (s MockDBRepo) IsSubscribeSite(user_id string, site_url string) bool {
 	return true
 }
 
@@ -81,10 +91,20 @@ func (s MockDBRepo) RegisterSite(site Data.WebSite, articles []Data.Article) err
 }
 
 func (s MockDBRepo) SearchArticlesByKeyword(keyword string) ([]Data.Article, error) {
+	if keyword == "Found" {
+		return []Data.Article{
+			{
+				Title: 	 "Found",
+				Link:    "https://example.com",
+				Site:   "https://example.com",
+				LastModified: "2021-01-01T00:00:00+09:00",
+			},
+		}, nil
+	}
 	return nil, nil
 }
 
-func (s MockDBRepo) GetArticlesByTme(siteUrl string, lastModified time.Time) ([]Data.Article, error) {
+func (s MockDBRepo) SearchArticlesByTime(siteUrl string, lastModified time.Time) ([]Data.Article, error) {
 	// 更新日時より新しい記事を返す
 	var articles []Data.Article
 	for _, article := range mockArticles {
@@ -100,6 +120,25 @@ func (s MockDBRepo) GetArticlesByTme(siteUrl string, lastModified time.Time) ([]
 		}
 	}
 	return articles, nil
+}
+
+func (s MockDBRepo) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
+	switch siteName {
+	case "Found":
+		return []Data.WebSite{
+			{
+				SiteURL:      "https://example.com",
+				SiteRssURL:   "https://example.com",
+				SiteName:     "Found",
+				LastModified: "2021-01-01T00:00:00+09:00",
+			},
+		}, nil
+	}
+	return nil, nil
+}
+
+func (s MockDBRepo) SearchArticlesBySite(siteUrl string) ([]Data.Article, error) {
+	return nil, nil
 }
 
 // モック用変数

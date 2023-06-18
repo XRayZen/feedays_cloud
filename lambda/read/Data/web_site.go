@@ -1,6 +1,5 @@
 package Data
 
-
 // WebSiteの構造体
 type WebSite struct {
 	// サイト名

@@ -16,7 +16,7 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 	if err := json.Unmarshal([]byte(request_argument_json2), &isSubscribe); err != nil {
 		return "", err
 	}
-	// サイトが登録されていいるか
+	// サイトが購読されているか確認する
 	if s.DBRepo.IsExistSite(webSite.SiteURL) {
 		// 購読を登録する
 		if err := s.DBRepo.SubscribeSite(user_id, webSite.SiteURL, isSubscribe); err != nil {
@@ -37,6 +37,5 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 			return "", err
 		}
 	}
-
 	return "", nil
 }

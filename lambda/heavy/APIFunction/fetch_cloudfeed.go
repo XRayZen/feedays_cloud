@@ -65,7 +65,7 @@ func refreshSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes
 			}
 		}
 		// クライアント側更新日時より新しい記事を返す
-		articles, err := repo.GetArticlesByTme(siteUrl, clientLastModified)
+		articles, err := repo.SearchArticlesByTime(siteUrl, clientLastModified)
 		if err != nil {
 			return nil, err
 		}
