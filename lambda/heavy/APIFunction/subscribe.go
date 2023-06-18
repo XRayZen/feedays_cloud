@@ -16,12 +16,13 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 	if err := json.Unmarshal([]byte(request_argument_json2), &isSubscribe); err != nil {
 		return "", err
 	}
-	// サイトが購読されているか確認する
+	// サイトが登録されているか確認する
 	if s.DBRepo.IsExistSite(webSite.SiteURL) {
-		// 購読を登録する
+		// 購読を登録・登録解除する
 		if err := s.DBRepo.SubscribeSite(user_id, webSite.SiteURL, isSubscribe); err != nil {
 			return "", err
 		}
+		return "Success Subscribe Site", nil
 	} else {
 		// サイトのRSSを取得する
 		articles, err := fetchRSSArticles(webSite.SiteRssURL)
@@ -36,6 +37,6 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 		if err := s.DBRepo.SubscribeSite(user_id, webSite.SiteURL, isSubscribe); err != nil {
 			return "", err
 		}
+		return "Success Register Site", nil
 	}
-	return "", nil
 }

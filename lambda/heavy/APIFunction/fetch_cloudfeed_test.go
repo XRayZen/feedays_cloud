@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-func TestFetchCloudFeed(t *testing.T) {
-	// 考えられるテストケースを網羅する
-	//
-}
-
 func Test_refreshSiteArticles(t *testing.T) {
 	// 考えられるテストケースを網羅する
 	// サイトが存在していて更新期限を過ぎている場合は

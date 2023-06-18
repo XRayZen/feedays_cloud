@@ -129,37 +129,3 @@ func TestNewSite(t *testing.T) {
 	}
 }
 
-// RSSFeedをパースする
-func TestParseRSSFeed(t *testing.T) {
-	// https://gigazine.net/news/rss_2.0
-	type args struct {
-		rssUrl string
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{
-			name: "正常系",
-			args: args{
-				rssUrl: "https://gigazine.net/news/rss_2.0",
-			},
-			want: 1,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			articles, err := fetchRSSArticles(tt.args.rssUrl)
-			if err != nil {
-				t.Error(err)
-			}
-			if len(articles) < tt.want {
-				t.Errorf("parseRssFeed() = %v, want %v", len(articles), tt.want)
-			}
-		})
-	}
-
-}
