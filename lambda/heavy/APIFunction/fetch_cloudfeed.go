@@ -3,8 +3,11 @@ package APIFunction
 import (
 	"encoding/json"
 	"errors"
+
+	// "log"
 	"read/Data"
 	"read/Repo"
+
 	// "sort"
 	"time"
 )
@@ -20,7 +23,7 @@ func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_a
 	if err != nil {
 		return "", err
 	}
-	articles, err := getSiteArticles(s.DBRepo, request.SiteUrl, request.IntervalMinutes, clientLastModified)
+	articles, err := refreshSiteArticles(s.DBRepo, request.SiteUrl, request.IntervalMinutes, clientLastModified)
 	if err != nil {
 		return "", err
 	}
@@ -36,22 +39,22 @@ func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_a
 
 // 指定したサイトURLの記事が指定された間隔より古くなっていたら更新する
 // まだ鮮度があるのなら更新せずそのままクライアント側更新日時より新しい記事を返す
-func getSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes int, clientLastModified time.Time) ([]Data.Article, error) {
+func refreshSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes int, clientLastModified time.Time) ([]Data.Article, error) {
 	if repo.IsExistSite(siteUrl) {
 		// サイトの記事更新日時を取得する
-		lastModified, err := repo.GetSiteLastModified(siteUrl)
+		lastModified, err := repo.FetchSiteLastModified(siteUrl)
 		if err != nil {
 			return nil, err
 		}
-		// 記事更新日時にIntervalMinutesを足した日時に現時間が過ぎていたら記事更新をする
-		if isOverIntervalMinutes(lastModified, intervalMinutes) {
+		// 記事更新日時にIntervalMinutesを足した更新期限日時に現時間が過ぎていたら記事更新をする
+		if isUpdateExpired(lastModified, intervalMinutes) {
 			// サイトを取得する
-			site, err := repo.GetSite(siteUrl)
+			site, err := repo.FetchSite(siteUrl)
 			if err != nil {
 				return nil, err
 			}
 			// サイトの記事を取得する
-			articles, err := parseRssFeed(site.SiteRssURL)
+			articles, err := fetchRSSArticles(site.SiteRssURL)
 			if err != nil {
 				return nil, err
 			}
@@ -68,11 +71,15 @@ func getSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes int
 		}
 		return articles, nil
 	}
-	return nil, errors.New("サイトが存在しません")
+	return nil, errors.New("Not Found WebSite")
 }
 
-// 記事更新日時にIntervalMinutesを足した日時に現時間が過ぎているか確認する
-func isOverIntervalMinutes(lastModified time.Time, intervalMinutes int) bool {
-	lastModifiedInterval := lastModified.Add(time.Duration(time.Duration(intervalMinutes).Minutes()))
-	return time.Now().After(lastModifiedInterval)
+// 記事更新日時にIntervalMinutesを足した更新期限日時を現時間が過ぎていたらtrueを返す
+func isUpdateExpired(lastModified time.Time, intervalMinutes int) bool {
+	// 現時間を取得する
+	now_time := time.Now()
+	// 記事更新日時にIntervalMinutesを足した更新期限日時を取得する
+	update_expired_time := lastModified.Add(time.Minute * time.Duration(intervalMinutes))
+	// 更新期限日時が現時間より過ぎていたらtrueを返す
+	return update_expired_time.Before(now_time)
 }

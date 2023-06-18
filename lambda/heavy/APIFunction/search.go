@@ -23,7 +23,7 @@ func (s APIFunctions) Search(access_ip string, user_id string, request_argument_
 		// サイトURLをキーにDBに該当するサイトがあるか確認する
 		if s.DBRepo.IsExistSite(apiSearchRequest.Word) {
 			// サイトURLをキーにDBに該当するサイトを返す
-			webSite, err := s.DBRepo.GetSite(apiSearchRequest.Word)
+			webSite, err := s.DBRepo.FetchSite(apiSearchRequest.Word)
 			if err != nil {
 				return "", err
 			}

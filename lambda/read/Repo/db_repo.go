@@ -15,10 +15,10 @@ type DBRepository interface {
 	// サイトURLをキーにDBに該当するサイトがあるか確認する
 	IsExistSite(site_url string) bool
 	// サイトURLをキーにDBに該当するサイトを返す
-	GetSite(site_url string) (Data.WebSite, error)
-	// サイトURLをキーに記事更新日時を取得する
-	GetSiteLastModified(site_url string) (time.Time, error)
-	// 新規サイトをDBに登録する
+	FetchSite(site_url string) (Data.WebSite, error)
+	// サイトURLをキーに記事更新チェック日時を取得する
+	FetchSiteLastModified(site_url string) (time.Time, error)
+	// 新規サイトをDB(サイトテーブル)に登録する
 	RegisterSite(site Data.WebSite, articles []Data.Article) error
 	// キーワード検索でDBに該当する記事を返す
 	SearchArticlesByKeyword(keyword string) ([]Data.Article, error)
@@ -27,6 +27,8 @@ type DBRepository interface {
 	// サイトの記事を更新する
 	// サイトの更新日時より新しい記事があればDBに登録する
 	UpdateArticles(siteUrl string, articles []Data.Article) error
+	// サイトを購読登録する
+	SubscribeSite(user_id string, siteUrl string, is_subscribe bool) error
 }
 
 // DBRepoのリアルを実装
@@ -50,11 +52,11 @@ func (r DBRepoImpl) IsExistSite(site_url string) bool {
 	return false
 }
 
-func (r DBRepoImpl) GetSite(site_url string) (Data.WebSite, error) {
+func (r DBRepoImpl) FetchSite(site_url string) (Data.WebSite, error) {
 	return Data.WebSite{}, nil
 }
 
-func (r DBRepoImpl) GetSiteLastModified(site_url string) (time.Time, error) {
+func (r DBRepoImpl) FetchSiteLastModified(site_url string) (time.Time, error) {
 	return time.Now(), nil
 }
 
@@ -71,5 +73,9 @@ func (r DBRepoImpl) GetArticlesByTme(siteUrl string, lastModified time.Time) ([]
 }
 
 func (r DBRepoImpl) UpdateArticles(siteUrl string, articles []Data.Article) error {
+	return nil
+}
+
+func (r DBRepoImpl) SubscribeSite(user_id string, siteUrl string, is_subscribe bool) error {
 	return nil
 }

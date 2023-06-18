@@ -2,8 +2,8 @@ package APIFunction
 
 import (
 	"fmt"
-	"read/Data"
 	"net/http"
+	"read/Data"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -25,7 +25,7 @@ func newSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 		return Data.WebSite{}, nil, fmt.Errorf("getSiteMeta error: %v", err)
 	}
 	// RSSをパースする
-	articles, err := parseRssFeed(rssUrls[0])
+	articles, err := fetchRSSArticles(rssUrls[0])
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("parseRssFeed error: %v", err)
 	}

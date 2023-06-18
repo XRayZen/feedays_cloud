@@ -9,10 +9,13 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// RssFeedをパースする
-func parseRssFeed(rssUrl string) ([]Data.Article, error) {
+// 指定されたサイトのRSS_URLからRSSフィードを取得して記事リストとして返す
+func fetchRSSArticles(rssUrl string) ([]Data.Article, error) {
 	fp := gofeed.NewParser()
-	feed, _ := fp.ParseURL(rssUrl)
+	feed, err := fp.ParseURL(rssUrl)
+	if err != nil {
+		return nil, err
+	}
 	articles := []Data.Article{}
 	for _, v := range feed.Items {
 		article := Data.Article{
@@ -62,7 +65,6 @@ func getArticleImageURLs(articles []Data.Article) ([]Data.Article, error) {
 	})
 	return articles, nil
 }
-
 
 // 記事のイメージURLを取得する
 func getArticleImageURL(doc *goquery.Document, articleUrl string) (string, error) {
