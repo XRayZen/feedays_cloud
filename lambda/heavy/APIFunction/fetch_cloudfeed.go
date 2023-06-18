@@ -54,7 +54,12 @@ func refreshSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes
 				return nil, err
 			}
 			// サイトの記事を取得する
-			articles, err := fetchRSSArticles(site.SiteRssURL)
+			no_image_articles, err := fetchRSSArticles(site.SiteRssURL)
+			if err != nil {
+				return nil, err
+			}
+			// サイトのイメージURLを取得する
+			articles, err := getArticleImageURLs(no_image_articles)
 			if err != nil {
 				return nil, err
 			}

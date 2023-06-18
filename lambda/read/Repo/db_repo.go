@@ -34,6 +34,14 @@ type DBRepository interface {
 	UpdateArticles(siteUrl string, articles []Data.Article) error
 	// サイトを購読登録する
 	SubscribeSite(user_id string, siteUrl string, is_subscribe bool) error
+
+	// バッチ処理用
+	// サイトテーブルを全件取得する
+	FetchAllSites() ([]Data.WebSite, error)
+	// 閲覧履歴テーブルを全件取得する
+	FetchAllHistories() ([]Data.ReadActivity, error)
+	// サイトと記事を大量に更新する
+	UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error
 }
 
 // DBRepoのリアルを実装
@@ -90,5 +98,18 @@ func (r DBRepoImpl) UpdateArticles(siteUrl string, articles []Data.Article) erro
 }
 
 func (r DBRepoImpl) SubscribeSite(user_id string, siteUrl string, is_subscribe bool) error {
+	return nil
+}
+
+// バッチ処理用
+func (r DBRepoImpl) FetchAllSites() ([]Data.WebSite, error) {
+	return []Data.WebSite{}, nil
+}
+
+func (r DBRepoImpl) FetchAllHistories() ([]Data.ReadActivity, error) {
+	return []Data.ReadActivity{}, nil
+}
+
+func (r DBRepoImpl) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
 	return nil
 }

@@ -94,9 +94,9 @@ func (s MockDBRepo) SearchArticlesByKeyword(keyword string) ([]Data.Article, err
 	if keyword == "Found" {
 		return []Data.Article{
 			{
-				Title: 	 "Found",
-				Link:    "https://example.com",
-				Site:   "https://example.com",
+				Title:        "Found",
+				Link:         "https://example.com",
+				Site:         "https://example.com",
 				LastModified: "2021-01-01T00:00:00+09:00",
 			},
 		}, nil
@@ -150,5 +150,18 @@ func (s MockDBRepo) UpdateArticles(siteUrl string, articles []Data.Article) erro
 }
 
 func (s MockDBRepo) SubscribeSite(user_id string, siteUrl string, is_subscribe bool) error {
+	return nil
+}
+
+// バッチ処理用
+func (s MockDBRepo) FetchAllSites() ([]Data.WebSite, error) {
+	return []Data.WebSite{}, nil
+}
+
+func (s MockDBRepo) FetchAllHistories() ([]Data.ReadActivity, error) {
+	return []Data.ReadActivity{}, nil
+}
+
+func (s MockDBRepo) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
 	return nil
 }

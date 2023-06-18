@@ -41,6 +41,8 @@ type Article struct {
 	IsReedLate bool `json:"isReedLate"`
 	// 記事のカテゴリー
 	Category []string `json:"category"`
+	// サイトURL
+	SiteUrl string `json:"siteUrl"`
 }
 
 type RssFeedImage struct {
