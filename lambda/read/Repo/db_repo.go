@@ -10,7 +10,6 @@ import (
 type DBRepository interface {
 	GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error)
 	GetExploreCategories(userID string, country string) (resExp Data.ExploreCategories, err error)
-	GetRanking(userID string, country string) (resRanking Data.Ranking, err error)
 
 	// heavyで使う
 	// サイトURLをキーにサイトテーブルに該当するサイトがあるか確認する
@@ -42,6 +41,8 @@ type DBRepository interface {
 	FetchAllHistories() ([]Data.ReadActivity, error)
 	// サイトと記事を大量に更新する
 	UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error
+	// 時間（From・To）を指定してリードアクテビティを検索する
+	SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error)
 }
 
 // DBRepoのリアルを実装
@@ -56,9 +57,6 @@ func (s DBRepoImpl) GetExploreCategories(userID string, country string) (resExp 
 	return Data.ExploreCategories{}, nil
 }
 
-func (s DBRepoImpl) GetRanking(userID string, country string) (resRanking Data.Ranking, err error) {
-	return Data.Ranking{}, nil
-}
 
 // heavyで使う
 func (r DBRepoImpl) IsExistSite(site_url string) bool {
@@ -113,3 +111,8 @@ func (r DBRepoImpl) FetchAllHistories() ([]Data.ReadActivity, error) {
 func (r DBRepoImpl) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
 	return nil
 }
+
+func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error) {
+	return []Data.ReadActivity{}, nil
+}
+

@@ -14,10 +14,6 @@ func Batch() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if res {
-		log.Println("BATCH RefreshArticles SUCCESS!")
-	}
-	//DBを定期的に読み込んでランキングを集計・更新する
-	
+	log.Println(res)
 	return true, nil
 }

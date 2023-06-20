@@ -18,12 +18,6 @@ func ParseRequestType(diDBRepo Repo.DBRepository, requestType string, userID str
 		}
 		res, err = str.GetExploreCategories(userID)
 		return res, err
-	case "Ranking":
-		str := Ranking{
-			DBrepo: diDBRepo,
-		}
-		res, err = str.GetRanking(userID)
-		return res, err
 	default:
 		return "", errors.New("invalid request type")
 	}

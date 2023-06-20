@@ -13,10 +13,6 @@ func TestParseRequestType(t *testing.T) {
 		CategoryName: "CategoryName",
 	})
 	want_ExStr := string(want_Ex)
-	want_Rs, _ := json.Marshal(Data.Ranking{
-		RankingName: "RankingName",
-	})
-	want_RsStr := string(want_Rs)
 	type args struct {
 		// ここでDIしても良い
 		diDBRepo    Repo.DBRepository
@@ -38,15 +34,6 @@ func TestParseRequestType(t *testing.T) {
 				userID:      "userID",
 			},
 			want: want_ExStr,
-		},
-		{
-			name: "正常系 Ranking",
-			args: args{
-				diDBRepo:    Repo.MockDBRepo{},
-				requestType: "Ranking",
-				userID:      "userID",
-			},
-			want: want_RsStr,
 		},
 		{
 			name: "異常系 invalid request type",

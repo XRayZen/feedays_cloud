@@ -12,7 +12,7 @@ type WebSite struct {
 	SiteID string `json:"siteID"`
 	// サイトのURL
 	SiteURL string `json:"siteURL"`
-	// サイトのカテゴリー
+	// サイトのカテゴリー（ニュース、エンタメ、スポーツ、etc...）
 	SiteCategory string `json:"siteCategory"`
 	// サイトのRSS URL
 	SiteRssURL string `json:"siteRssURL"`
