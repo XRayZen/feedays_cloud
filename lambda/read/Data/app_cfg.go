@@ -7,13 +7,14 @@ type AppConfig struct {
 }
 
 type ApiRequestLimitConfig struct {
-	TrendRequestLimit        int `json:"trendRequestLimit"`
+	FetchFeedRequestInterval int `json:"fetchFeedRequestInterval"`
 	FetchRssFeedRequestLimit int `json:"fetchRssFeedRequestLimit"`
-	SendActivityMinute       int `json:"sendActivityMinute"`
+	TrendRequestInterval     int `json:"trendRequestInterval"`
+	TrendRequestLimit        int `json:"trendRequestLimit"`
 }
 
 type RssFeedConfig struct {
-	LimitLastFetchTime int `json:"limitLastFetchTime"`
+	FeedRefreshInterval int `json:"feedRefreshInterval"`
 }
 
 type MobileUiConfig struct {
