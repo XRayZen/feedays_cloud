@@ -45,6 +45,16 @@ type ReadActivity struct {
 	Title string `json:"title"`
 	// リンク
 	Link string `json:"link"`
-	// アクティビティタイプ (  read Article or Site,)
+	// アクティビティタイプ (  Article or Site,)
 	Type string `json:"type"`
+	// サイト名
+	SiteName string `json:"siteName"`
+	// サイトURL
+	SiteURL string `json:"siteURL"`
+	// アクセス日時
+	AccessTime string `json:"accessTime"`
+	// アクセスプラットフォーム
+	AccessPlatform string `json:"accessPlatform"`
+	// アクセスIP
+	AccessIP string `json:"accessIP"`
 }

@@ -5,4 +5,5 @@ use (
 	./lambda/read
 	./lambda/write
 	./lambda/heavy
+	./lambda/batch
 )

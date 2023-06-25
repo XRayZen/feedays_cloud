@@ -21,12 +21,6 @@ func (s MockDBRepo) GetExploreCategories(userID string, country string) (resExp 
 	}, nil
 }
 
-func (s MockDBRepo) GetRanking(userID string, country string) (resRanking Data.Ranking, err error) {
-	return Data.Ranking{
-		RankingName: "RankingName",
-	}, nil
-}
-
 // heavyで使う
 func (s MockDBRepo) IsExistSite(site_url string) bool {
 	switch site_url {
@@ -94,9 +88,9 @@ func (s MockDBRepo) SearchArticlesByKeyword(keyword string) ([]Data.Article, err
 	if keyword == "Found" {
 		return []Data.Article{
 			{
-				Title: 	 "Found",
-				Link:    "https://example.com",
-				Site:   "https://example.com",
+				Title:        "Found",
+				Link:         "https://example.com",
+				Site:         "https://example.com",
 				LastModified: "2021-01-01T00:00:00+09:00",
 			},
 		}, nil
@@ -151,4 +145,62 @@ func (s MockDBRepo) UpdateArticles(siteUrl string, articles []Data.Article) erro
 
 func (s MockDBRepo) SubscribeSite(user_id string, siteUrl string, is_subscribe bool) error {
 	return nil
+}
+
+// モック用変数 テストする時に変更する
+var MockSiteLastModified int
+
+// バッチ処理用
+func (s MockDBRepo) FetchAllSites() ([]Data.WebSite, error) {
+	// 今より30分前の日時を返す
+	lastModifiedTime := time.Now().Add(-time.Minute * time.Duration(MockSiteLastModified))
+	// それをRFC3339形式に変換
+	lastModified := lastModifiedTime.Format(time.RFC3339)
+	return []Data.WebSite{
+		{
+			SiteURL:      "https://automaton-media.com/",
+			SiteRssURL:   "https://automaton-media.com/feed/",
+			SiteName:     "AUTOMATON",
+			LastModified: lastModified,
+		},
+		{
+			SiteURL:      "https://gigazine.net/",
+			SiteRssURL:   "https://gigazine.net/news/rss_2.0/",
+			SiteName:     "GIGAZINE",
+			LastModified: lastModified,
+		},
+	}, nil
+}
+
+func (s MockDBRepo) FetchAllHistories() ([]Data.ReadActivity, error) {
+	// モック用のReadActivityを生成して返す
+	// 一番読まれたのはGIGAZINEの記事（架空）
+	// 二番目に読まれたのはAUTOMATONの記事（架空）
+	var readActivities []Data.ReadActivity
+	// GIGAZINEの記事を100回読んだことにする
+	for i := 0; i < 100; i++ {
+		readActivities = append(readActivities, Data.ReadActivity{
+			Title: 	"Mock Article",
+			UserID: "Mock User",
+			Link:  "https://gigazine.net/article/20210101-mock-article/",
+		})
+	}
+	// AUTOMATONの記事を50回読んだことにする
+	for i := 0; i < 50; i++ {
+		readActivities = append(readActivities, Data.ReadActivity{
+			Title: 	"Mock Article",
+			UserID: "Mock User",
+			Link:  "https://automaton-media.com/articles/newsjp/20210101-mock-article/",
+		})
+	}
+
+	return []Data.ReadActivity{}, nil
+}
+
+func (s MockDBRepo) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
+	return nil
+}
+
+func (s MockDBRepo) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error) {
+	return nil, nil
 }

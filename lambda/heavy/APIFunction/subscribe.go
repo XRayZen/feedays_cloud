@@ -25,7 +25,12 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 		return "Success Subscribe Site", nil
 	} else {
 		// サイトのRSSを取得する
-		articles, err := fetchRSSArticles(webSite.SiteRssURL)
+		no_image_articles, err := fetchRSSArticles(webSite.SiteRssURL)
+		if err != nil {
+			return "", err
+		}
+		// サイトのイメージURLを取得する
+		articles, err := getArticleImageURLs(no_image_articles)
 		if err != nil {
 			return "", err
 		}

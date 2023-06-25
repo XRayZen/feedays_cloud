@@ -1,4 +1,4 @@
-package APIFunction
+package ApiFunction
 
 import (
 	"fmt"
@@ -25,16 +25,11 @@ func newSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 		return Data.WebSite{}, nil, fmt.Errorf("getSiteMeta error: %v", err)
 	}
 	// RSSをパースする
-	no_image_articles, err := fetchRSSArticles(rssUrls[0])
+	articles, err := fetchRSSArticles(rssUrls[0])
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("parseRssFeed error: %v", err)
 	}
 	siteMeta.SiteRssURL = rssUrls[0]
-	// 記事のイメージURLを取得する
-	articles, err := getArticleImageURLs(no_image_articles)
-	if err != nil {
-		return Data.WebSite{}, nil, fmt.Errorf("getArticleImageURLs error: %v", err)
-	}
 	return siteMeta, articles, nil
 }
 
