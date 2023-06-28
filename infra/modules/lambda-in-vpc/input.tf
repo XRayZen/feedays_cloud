@@ -1,0 +1,68 @@
+variable "lambda_function_name" {
+    type = string
+    description = "lambda function name"
+}
+
+variable "lambda_function_description" {
+    type = string
+    description = "lambda function description"
+}
+
+variable "lambda_function_architecture" {
+    type = string
+    description = "lambda function architecture"
+    default = "x86_64"
+}
+
+variable "repo_url" {
+    type = string
+    description = "ecr url"
+}
+
+variable "image_tag" {
+    type = string
+    # タグを指定する
+    description = "image tag (e.g. latest)"
+}
+
+variable "memory_size" {
+    type = number
+    description = "memory size"
+}
+
+variable "timeout" {
+    type = number
+    description = "timeout"
+}
+
+variable "managed_policy_arns" {
+    type = set(string)
+    description = "managed policy arns"
+}
+
+variable "subnet_ids" {
+    type = list(string)
+    description = "subnet ids"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
