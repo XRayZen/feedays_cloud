@@ -26,6 +26,12 @@ variable "public_subnets" {
   default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
 
+variable "database_subnets" {
+  type        = list(string)
+  description = "Database subnets"
+  default     = ["10.0.110.0/24", "10.0.112.0/24", "10.0.113.0/24"]
+}
+
 variable "enable_nat_gateway" {
   type        = bool
   description = "Enable NAT gateway"

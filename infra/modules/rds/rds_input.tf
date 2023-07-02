@@ -1,8 +1,8 @@
+# VPC関連
 variable "vpc_id" {
   type        = string
   description = "(optional) describe your variable"
 }
-
 # 配置するavailability zone
 variable "availability_zone" {
   type        = string
@@ -14,31 +14,57 @@ variable "vpc_cidr_block" {
   description = "(optional) describe your variable"
 }
 
-variable "subnet_ids" {
-    type = list(string)
-    description = "subnet ids"
+variable "vpc_private_subnets" {
+  type        = list(string)
+  description = "vpc private subnets"
 }
 
-# lambdaのセキュリティグループID
-variable "lambda_security_group_id" {
+variable "vpc_database_subnets" {
+  type        = list(string)
+  description = "vpc database subnets"
+}
+
+variable "vpc_private_subnets_cidr_blocks" {
+  type        = list(string)
+  description = "vpc private subnets cidr blocks"
+}
+
+variable "vpc_database_subnet_group_name" {
   type        = string
-  description = "lambda security group id"
+  description = "vpc database subnet group name"
+}
+
+variable "vpc_database_subnets_cidr_blocks" {
+  type        = list(string)
+  description = "vpc database subnets cidr blocks"
 }
 
 # DBエンジン種類
 variable "db_engine" {
   type        = string
   description = "DB engine type"
+  default = "mysql"
 }
+
 # DBエンジンバージョン
 variable "db_engine_version" {
   type        = string
   description = "DB engine version"
+    default     = "8.0.21"
 }
+
 # DBインスタンスタイプ
 variable "db_instance_class" {
   type        = string
   description = "DB instance class"
+  default     = "db.t3.micro"
+}
+
+# DBパラメーターグループ（ファミリー）
+variable "db_parameter_group_family" {
+  type        = string
+  description = "DB parameter group family"
+  default     = "mysql8.0"
 }
 # DBストレージタイプ
 variable "db_storage_type" {
@@ -56,16 +82,18 @@ variable "db_max_allocated_storage" {
   description = "DB max allocated storage"
 }
 
+# DBユーザー名
 variable "db_username" {
   type        = string
   description = "db user-name"
 }
-
+# DB名
 variable "db_name" {
   type        = string
   description = "(optional) describe your variable"
 }
 
-
-
-
+variable "tags" {
+  type        = map(string)
+  description = "tags"
+}

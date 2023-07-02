@@ -38,22 +38,22 @@ dependency "rds" {
     }
 }
 inputs = {
-    lambda_function_name = "feedays-cloud-read"
-    lambda_function_description = "feedays-cloud-read-lambda-function"
+    lambda_function_name = "feedays-cloud-batch"
+    lambda_function_description = "feedays-cloud-batch-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "read"
-    memory_size = 128
-    timeout = 3
+    image_tag= "batch"
+    memory_size = 200
+    timeout = 30
     lambda_function_architecture = "arm64"
 
     # VPC設定
     subnet_ids = dependency.vpc.outputs.private_subnet_ids
     vpc_id = dependency.vpc.outputs.vpc_id
-    
+
     # LamnbdaSGに必要
     vpc_private_subnets_cidr_blocks = dependency.vpc.outputs.private_subnets_cidr_blocks
     vpc_database_subnets_cidr_blocks = dependency.vpc.outputs.database_subnets_cidr_blocks
-    
+
     # 環境変数はここで定義する
     variables = [
         rds_endpoint = dependency.rds.outputs.rds_proxy_endpoint,
@@ -70,7 +70,6 @@ inputs = {
     "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
     # Amazon ECR に対する読み取り専用アクセスを付与
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
     # APIGW用
     "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess",
     # RDS Proxy用

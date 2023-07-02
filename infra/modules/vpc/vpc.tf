@@ -5,9 +5,10 @@ module "vpc" {
   name = "${var.project_name}-vpc"
   cidr = var.cidr
 
-  azs             = var.availability_zones
-  private_subnets = var.private_subnets
-  public_subnets  = var.public_subnets
+  azs              = var.availability_zones
+  private_subnets  = var.private_subnets
+  public_subnets   = var.public_subnets
+  database_subnets = var.database_subnets
   # NATゲートウェイを使う場合はtrueにする
   enable_nat_gateway     = var.enable_nat_gateway
   single_nat_gateway     = var.single_nat_gateway
