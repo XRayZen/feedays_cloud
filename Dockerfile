@@ -34,3 +34,8 @@ RUN sed -i 's/OSH_THEME=.*/OSH_THEME="powerline-multiline"/g' ~/.bashrc
 
 # oapi-codegenをインストール
 RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0
+# AWS CLI v2をインストール
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip" \
+  && unzip awscliv2.zip \
+  && ./aws/install
+
