@@ -6,5 +6,5 @@ locals{
     # DBの設定
     db_port = 3306
     db_username = "admin"
-    db_name = "feedays-develop-Database"
+    db_name = "feedays-develop-database"
 }

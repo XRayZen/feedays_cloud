@@ -1,9 +1,9 @@
 #--------------------------------------------------------------
 # Secrets Manager
 #--------------------------------------------------------------
-data "aws_kms_alias" "secretsmanager" {
-  name = "alias/aws/secretsmanager"
-}
+# data "aws_kms_alias" "secretsmanager" {
+#   name = "alias/aws/secretsmanager"
+# }
 
 resource "random_password" "db-password" {
   length           = 16
@@ -14,7 +14,7 @@ resource "random_password" "db-password" {
 resource "aws_secretsmanager_secret" "superuser" {
   name        = var.db_username
   description = "Database superuser, ${var.db_username}, database connection values"
-  kms_key_id  = data.aws_kms_alias.secretsmanager.id
+  # kms_key_id  = data.aws_kms_alias.secretsmanager.id
 
   tags = var.tags
 }

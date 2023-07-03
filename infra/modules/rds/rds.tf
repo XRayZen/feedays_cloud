@@ -2,7 +2,7 @@
 # DBを作成
 module "rds" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "~> 5.0"
+  version = "6.0.0"
   # RDSインスタンスの名前
   identifier = "${var.db_name}-rds"
 
@@ -35,6 +35,7 @@ module "rds" {
   backup_window              = "03:00-06:00"
   backup_retention_period    = 0
   auto_minor_version_upgrade = false
+
   # 削除設定
   deletion_protection = false
   skip_final_snapshot = true

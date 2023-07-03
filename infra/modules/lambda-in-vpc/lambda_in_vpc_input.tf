@@ -66,3 +66,7 @@ variable "vpc_database_subnets_cidr_blocks" {
   description = "vpc database subnets cidr blocks"
 }
 
+variable "rds_proxy_arn" {
+  type        = string
+  description = "rds proxy arn"
+}

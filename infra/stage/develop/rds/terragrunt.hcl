@@ -15,18 +15,19 @@ dependency "vpc" {
 
     mock_outputs= {
         vpc_id= "vpc-123456"
-        vpc_cidr= "empty"
-        vpc_private_subnets= ["subnet-123456", "subnet-123456"]
-        vpc_private_subnets_cidr_blocks= ["empty", "empty"]
-        vpc_database_subnet_group_name = "empty"
-        vpc_database_subnets_cidr_blocks = ["empty", "empty"]
+        vpc_cidr= "10.0.0.0/16"
+        vpc_private_subnets= ["subnet-1234567", "subnet-12345678"]
+        vpc_database_subnets= ["subnet-123456", "subnet-1234565"]
+        vpc_database_subnet_group_name = "subnet-123456"
+        vpc_private_subnets_cidr_blocks= ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+        vpc_database_subnets_cidr_blocks = ["10.0.110.0/24", "10.0.112.0/24", "10.0.113.0/24"]
     }
 }
 
 inputs = {
     # ネットワーク設定
     vpc_id= dependency.vpc.outputs.vpc_id
-    availability_zone = local.env.availability_zone
+    availability_zone = local.env.locals.availability_zone
     vpc_cidr_block= dependency.vpc.outputs.vpc_cidr
     vpc_private_subnets = dependency.vpc.outputs.vpc_private_subnets
     vpc_database_subnets = dependency.vpc.outputs.vpc_database_subnets
@@ -42,11 +43,11 @@ inputs = {
     db_allocated_storage = 20
     db_max_allocated_storage = 22
     # DBユーザー名
-    db_username = local.env.db_username
+    db_username = local.env.locals.db_username
     # DB名
-    db_name = local.env.db_name
+    db_name = local.env.locals.db_name
     tags = {
-        Name = "${local.env.name}-db"
+        Name = "${local.env.locals.project_name}-db"
     }
 }
 

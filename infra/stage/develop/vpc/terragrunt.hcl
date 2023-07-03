@@ -11,7 +11,7 @@ terraform{
 }
 
 inputs ={
-    project_name= local.env.project_name
+    project_name= local.env.locals.project_name
 
     cidr = "10.0.0.0/16"
     availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]

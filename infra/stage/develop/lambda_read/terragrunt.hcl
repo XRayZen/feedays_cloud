@@ -22,10 +22,10 @@ dependency "vpc" {
     config_path = "../vpc"
 
     mock_outputs = {
-        vpc_id = "mock-vpc-id"
-        private_subnet_ids = ["mock-private-subnet-id"]
-        private_subnets_cidr_blocks = ["mock-private-subnet-cidr-block"]
-        database_subnets_cidr_blocks = ["mock-database-subnet-cidr-block"]
+        vpc_id = "vpc-1234567890abcdef0"
+        private_subnet_ids = ["subnet-1234567890abcdef0", "subnet-1234567890abcdef1", "subnet-1234567890abcdef2"]
+        private_subnets_cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+        database_subnets_cidr_blocks = ["10.0.110.0/24", "10.0.112.0/24", "10.0.113.0/24"]
     }
 }
 # RDSに依存
@@ -53,15 +53,15 @@ inputs = {
     # LamnbdaSGに必要
     vpc_private_subnets_cidr_blocks = dependency.vpc.outputs.private_subnets_cidr_blocks
     vpc_database_subnets_cidr_blocks = dependency.vpc.outputs.database_subnets_cidr_blocks
-    
+    rds_proxy_arn = dependency.rds.outputs.rds_proxy_arn
     # 環境変数はここで定義する
-    variables = [
-        rds_endpoint = dependency.rds.outputs.rds_proxy_endpoint,
+    variables = {
+        rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
-        port = local.env.db_port,
-        usename = local.env.db_username,
-        db_name = local.env.db_name,
-    ]
+        port : local.env.locals.db_port,
+        usename : local.env.locals.db_username,
+        db_name : local.env.locals.db_name,
+    }
 
     managed_policy_arns = [
     # Lambda関数がCloudWatch Logsにログを書き込むための最低限の権限を提供します。

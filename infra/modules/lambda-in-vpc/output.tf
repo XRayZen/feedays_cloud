@@ -7,5 +7,5 @@ output "lambda_function_invoke_arn" {
 }
 
 output "lambda_security_group_id" {
-  value = aws_security_group.lambda_security_group.id
+  value = module.lambda_sg.security_group_id
 }
