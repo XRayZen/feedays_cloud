@@ -21,6 +21,7 @@ resource "aws_secretsmanager_secret" "superuser" {
 
 resource "aws_secretsmanager_secret_version" "superuser" {
   secret_id = aws_secretsmanager_secret.superuser.id
+  version_stages = var.secret_version_stages
   secret_string = jsonencode({
     username = var.db_username
     password = random_password.db-password.result

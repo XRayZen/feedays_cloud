@@ -35,16 +35,17 @@ dependency "rds" {
     mock_outputs = {
         rds_proxy_endpoint = "mock-rds-proxy-endpoint"
         rds_proxy_arn = "mock-rds-proxy-arn"
+        db_password = "mock-db-password"
     }
 }
 
-inputs = {
-    lambda_function_name = "feedays-cloud-write"
-    lambda_function_description = "feedays-cloud-write-lambda-function"
+inputs={
+    lambda_function_name = "feedays-cloud-test"
+    lambda_function_description = "feedays-cloud-test-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "write"
+    image_tag= "test"
     memory_size = 128
-    timeout = 30
+    timeout = 3
     lambda_function_architecture = "arm64"
 
     # VPC設定
@@ -55,14 +56,16 @@ inputs = {
     vpc_private_subnets_cidr_blocks = dependency.vpc.outputs.private_subnets_cidr_blocks
     vpc_database_subnets_cidr_blocks = dependency.vpc.outputs.database_subnets_cidr_blocks
     rds_proxy_arn = dependency.rds.outputs.rds_proxy_arn
-
     # 環境変数はここで定義する
     variables = {
+        region : local.env.locals.region,
         rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
         port : local.env.locals.db_port,
         usename : local.env.locals.db_username,
         db_name : local.env.locals.db_name,
+        # パスワードはシークレットマネージャーから取得するので、使わない
+        secret_stage : local.env.locals.secret_stage,
     }
 
     managed_policy_arns = [
@@ -72,13 +75,12 @@ inputs = {
     "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
     # Amazon ECR に対する読み取り専用アクセスを付与
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
     # APIGW用
     "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess",
     # RDS Proxy用
     "arn:aws:iam::aws:policy/AmazonRDSDataFullAccess",
     ]
 }
-
-
 
 

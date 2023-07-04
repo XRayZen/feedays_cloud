@@ -7,4 +7,6 @@ locals{
     db_port = 3306
     db_username = "admin"
     db_name = "feedays-develop-database"
+    # シークレット設定
+    secret_stage = "DEVELOP"
 }

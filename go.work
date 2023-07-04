@@ -1,9 +1,10 @@
 go 1.20
 
 use (
-	./testClient
-	./lambda/read
-	./lambda/write
-	./lambda/heavy
 	./lambda/batch
+	./lambda/heavy
+	./lambda/read
+	./lambda/test
+	./lambda/write
+	./testClient
 )

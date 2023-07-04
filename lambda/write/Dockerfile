@@ -1,6 +1,6 @@
 FROM golang:1.20 as builder
 WORKDIR /write
-COPY go.mod ./
+COPY go.mod go.sum ./
 # build
 COPY . .
 # ARM64向けにビルド

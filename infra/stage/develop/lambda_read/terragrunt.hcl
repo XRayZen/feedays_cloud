@@ -12,7 +12,7 @@ terraform{
 
 dependency "ecr" {
     config_path = "../ecr"
-    
+
     mock_outputs = {
         ecr_repository_url = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com"
     }
@@ -35,8 +35,10 @@ dependency "rds" {
     mock_outputs = {
         rds_proxy_endpoint = "mock-rds-proxy-endpoint"
         rds_proxy_arn = "mock-rds-proxy-arn"
+        db_password = "mock-db-password"
     }
 }
+
 inputs = {
     lambda_function_name = "feedays-cloud-read"
     lambda_function_description = "feedays-cloud-read-lambda-function"
@@ -49,7 +51,7 @@ inputs = {
     # VPC設定
     subnet_ids = dependency.vpc.outputs.private_subnet_ids
     vpc_id = dependency.vpc.outputs.vpc_id
-    
+
     # LamnbdaSGに必要
     vpc_private_subnets_cidr_blocks = dependency.vpc.outputs.private_subnets_cidr_blocks
     vpc_database_subnets_cidr_blocks = dependency.vpc.outputs.database_subnets_cidr_blocks
@@ -61,6 +63,8 @@ inputs = {
         port : local.env.locals.db_port,
         usename : local.env.locals.db_username,
         db_name : local.env.locals.db_name,
+        # パスワードはシークレットマネージャーから取得するので、使わない
+        # db_pass : dependency.rds.outputs.db_password
     }
 
     managed_policy_arns = [

@@ -43,14 +43,14 @@ variable "vpc_database_subnets_cidr_blocks" {
 variable "db_engine" {
   type        = string
   description = "DB engine type"
-  default = "mysql"
+  default     = "mysql"
 }
 
 # DBエンジンバージョン
 variable "db_engine_version" {
   type        = string
   description = "DB engine version"
-    default     = "8.0.21"
+  default     = "8.0.21"
 }
 
 # DBインスタンスタイプ
@@ -97,3 +97,9 @@ variable "tags" {
   type        = map(string)
   description = "tags"
 }
+
+variable "secret_version_stages" {
+  type        = set(string)
+  description = "database secret version stages"
+}
+

@@ -42,10 +42,12 @@ inputs = {
     db_storage_type = "gp2"
     db_allocated_storage = 20
     db_max_allocated_storage = 22
-    # DBユーザー名
-    db_username = local.env.locals.db_username
     # DB名
     db_name = local.env.locals.db_name
+    # DBユーザー名
+    db_username = local.env.locals.db_username
+    # シークレット設定
+    secret_version_stages = ["DEVELOP"]
     tags = {
         Name = "${local.env.locals.project_name}-db"
     }
