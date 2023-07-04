@@ -23,9 +23,9 @@ dependency "vpc" {
 
     mock_outputs = {
         vpc_id = "vpc-1234567890abcdef0"
-        private_subnet_ids = ["subnet-1234567890abcdef0", "subnet-1234567890abcdef1", "subnet-1234567890abcdef2"]
-        private_subnets_cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-        database_subnets_cidr_blocks = ["10.0.110.0/24", "10.0.112.0/24", "10.0.113.0/24"]
+        vpc_private_subnets = ["subnet-1234567890abcdef0", "subnet-1234567890abcdef1", "subnet-1234567890abcdef2"]
+        vpc_private_subnets_cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+        vpc_database_subnets_cidr_blocks = ["10.0.110.0/24", "10.0.112.0/24", "10.0.113.0/24"]
     }
 }
 # RDSに依存
@@ -49,12 +49,12 @@ inputs={
     lambda_function_architecture = "arm64"
 
     # VPC設定
-    subnet_ids = dependency.vpc.outputs.private_subnet_ids
+    subnet_ids = dependency.vpc.outputs.vpc_private_subnets
     vpc_id = dependency.vpc.outputs.vpc_id
 
     # LamnbdaSGに必要
-    vpc_private_subnets_cidr_blocks = dependency.vpc.outputs.private_subnets_cidr_blocks
-    vpc_database_subnets_cidr_blocks = dependency.vpc.outputs.database_subnets_cidr_blocks
+    vpc_private_subnets_cidr_blocks = dependency.vpc.outputs.vpc_private_subnets_cidr_blocks
+    vpc_database_subnets_cidr_blocks = dependency.vpc.outputs.vpc_database_subnets_cidr_blocks
     rds_proxy_arn = dependency.rds.outputs.rds_proxy_arn
     # 環境変数はここで定義する
     variables = {
@@ -62,7 +62,7 @@ inputs={
         rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
         port : local.env.locals.db_port,
-        usename : local.env.locals.db_username,
+        db_usename : local.env.locals.db_username,
         db_name : local.env.locals.db_name,
         # パスワードはシークレットマネージャーから取得するので、使わない
         secret_stage : local.env.locals.secret_stage,

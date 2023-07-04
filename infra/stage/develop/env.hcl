@@ -6,7 +6,7 @@ locals{
     # DBの設定
     db_port = 3306
     db_username = "admin"
-    db_name = "feedays-develop-database"
+    db_name = "feedaysdb"
     # シークレット設定
     secret_stage = "DEVELOP"
 }

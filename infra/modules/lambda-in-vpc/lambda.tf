@@ -12,7 +12,7 @@ resource "aws_lambda_function" "lambda_func_" {
 
   vpc_config {
     subnet_ids         = var.subnet_ids
-    security_group_ids = module.lambda_sg.security_group_id
+    security_group_ids = [module.lambda_sg.security_group_id]
   }
 
   environment {
