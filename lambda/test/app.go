@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
 	Internet "test/internet"
 	RDS "test/rds"
 	SecretManager "test/secret_manager"
@@ -17,18 +19,21 @@ func main() {
 func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	// リクエストをパースせずにテストを実行する
 	// シークレットリードテスト
+	log.Default()
+	log.Println("Secret Read Test Start")
 	result, err := SecretManager.Secret_read_test()
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode:      400,
 			Headers:         map[string]string{"Content-Type": "application/json"},
-			Body:            "error msg: " + err.Error(),
+			Body:            "error msg : " + err.Error(),
 			IsBase64Encoded: false,
 			Cookies: []string{
 				"cookie1",
 			},
 		}, err
 	}
+	log.Println("Secret Read Test End")
 	if !result {
 		return events.LambdaFunctionURLResponse{
 			StatusCode:      400,
@@ -40,13 +45,14 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 			},
 		}, nil
 	}
+	fmt.Println("Secret Read Test Success")
 	// データベース読み書きテスト
 	result, err = RDS.RdsWriteReadTest()
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode:      400,
 			Headers:         map[string]string{"Content-Type": "application/json"},
-			Body:            "error msg: " + err.Error(),
+			Body:            "error msg : " + err.Error(),
 			IsBase64Encoded: false,
 			Cookies: []string{
 				"cookie1",
@@ -64,6 +70,7 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 			},
 		}, nil
 	}
+	fmt.Println("RDS Write Read Test Success")
 	// インターネット導通テスト
 	str, err := Internet.GetGIGAZINE()
 	if err != nil {

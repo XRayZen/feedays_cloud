@@ -17,9 +17,10 @@ type TestTable struct {
 	Description string
 }
 
+// DB接続情報のキャッシュ
 var (
-	dbUser, dbPass, dbAddress string
-	DBMS                      *gorm.DB
+	dbName, dbUser, dbPass, dbAddress string
+	DBMS                              *gorm.DB
 	// debug                             bool
 )
 
@@ -39,12 +40,14 @@ func GormConnect() (*gorm.DB, error) {
 	// シークレットネームはDBユーザー名と同じにしている
 	User, Pass, err := SecretManager.DB_Secret()
 	if err != nil {
-		panic(err)
+		fmt.Println("SecretManager.DB_Secret() Error:", err)
+		return nil, err
 	}
 	dbUser = User
 	dbPass = Pass
 	dbAddress = os.Getenv("rds_endpoint")
-	DBMS, err := RDS_Connect("mysql", "test", dbUser, dbPass, dbAddress)
+	dbName = os.Getenv("db_name")
+	DBMS, err := RDS_Connect("mysql", dbName, dbUser, dbPass, dbAddress)
 	if err != nil {
 		fmt.Println("DB接続失敗:", err)
 		return nil, err
@@ -59,17 +62,6 @@ func GormMigrateTable(DBMS *gorm.DB) *gorm.DB {
 }
 
 func RdsWriteReadTest() (bool, error) {
-	// 環境変数からDB接続情報を取得する
-	// AWS Secrets ManagerからDB接続情報を取得する
-	// usernameとpasswordはSecrets Managerに保存している
-	// シークレットネームはDBユーザー名と同じにしている
-	User, Pass, err := SecretManager.DB_Secret()
-	if err != nil {
-		panic(err)
-	}
-	dbUser = User
-	dbPass = Pass
-	dbAddress = os.Getenv("rds_endpoint")
 	DB, err := GormConnect()
 	if err != nil {
 		return false, err

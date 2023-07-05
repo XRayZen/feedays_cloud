@@ -47,7 +47,7 @@ inputs = {
     # DBユーザー名
     db_username = local.env.locals.db_username
     # シークレット設定
-    secret_version_stages = ["DEVELOP"]
+    secret_version_stages = [local.env.locals.secret_stage]
     tags = {
         Name = "${local.env.locals.project_name}-db"
     }

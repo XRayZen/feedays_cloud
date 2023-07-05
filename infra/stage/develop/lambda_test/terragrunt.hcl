@@ -45,7 +45,7 @@ inputs={
     repo_url= dependency.ecr.outputs.ecr_repository_url
     image_tag= "test"
     memory_size = 128
-    timeout = 3
+    timeout = 10
     lambda_function_architecture = "arm64"
 
     # VPC設定
@@ -62,7 +62,7 @@ inputs={
         rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
         port : local.env.locals.db_port,
-        db_usename : local.env.locals.db_username,
+        db_username : local.env.locals.db_username,
         db_name : local.env.locals.db_name,
         # パスワードはシークレットマネージャーから取得するので、使わない
         secret_stage : local.env.locals.secret_stage,
@@ -80,6 +80,8 @@ inputs={
     "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess",
     # RDS Proxy用
     "arn:aws:iam::aws:policy/AmazonRDSDataFullAccess",
+    # シークレットマネージャー用
+    "arn:aws:iam::aws:policy/SecretsManagerReadWrite",
     ]
 }
 

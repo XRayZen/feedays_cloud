@@ -15,7 +15,7 @@ module "lambda_sg" {
       # https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/rules.tf
       rule        = "http-80-tcp"
       cidr_blocks = join(",", var.vpc_private_subnets_cidr_blocks)
-    }
+    },
   ]
 
   egress_with_cidr_blocks = [
@@ -24,9 +24,14 @@ module "lambda_sg" {
       description = "Allow all traffic"
       rule        = "all-all"
       cidr_blocks = join(",", var.vpc_database_subnets_cidr_blocks)
+    },
+    {
+      # すべてのトラフィックを無差別に送信許可する
+      description = "Allow all traffic"
+      rule        = "all-all"
+      cidr_blocks = "0.0.0.0/0"
     }
   ]
-
   tags = {
     Name        = "lambda_sg"
     description = "Security group for lambda function"
