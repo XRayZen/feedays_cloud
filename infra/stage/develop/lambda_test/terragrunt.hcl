@@ -61,7 +61,7 @@ inputs={
         region : local.env.locals.region,
         rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
-        port : local.env.locals.db_port,
+        db_port : local.env.locals.db_port,
         db_username : local.env.locals.db_username,
         db_name : local.env.locals.db_name,
         # パスワードはシークレットマネージャーから取得するので、使わない

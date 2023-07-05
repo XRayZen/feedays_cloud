@@ -16,6 +16,20 @@ module "rds_sg" {
       rule        = "mysql-tcp"
       cidr_blocks = join(",", var.vpc_private_subnets_cidr_blocks)
     },
+    {
+      description = "rds proxy access"
+      rule        = "mysql-tcp"
+      cidr_blocks = join(",", var.vpc_database_subnets_cidr_blocks)
+    }
+  ]
+
+  # 全てのトラフィックのアウトバンドを許可する
+  egress_with_cidr_blocks = [
+    {
+      description = "all traffic"
+      rule        = "all-all"
+      cidr_blocks = "0.0.0.0/0"
+    },
   ]
 
   tags = {
@@ -43,13 +57,13 @@ module "rds_proxy_sg" {
     },
   ]
 
-  # データーベースサブネットへのアクセスを許可する
+  # 全てのトラフィックのアウトバンドを許可する
   egress_with_cidr_blocks = [
     {
-      description = ""
-      rule        = "mysql-tcp"
-      cidr_blocks = join(",", var.vpc_database_subnets_cidr_blocks)
-    }
+      description = "all traffic"
+      rule        = "all-all"
+      cidr_blocks = "0.0.0.0/0"
+    },
   ]
 
   tags = {

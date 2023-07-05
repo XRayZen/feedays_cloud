@@ -1,12 +1,14 @@
 package RDS
 
 import (
+	// "crypto/tls"
 	"fmt"
+	"log"
 	"os"
 	"test/secret_manager"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // テスト用テーブル
@@ -19,14 +21,20 @@ type TestTable struct {
 
 // DB接続情報のキャッシュ
 var (
-	dbName, dbUser, dbPass, dbAddress string
-	DBMS                              *gorm.DB
+	dbName, dbUser, dbPass, dbAddress, dbPort string
+	DBMS                                      *gorm.DB
 	// debug                             bool
 )
 
-func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint string) (*gorm.DB, error) {
+func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint, dbPort string) (*gorm.DB, error) {
 	// DB接続
-	DBMS, err := gorm.Open(DbType, dbUser+":"+dbPass+"@tcp("+dbEndPoint+")/"+DbName+"?charset=utf8&parseTime=True&loc=Local")
+	CONNECT := dbUser + ":" + dbPass + "@tcp(" + dbEndPoint + ":" + dbPort + ")/" + DbName + "?charset=utf8&&parseTime=True&loc=Local"
+	cfg:=mysql.Config{
+		DSN: CONNECT,
+	}
+	log.Println("RDS CONNECT STR:", cfg.DSN)
+	// DBに管理者権限があるユーザーが作成されていないのでエラーが出る
+	DBMS, err := gorm.Open(mysql.New(cfg), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +42,6 @@ func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint string) (*gorm.DB, e
 }
 
 func GormConnect() (*gorm.DB, error) {
-	// 環境変数からDB接続情報を取得する
 	// AWS Secrets ManagerからDB接続情報を取得する
 	// usernameとpasswordはSecrets Managerに保存している
 	// シークレットネームはDBユーザー名と同じにしている
@@ -47,12 +54,12 @@ func GormConnect() (*gorm.DB, error) {
 	dbPass = Pass
 	dbAddress = os.Getenv("rds_endpoint")
 	dbName = os.Getenv("db_name")
-	DBMS, err := RDS_Connect("mysql", dbName, dbUser, dbPass, dbAddress)
+	dbPort = os.Getenv("db_port")
+	DBMS, err := RDS_Connect("mysql", dbName, dbUser, dbPass, dbAddress, dbPort)
 	if err != nil {
 		fmt.Println("DB接続失敗:", err)
 		return nil, err
 	}
-	DBMS.LogMode(true)
 	return DBMS, nil
 }
 

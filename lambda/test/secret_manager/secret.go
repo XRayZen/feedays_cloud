@@ -11,6 +11,9 @@ import (
 )
 
 var (
+	// AWS公式が推奨するやり方
+	// この方がコストが安い
+	// https://docs.aws.amazon.com/ja_jp/secretsmanager/latest/userguide/integrating_caching_clientapps.html
 	secretCache, _ = secretcache.New()
 )
 
@@ -19,7 +22,6 @@ type secretData struct {
 	Password string `json:"password"`
 }
 
-// キャッシュを使ったシークレットバリューの取得
 func getSecretValueWithCache(secretName string, secretStage string) (string, error) {
 	log.Println("getSecretValueWithCache Start")
 	// シークレットキャッシュの設定でversionStageを指定する
