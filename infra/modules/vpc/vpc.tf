@@ -15,7 +15,6 @@ module "vpc" {
   one_nat_gateway_per_az = var.one_nat_gateway_per_az
 }
 
-# ラムダ関数をVPC内で実行するためには、VPCのサブネットを指定する必要があるので用意する
 data "aws_subnet" "public" {
   count      = length(module.vpc.public_subnets)
   id         = element(module.vpc.public_subnets, count.index)

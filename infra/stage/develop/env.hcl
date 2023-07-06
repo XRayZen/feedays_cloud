@@ -1,6 +1,6 @@
 locals{
-    project_name = "feedays-cloud"
-    stage = "development infra"
+    project_name = "feedays_cloud"
+    stage = "develop"
     region = "us-east-1"
     availability_zone = "us-east-1a"
     # DBの設定
