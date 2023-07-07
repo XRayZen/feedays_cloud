@@ -77,6 +77,7 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		}, nil
 	}
 	fmt.Println("RDS Write Read Test Success")
+	fmt.Println("Internet Connection Test Start")
 	// インターネット導通テスト
 	str, err := Internet.GetGIGAZINE()
 	if err != nil {
@@ -90,6 +91,7 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 			},
 		}, err
 	}
+	fmt.Println("Internet Connection Test End")
 	if str == "" {
 		return events.LambdaFunctionURLResponse{
 			StatusCode:      400,
@@ -101,6 +103,7 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 			},
 		}, nil
 	}
+	fmt.Println("Internet Connection Test Success")
 	// 全てのテストが成功したら200を返す
 	return events.LambdaFunctionURLResponse{
 		StatusCode:      200,
