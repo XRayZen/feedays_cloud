@@ -19,7 +19,6 @@ dependency "vpc" {
         vpc_private_subnets= ["subnet-1234567", "subnet-12345678"]
         vpc_database_subnets= ["subnet-123456", "subnet-1234565"]
         vpc_database_subnet_group_name = "subnet-123456"
-        vpc_public_subnets_cidr_blocks= ["10.0.121.0/24", "10.0.122.0/24", "10.0.123.0/24"]
         vpc_private_subnets_cidr_blocks= ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
         vpc_database_subnets_cidr_blocks = ["10.0.110.0/24", "10.0.112.0/24", "10.0.113.0/24"]
     }

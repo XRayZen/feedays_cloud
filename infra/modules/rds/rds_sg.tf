@@ -43,14 +43,14 @@ module "rds_proxy_sg" {
     },
   ]
 
-  # 全てのトラフィックのアウトバンドを許可する
-  # egress_with_cidr_blocks = [
-  #   {
-  #     description = "all traffic"
-  #     rule        = "all-all"
-  #     cidr_blocks = "0.0.0.0/0"
-  #   },
-  # ]
+  egress_with_cidr_blocks = [
+    {
+      # データベースサブネットへのアウトバンドを許可する
+      description= "Database subnet access"
+      rule        = "mysql-tcp"
+      cidr_blocks = join(",", var.vpc_database_subnets_cidr_blocks)
+    }
+  ]
 
   tags = {
     Name = "${var.db_name}-rds-proxy-sg"

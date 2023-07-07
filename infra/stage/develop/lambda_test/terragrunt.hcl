@@ -46,7 +46,7 @@ inputs={
     repo_url= dependency.ecr.outputs.ecr_repository_url
     image_tag= "test"
     memory_size = 128
-    timeout = 10
+    timeout = 20
     lambda_function_architecture = "arm64"
 
     # VPC設定
