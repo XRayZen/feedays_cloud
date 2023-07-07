@@ -23,7 +23,7 @@ type TestTable struct {
 var (
 	dbName, dbUser, dbPass, dbAddress, dbPort string
 	DBMS                                      *gorm.DB
-	// debug                             bool
+	Debug                             bool
 )
 
 func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint, dbPort string) (*gorm.DB, error) {
@@ -32,6 +32,7 @@ func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint, dbPort string) (*go
 	cfg:=mysql.Config{
 		DSN: CONNECT,
 	}
+
 	log.Println("RDS CONNECT STR:", cfg.DSN)
 	// DBに管理者権限があるユーザーが作成されていないのでエラーが出る
 	DBMS, err := gorm.Open(mysql.New(cfg), &gorm.Config{})

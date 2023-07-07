@@ -12,12 +12,11 @@ module "ec2_key_pair" {
 }
 
 # クライアントPCにKey pair（秘密鍵と公開鍵）を作成
-# - [terraform apply] 実行後はクライアントPCの公開鍵は自動削除される
 locals {
   # クライアントPCの公開鍵はstage/develop/test_ec2に保存される
-  public_key_file = "../../../stage/${var.stage}/test_ec2/${var.key_name}.id_rsa.pub"
+  public_key_file = "../../../${var.key_name}.id_rsa.pub"
   # クライアントPCの秘密鍵はstage/develop/test_ec2に保存される
-  private_key_file = "../../../stage/${var.stage}/test_ec2/${var.key_name}.id_rsa"
+  private_key_file = "../../../${var.key_name}.pem"
 }
 
 #local_fileのリソースを指定するとterraformを実行するディレクトリ内でファイル作成やコマンド実行が出来る。

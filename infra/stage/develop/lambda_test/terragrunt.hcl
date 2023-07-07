@@ -34,6 +34,7 @@ dependency "rds" {
 
     mock_outputs = {
         rds_proxy_endpoint = "mock-rds-proxy-endpoint"
+        rds_proxy_read_write_endpoint = "mock-rds-proxy-read-write-endpoint"
         rds_proxy_arn = "mock-rds-proxy-arn"
         db_password = "mock-db-password"
     }
@@ -59,7 +60,8 @@ inputs={
     # 環境変数はここで定義する
     variables = {
         region : local.env.locals.region,
-        rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
+        # rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
+        rds_endpoint: dependency.rds.outputs.rds_proxy_read_write_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
         db_port : local.env.locals.db_port,
         db_username : local.env.locals.db_username,

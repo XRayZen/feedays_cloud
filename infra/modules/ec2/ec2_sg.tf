@@ -11,12 +11,6 @@ module "ec2_sg" {
   # ルールは以下に記載されている
   # https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/rules.tfb
   ingress_with_cidr_blocks = [
-    # VPC内からのアクセスを許可する
-    {
-      description = "Allow HTTP from VPC"
-      rule        = "http-80-tcp"
-      cidr_blocks = join(",", var.vpc_public_subnets_cidr_blocks)
-    },
     {
       description = "Allow SSH from My IP"
       rule        = "ssh-tcp"

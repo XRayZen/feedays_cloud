@@ -16,6 +16,12 @@ func main() {
 	lambda.Start(HandleRequest)
 }
 
+func LogWrite(msg string) {
+	if RDS.Debug{
+		log.Println(msg)
+	}
+}
+
 func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	// リクエストをパースせずにテストを実行する
 	// シークレットリードテスト

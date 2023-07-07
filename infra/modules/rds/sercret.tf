@@ -5,6 +5,10 @@
 #   name = "alias/aws/secretsmanager"
 # }
 
+locals {
+  db_password = random_password.db-password.result
+}
+
 resource "random_password" "db-password" {
   length           = 16
   special          = true
@@ -24,7 +28,7 @@ resource "aws_secretsmanager_secret_version" "superuser" {
   version_stages = var.secret_version_stages
   secret_string = jsonencode({
     username = var.db_username
-    password = random_password.db-password.result
+    password = local.db_password
   })
 }
 

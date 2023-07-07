@@ -9,13 +9,5 @@ backend.tf
 # SSH用
 *.id_rsa.pub
 *.id_rsa
-
-
-
-
-
-
-
-
-
+*.pem
 

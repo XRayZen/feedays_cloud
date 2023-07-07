@@ -16,13 +16,6 @@ variable "key_name" {
 #   default = "${var.project_name}_${var.stage}_ec2_key"
 }
 
-variable "amazon_linux_ami_id" {
-  type        = string
-  description = "Amazon Linux AMI ID"
-  # Amazon Linux 2023 AMI
-  default = "ami-0cfc97bf81f2eadc4"
-}
-
 variable "ec2_instance_type" {
   type        = string
   description = "EC2 instance type"

@@ -8,14 +8,12 @@ module "rds_proxy" {
   vpc_subnet_ids         = var.vpc_private_subnets
   vpc_security_group_ids = [module.rds_proxy_sg.security_group_id]
 
-  engine_family = "MYSQL"
-  debug_logging = true
+  engine_family = var.rds_proxy_engine_family
+  debug_logging = var.rds_proxy_debug_logging
   # GORMでTLSを有効にすると、RDS Proxyのエンドポイントに接続できないので無効化しておく
   require_tls = false
 
-  # Target RDS instance
-  # よく見たらこれを忘れていた
-  target_db_instance = true
+  target_db_instance     = true
   db_instance_identifier = module.rds.db_instance_identifier
 
   endpoints = {
@@ -31,6 +29,7 @@ module "rds_proxy" {
       name                   = "ro-endpoint"
       vpc_subnet_ids         = var.vpc_private_subnets
       vpc_security_group_ids = [module.rds_proxy_sg.security_group_id]
+      tagete_role            = "READ_ONLY"
       tags = {
         Name = "mysql-ro-endpoint"
       }

@@ -18,20 +18,20 @@ module "lambda_sg" {
     },
   ]
 
-  egress_with_cidr_blocks = [
-    {
-      # すべてのトラフィックをデータベースサブネットに送信許可する
-      description = "Allow all traffic"
-      rule        = "all-all"
-      cidr_blocks = join(",", var.vpc_database_subnets_cidr_blocks)
-    },
-    {
-      # すべてのトラフィックを無差別に送信許可する
-      description = "Allow all traffic"
-      rule        = "all-all"
-      cidr_blocks = "0.0.0.0/0"
-    }
-  ]
+  # egress_with_cidr_blocks = [
+  #   {
+  #     # すべてのトラフィックをデータベースサブネットに送信許可する
+  #     description = "Allow all traffic"
+  #     rule        = "all-all"
+  #     cidr_blocks = join(",", var.vpc_database_subnets_cidr_blocks)
+  #   },
+  #   {
+  #     # すべてのトラフィックを無差別に送信許可する
+  #     description = "Allow all traffic"
+  #     rule        = "all-all"
+  #     cidr_blocks = "0.0.0.0/0"
+  #   }
+  # ]
   tags = {
     Name        = "lambda_sg"
     description = "Security group for lambda function"

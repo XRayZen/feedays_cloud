@@ -1,4 +1,3 @@
-
 # DBを作成
 module "rds" {
   source  = "terraform-aws-modules/rds/aws"
@@ -7,11 +6,16 @@ module "rds" {
   identifier = "${var.db_name}-rds"
 
   db_name  = var.db_name
-  username = var.db_username
-  password = random_password.db-password.result
   port     = 3306
-
+  username = var.db_username
+  password = local.db_password
+  # マスターパスワードはシークレットに保管して開発者側で管理する
+  # RDSに管理させると利用するシークレット取得手法が複雑化してRDSProxyとの連携が難しくなる
+  manage_master_user_password         = false
   iam_database_authentication_enabled = false
+
+  create_cloudwatch_log_group     = var.rds_create_cloudwatch_log_group
+  enabled_cloudwatch_logs_exports = var.rds_enabled_cloudwatch_logs_exports
 
   engine               = var.db_engine
   engine_version       = var.db_engine_version
@@ -26,6 +30,7 @@ module "rds" {
   apply_immediately = true
 
   multi_az               = false
+  # マルチAZならAZを指定する必要はない
   availability_zone      = var.availability_zone
   db_subnet_group_name   = var.vpc_database_subnet_group_name
   subnet_ids             = var.vpc_database_subnets

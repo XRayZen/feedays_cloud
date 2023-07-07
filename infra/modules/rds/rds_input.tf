@@ -93,6 +93,32 @@ variable "db_name" {
   description = "(optional) describe your variable"
 }
 
+# RDS Proxyの設定
+variable "rds_proxy_debug_logging" {
+  type        = bool
+  description = "rds proxy debug logging"
+  default     = false
+}
+
+variable "rds_proxy_engine_family" {
+  type        = string
+  description = "rds proxy engine family"
+  default     = "MYSQL"
+}
+
+# RDSインスタンスの設定
+variable "rds_create_cloudwatch_log_group" {
+  type        = bool
+  description = "rds create cloudwatch log group"
+  default     = true
+}
+
+variable "rds_enabled_cloudwatch_logs_exports" {
+  type        = list(string)
+  description = "rds enabled cloudwatch logs exports"
+  default     = ["audit", "error", "general", "slowquery"]
+}
+
 variable "tags" {
   type        = map(string)
   description = "tags"
