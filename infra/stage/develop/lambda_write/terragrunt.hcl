@@ -34,6 +34,7 @@ dependency "rds" {
 
     mock_outputs = {
         rds_proxy_endpoint = "mock-rds-proxy-endpoint"
+        rds_proxy_read_write_endpoint = "mock-rds-proxy-read-write-endpoint"
         rds_proxy_arn = "mock-rds-proxy-arn"
         db_password = "mock-db-password"
     }
@@ -45,7 +46,7 @@ inputs={
     repo_url= dependency.ecr.outputs.ecr_repository_url
     image_tag= "write"
     memory_size = 128
-    timeout = 10
+    timeout = 20
     lambda_function_architecture = "arm64"
 
     # VPC設定
@@ -59,12 +60,11 @@ inputs={
     # 環境変数はここで定義する
     variables = {
         region : local.env.locals.region,
-        rds_endpoint: dependency.rds.outputs.rds_proxy_endpoint,
+        rds_endpoint: dependency.rds.outputs.rds_proxy_read_write_endpoint,
         # RDSエンドポイント以外はEnv.hclから読み込むにした方が良い
         db_port : local.env.locals.db_port,
         db_username : local.env.locals.db_username,
         db_name : local.env.locals.db_name,
-        # パスワードはシークレットマネージャーから取得するので、使わない
         secret_stage : local.env.locals.secret_stage,
     }
 

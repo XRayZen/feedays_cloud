@@ -15,7 +15,11 @@ func (s MockDBRepo) GetUserInfo(userID string) (resUserInfo Data.UserInfo, err e
 	return Data.UserInfo{}, nil
 }
 
-func (s MockDBRepo) GetExploreCategories(userID string, country string) (resExp Data.ExploreCategories, err error) {
+func (s MockDBRepo) FetchRanking(userID string) (resRanking Data.Ranking, err error) {
+	return Data.Ranking{}, nil
+}
+
+func (s MockDBRepo) FetchExploreCategories(country string) (resExp Data.ExploreCategories, err error) {
 	return Data.ExploreCategories{
 		CategoryName: "CategoryName",
 	}, nil

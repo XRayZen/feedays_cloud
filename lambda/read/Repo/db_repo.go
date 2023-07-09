@@ -1,15 +1,19 @@
 package Repo
 
 import (
+	"fmt"
 	"read/Data"
+	"strconv"
 	"time"
 )
 
 // テストを容易にするためDependency Injection（依存性の注入）を採用
 // DBを呼び出す層はインターフェースを定義する
 type DBRepository interface {
+	// Readで使う
 	GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error)
-	GetExploreCategories(userID string, country string) (resExp Data.ExploreCategories, err error)
+	FetchRanking(useeID string) (resRanking Data.Ranking, err error)
+	FetchExploreCategories(country string) (resExp Data.ExploreCategories, err error)
 
 	// heavyで使う
 	// サイトURLをキーにサイトテーブルに該当するサイトがあるか確認する
@@ -50,20 +54,92 @@ type DBRepoImpl struct {
 }
 
 func (s DBRepoImpl) GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error) {
+	// これを使うかは疑問
 	return Data.UserInfo{}, nil
 }
 
-func (s DBRepoImpl) GetExploreCategories(userID string, country string) (resExp Data.ExploreCategories, err error) {
-	return Data.ExploreCategories{}, nil
+func (s DBRepoImpl) FetchRanking(userID string) (resRanking Data.Ranking, err error) {
+	// ユーザーIDからユーザーの国を取得してDBから国ごとのランキングを取得する
+	db, err := Connect()
+	if err != nil {
+		return Data.Ranking{}, err
+	}
+	// ユーザーIDをintに変換する
+	num, err := strconv.Atoi(userID)
+	if err != nil {
+		return Data.Ranking{}, err
+	}
+	// ユーザーIDからユーザーの国を取得する
+	var user User
+	db.Where(&User{user_id: num}).Select("country").Find(&user)
+	// ユーザーの国をキーにDBからランキングを取得する
+	// TODO:これ以降の作業を進むにはDBユーザーに国を追加定義する必要がある
+	// var ranking SiteRanking
+	// db.Where(&SiteRanking{country: user.}).Find(&ranking)
+
+	return Data.Ranking{}, nil
 }
 
+func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategories, err error) {
+	// ユーザーIDと国をキーにDBからカテゴリーを取得する
+	db, err := Connect()
+	if err != nil {
+		return nil, err
+	}
+	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
+	var expCats []ExploreCategory
+	result := db.Where(&ExploreCategory{country: country}).Find(&expCats)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	// カテゴリーをExploreCategories型に変換する
+	var categories []Data.ExploreCategories
+	for _, expCat := range expCats {
+		categories = append(categories, Data.ExploreCategories{
+			CategoryName:        expCat.category_name,
+			CategoryDescription: expCat.description,
+			CategoryID:          fmt.Sprint(expCat.ID),
+		})
+	}
+	return categories, nil
+}
 
 // heavyで使う
 func (r DBRepoImpl) IsExistSite(site_url string) bool {
+	db, err := Connect()
+	if err != nil {
+		return false
+	}
+	var site Site
+	result := db.Where(&Site{site_url: site_url}).Find(&site)
+	if result.Error != nil {
+		return false
+	}
+	if result.RowsAffected > 0 {
+		return true
+	}
 	return false
 }
 
 func (r DBRepoImpl) IsSubscribeSite(user_id string, site_url string) bool {
+	db, err := Connect()
+	if err != nil {
+		return false
+	}
+	user_id_int, err := strconv.Atoi(user_id)
+	if err != nil {
+		return false
+	}
+	// Userのuser_idとUserの中のSubscriptionSiteのsite_urlをキーにSubscriptionSiteを検索する
+	var res SubscriptionSite
+	result := db.Where(&User{user_id: user_id_int}).Where(&SubscriptionSite{site_url: site_url}).Find(&res)
+	// result := db.Model(&User{}).Where("user_id = ?", user_id_int).Where(&SubscriptionSite{site_url: site_url}).Find(&res)
+	if result.Error != nil {
+		return false
+	}
+	if result.RowsAffected > 0 {
+		return true
+	}
 	return false
 }
 
@@ -115,4 +191,3 @@ func (r DBRepoImpl) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data
 func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error) {
 	return []Data.ReadActivity{}, nil
 }
-

@@ -16,7 +16,7 @@ func (e Explore) GetExploreCategories(userID string) (ExploreJson string, err er
 	if err != nil {
 		return "err", err
 	}
-	resData, err := e.DBrepo.GetExploreCategories(userID, resUserInfo.UserCountry)
+	resData, err := e.DBrepo.FetchExploreCategories(resUserInfo.UserCountry)
 	if err != nil {
 		return "err", err
 	}

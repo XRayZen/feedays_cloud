@@ -11,6 +11,9 @@ import (
 func ParseRequestType(diDBRepo Repo.DBRepository, requestType string, userID string) (res string, err error) {
 	// DBからデータを取得するだけの処理をする
 	switch requestType {
+	case "FetchRanking":
+		res, err := FetchRanking(userID)
+		return res, err
 	case "ExploreCategories":
 		// エントリポイントでDIしたのを入れる
 		str := Explore{

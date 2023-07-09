@@ -1,10 +1,9 @@
-package SecretManager
+package FetchSecret
 
 import (
 	// "os"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/aws/aws-secretsmanager-caching-go/secretcache"
@@ -22,40 +21,28 @@ type secretData struct {
 	Password string `json:"password"`
 }
 
-func getSecretValueWithCache(secretName string, secretStage string) (string, error) {
-	log.Println("getSecretValueWithCache Start")
+func FetchDbSecret() (secret secretData, err error) {
 	// シークレットキャッシュの設定でversionStageを指定する
 	secretCache.VersionStage = os.Getenv("secret_stage")
-	result, err := secretCache.GetSecretStringWithStage(secretName, secretStage)
+	// シークレットネームはDBユーザー名と同じにしている
+	secret_name := os.Getenv("db_username")
+	resJson, err := secretCache.GetSecretStringWithStage(secret_name, secretCache.VersionStage)
 	if err != nil {
-		return "", err
+		return secretData{}, err
 	}
-	return result, nil
+	// パースしたjsonを構造体に入れる
+	var res secretData
+	if err := json.Unmarshal([]byte(resJson), &res); err != nil {
+		return secretData{}, err
+	}
+	return res, nil
 }
 
 func DB_Secret() (string, string, error) {
-	// AWS Secrets ManagerからDB接続情報を取得する
-	// usernameとpasswordはSecrets Managerに保存している
-	fmt.Println("DB_Secret Start")
-	region := os.Getenv("region")
-	secret_stage := os.Getenv("secret_stage")
-	// シークレットネームはDBユーザー名と同じにしている
-	secret_name := os.Getenv("db_username")
-	log.Println("region:", region)
-	log.Println("secret_name:", secret_name)
-	log.Println("secret_stage:", secret_stage)
-	// ここでシークレットバリューがjsonで帰ってくるのでパースする
-	responseJson, err := getSecretValueWithCache(secret_name, secret_stage)
+	res,err := FetchDbSecret()
 	if err != nil {
 		return "", "", err
 	}
-	log.Println("responseJson:", responseJson)
-	// パースしたjsonを構造体に入れる
-	var res secretData
-	if err := json.Unmarshal([]byte(responseJson), &res); err != nil {
-		return "", "", err
-	}
-	fmt.Println("DB_Secret End")
 	return res.Username, res.Password, nil
 }
 

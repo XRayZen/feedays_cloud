@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"test/secret_manager"
+	FetchSecret "test/fetch_secret"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -46,7 +46,7 @@ func GormConnect() (*gorm.DB, error) {
 	// AWS Secrets ManagerからDB接続情報を取得する
 	// usernameとpasswordはSecrets Managerに保存している
 	// シークレットネームはDBユーザー名と同じにしている
-	User, Pass, err := SecretManager.DB_Secret()
+	User, Pass, err := FetchSecret.DB_Secret()
 	if err != nil {
 		fmt.Println("SecretManager.DB_Secret() Error:", err)
 		return nil, err
@@ -77,14 +77,19 @@ func RdsWriteReadTest() (bool, error) {
 	// テーブル作成
 	DB = GormMigrateTable(DB)
 	// トランザクション開始
-	tx := DB.Begin()
-	if tx.Error != nil {
-		return false, tx.Error
-	}
-	// テーブルにデータを追加
-	tx.Create(&TestTable{Name: "test", Address: "test", Description: "test"})
-	// トランザクション終了
-	tx.Commit()
+	DB.Transaction(func(tx *gorm.DB) error {
+		// トランザクション内でのデータベース処理を行う(ここでは `db` ではなく `tx` を利用する)
+		if err := tx.Create(&TestTable{Name: "test", Address: "test", Description: "test"}).Error; err != nil {
+			// エラーが発生した場合、ロールバックする
+			return err
+		}
+		// エラーがなければコミットする
+		if err := tx.Create(&TestTable{Name: "test", Address: "test", Description: "test"}).Error; err != nil {
+		return err
+		}
+		// nilが返却されるとトランザクション内の全処理がコミットされる
+		return nil
+	})
 	// テーブルからデータを取得“
 	var test TestTable
 	DB.First(&test, "name = ?", "test")
