@@ -17,12 +17,13 @@ type DbTestSite struct {
 	rss_url     string
 	icon_url    string
 	description string
-	site_feeds  []DbTestSiteFeed
+	site_feeds  []*DbTestSiteFeed
 }
 
 type DbTestSiteFeed struct {
 	gorm.Model
-	site         DbTestSite `gorm:"foreignKey:site_id"`
+	site_id      uint
+	site         *DbTestSite
 	title        string
 	url          string
 	icon_url     string

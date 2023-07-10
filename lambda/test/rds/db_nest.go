@@ -25,7 +25,6 @@ func DbNestedStructTest() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	targetSiteTitle := site.site_name
 	// トランザクション開始
 	DB.Transaction(func(tx *gorm.DB) error {
 		// トランザクション内でのデータベース処理を行う(ここでは `db` ではなく `tx` を利用する)
@@ -34,12 +33,21 @@ func DbNestedStructTest() (bool, error) {
 			tx.Rollback()
 			return err
 		}
+		// サイトを登録したらフィードも登録する
+		if err := tx.Create(&feeds).Error; err != nil {
+			// エラーが発生した場合はロールバックする
+			tx.Rollback()
+			return err
+		}
 		// エラーがなければコミットする
 		return tx.Commit().Error
 	})
-	// 入れ子での検索
-	targetTile := feeds[8].title
-	var siteFeed DbTestSiteFeed
+	// 入れ子での検索/合格条件はTarget Titleがfeed[0]のタイトルと一致すること
+	targetTile := feeds[0].title
+	targetSiteTitle := "GIGAZINE"
+	// 検索条件をログに出力
+	log.Println("Target Feed Title:", targetTile)
+	db_result :=DbTestSiteFeed{}
 	// 色々な書き方を試す
 	result := DB.Where(&DbTestSite{site_name: targetSiteTitle})
 	if result.Error != nil {
@@ -47,14 +55,17 @@ func DbNestedStructTest() (bool, error) {
 		return false, result.Error
 	}
 	// サイト名が一致したが、フィードが一致しないのであればDBに入れる時にサイトは入れられたがフィードは入れられていない
-	// プリロードを試してみる
-	result = DB.Where(&DbTestSite{site_name: targetSiteTitle}).Preload("DbTestSiteFeeds").Where(&DbTestSiteFeed{
-		title: targetTile,
-	}).Find(&siteFeed)
+	result = DB.Where(&DbTestSiteFeed{title: targetTile}).Find(&db_result)
 	if result.Error != nil {
 		log.Println("Target Title:", targetTile)
 		log.Println("Feed Match Error:", result.Error)
 		return false, result.Error
+	}
+	// 何も取得できなかった場合はエラー
+	if result.RowsAffected == 0 {
+		log.Println("Target Title:", targetTile)
+		log.Println("Feed Match Error: Not Found")
+		return false, errors.New("not found")
 	}
 	// テーブルごと削除
 	err = DB.Migrator().DropTable(&DbTestSite{})
@@ -66,7 +77,10 @@ func DbNestedStructTest() (bool, error) {
 		log.Println("Delete table error:", err)
 	}
 	// 検索結果が一致しない場合はエラー
-	if siteFeed.title != targetTile {
+	if db_result.title != targetTile {
+		log.Println("Target Title: ", targetTile)
+		log.Println("Result Title: ", db_result.title)
+		log.Println("Feed Match Error: Not Match")
 		return false, errors.New("not match")
 	}
 	return true, nil
@@ -90,7 +104,7 @@ func GetGIGAZINE() (DbTestSite, []DbTestSiteFeed, error) {
 		feed.Image = &gofeed.Image{URL: ""}
 	}
 	site := DbTestSite{
-		site_name:   feed.Title,
+		site_name:   "GIGAZINE",
 		site_url:    feed.Link,
 		rss_url:     url,
 		icon_url:    feed.Image.URL,
@@ -109,11 +123,15 @@ func GetGIGAZINE() (DbTestSite, []DbTestSiteFeed, error) {
 			url:          item.Link,
 			icon_url:     item.Image.URL,
 			published_at: *item.PublishedParsed,
-			site:         site,
+			site:         &site,
 		})
 	}
 	log.Println("site Title:", feed.Title)
 	// RSSを含めたサイト情報を返す
-	site.site_feeds = siteFeeds
+	var siteFeedsPtr []*DbTestSiteFeed
+	for i := range siteFeeds {
+		siteFeedsPtr = append(siteFeedsPtr, &siteFeeds[i])
+	}
+	site.site_feeds = siteFeedsPtr
 	return site, siteFeeds, nil
 }
