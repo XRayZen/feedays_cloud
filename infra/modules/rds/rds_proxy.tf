@@ -46,7 +46,7 @@ module "rds_proxy" {
   # セッション固定フィルタを設定して接続を再利用できる様にする
   session_pinning_filters = [
     "EXCLUDE_VARIABLE_SETS",
-    "INCLUDE_ALL"
+    # "INCLUDE_ALL"
   ]
 
   tags = {

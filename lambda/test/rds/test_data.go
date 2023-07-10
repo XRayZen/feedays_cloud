@@ -22,7 +22,7 @@ type DbTestSite struct {
 
 type DbTestSiteFeed struct {
 	gorm.Model
-	feed_index   int
+	site         DbTestSite `gorm:"foreignKey:site_id"`
 	title        string
 	url          string
 	icon_url     string

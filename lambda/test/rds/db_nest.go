@@ -15,8 +15,11 @@ func DbNestedStructTest() (bool, error) {
 		return false, err
 	}
 	// テーブル作成
-	DB.AutoMigrate(&DbTestSite{})
-	DB.AutoMigrate(&DbTestSiteFeed{})
+	err = DB.AutoMigrate(&DbTestSite{}, &DbTestSiteFeed{})
+	if err != nil {
+		log.Println("AutoMigrate Error:", err)
+		return false, err
+	}
 	// GIGAZINEのRSSを取得する
 	site, feeds, err := GetGIGAZINE()
 	if err != nil {
@@ -38,8 +41,19 @@ func DbNestedStructTest() (bool, error) {
 	targetTile := feeds[8].title
 	var siteFeed DbTestSiteFeed
 	// 色々な書き方を試す
-	result := DB.Where(&DbTestSite{site_name: targetSiteTitle}).Where(&DbTestSiteFeed{title: targetTile}).First(&siteFeed)
+	result := DB.Where(&DbTestSite{site_name: targetSiteTitle})
 	if result.Error != nil {
+		log.Println("Site Match Error:", result.Error)
+		return false, result.Error
+	}
+	// サイト名が一致したが、フィードが一致しないのであればDBに入れる時にサイトは入れられたがフィードは入れられていない
+	// プリロードを試してみる
+	result = DB.Where(&DbTestSite{site_name: targetSiteTitle}).Preload("DbTestSiteFeeds").Where(&DbTestSiteFeed{
+		title: targetTile,
+	}).Find(&siteFeed)
+	if result.Error != nil {
+		log.Println("Target Title:", targetTile)
+		log.Println("Feed Match Error:", result.Error)
 		return false, result.Error
 	}
 	// テーブルごと削除
@@ -53,7 +67,7 @@ func DbNestedStructTest() (bool, error) {
 	}
 	// 検索結果が一致しない場合はエラー
 	if siteFeed.title != targetTile {
-		return false, errors.New("Not match")
+		return false, errors.New("not match")
 	}
 	return true, nil
 }
@@ -71,9 +85,19 @@ func GetGIGAZINE() (DbTestSite, []DbTestSiteFeed, error) {
 	if len(feed.Items) == 0 {
 		return DbTestSite{}, nil, errors.New("RSS is empty")
 	}
+	// Imageがない場合は空文字を入れる
+	if feed.Image == nil {
+		feed.Image = &gofeed.Image{URL: ""}
+	}
+	site := DbTestSite{
+		site_name:   feed.Title,
+		site_url:    feed.Link,
+		rss_url:     url,
+		icon_url:    feed.Image.URL,
+		description: feed.Description,
+	}
 	// RSSをSiteFeed型の配列に変換する
 	var siteFeeds []DbTestSiteFeed
-	index := 0
 	for _, item := range feed.Items {
 		// Imageがない場合は空文字を入れる
 		if item.Image == nil {
@@ -81,26 +105,15 @@ func GetGIGAZINE() (DbTestSite, []DbTestSiteFeed, error) {
 		}
 		siteFeeds = append(siteFeeds, DbTestSiteFeed{
 			title:        item.Title,
-			feed_index:   index,
 			description:  item.Description,
 			url:          item.Link,
-			icon_url:   item.Image.URL,
+			icon_url:     item.Image.URL,
 			published_at: *item.PublishedParsed,
+			site:         site,
 		})
-		index++
 	}
 	log.Println("site Title:", feed.Title)
-	// Imageがない場合は空文字を入れる
-	if feed.Image == nil {
-		feed.Image = &gofeed.Image{URL: ""}
-	}
 	// RSSを含めたサイト情報を返す
-	return DbTestSite{
-		site_name:   feed.Title,
-		site_url:    feed.Link,
-		rss_url:     url,
-		icon_url:    feed.Image.URL,
-		description: feed.Description,
-		site_feeds:  siteFeeds,
-	}, siteFeeds, nil
+	site.site_feeds = siteFeeds
+	return site, siteFeeds, nil
 }
