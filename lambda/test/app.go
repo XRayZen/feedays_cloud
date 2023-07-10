@@ -24,7 +24,7 @@ func LogWrite(msg string) {
 
 func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	// リクエストをパースせずにテストを実行する
-	// シークレットリードテスト
+	// APIが要求する機能を全て仮実装してテスト検証をする
 	log.Default()
 	log.Println("Secret Read Test Start")
 	result, err := FetchSecret.Secret_read_test()

@@ -10,7 +10,7 @@ module "rds_proxy" {
 
   engine_family = var.rds_proxy_engine_family
   debug_logging = var.rds_proxy_debug_logging
-  # GORMでTLSを有効にすると、RDS Proxyのエンドポイントに接続できないので無効化しておく
+  # TLSを有効にすると、GORMでRDS Proxyのエンドポイントに接続できないので無効化しておく
   require_tls = false
 
   target_db_instance     = true
@@ -42,6 +42,12 @@ module "rds_proxy" {
       description = aws_secretsmanager_secret.superuser.description
     }
   }
+
+  # セッション固定フィルタを設定して接続を再利用できる様にする
+  session_pinning_filters = [
+    "EXCLUDE_VARIABLE_SETS",
+    "INCLUDE_ALL"
+  ]
 
   tags = {
     Name = "rds-proxy"

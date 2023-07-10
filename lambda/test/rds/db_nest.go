@@ -22,6 +22,7 @@ func DbNestedStructTest() (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	targetSiteTitle := site.site_name
 	// トランザクション開始
 	DB.Transaction(func(tx *gorm.DB) error {
 		// トランザクション内でのデータベース処理を行う(ここでは `db` ではなく `tx` を利用する)
@@ -36,7 +37,8 @@ func DbNestedStructTest() (bool, error) {
 	// 入れ子での検索
 	targetTile := feeds[8].title
 	var siteFeed DbTestSiteFeed
-	result := DB.Where(&DbTestSite{site_name: site.site_name}, &DbTestSiteFeed{title: targetTile}).First(&siteFeed)
+	// 色々な書き方を試す
+	result := DB.Where(&DbTestSite{site_name: targetSiteTitle}).Where(&DbTestSiteFeed{title: targetTile}).First(&siteFeed)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -73,15 +75,24 @@ func GetGIGAZINE() (DbTestSite, []DbTestSiteFeed, error) {
 	var siteFeeds []DbTestSiteFeed
 	index := 0
 	for _, item := range feed.Items {
+		// Imageがない場合は空文字を入れる
+		if item.Image == nil {
+			item.Image = &gofeed.Image{URL: ""}
+		}
 		siteFeeds = append(siteFeeds, DbTestSiteFeed{
 			title:        item.Title,
 			feed_index:   index,
 			description:  item.Description,
 			url:          item.Link,
-			icon_url:    item.Image.URL,
+			icon_url:   item.Image.URL,
 			published_at: *item.PublishedParsed,
 		})
 		index++
+	}
+	log.Println("site Title:", feed.Title)
+	// Imageがない場合は空文字を入れる
+	if feed.Image == nil {
+		feed.Image = &gofeed.Image{URL: ""}
 	}
 	// RSSを含めたサイト情報を返す
 	return DbTestSite{
