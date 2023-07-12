@@ -106,7 +106,14 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 	log.Println("Gigazine RSS Title: " + str)
 	fmt.Println("Internet Connection Test Success")
 	// 入れ子の検索テスト
-	result, err = RDS.DbNestedStructTest()
+	// 先にサンプルのテストしてみる
+	DB, err := RDS.GormConnect()
+	if err != nil {
+		log.Println("DB Connect Error : " + err.Error())
+	}
+	result, err =
+		// RDS.DbNestedSampleTest()
+		RDS.DbNestedStructTest(DB)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode:      400,

@@ -9,24 +9,23 @@ import (
 // 構造体の入れ子に対して検索できるかテストする為に構造体をつくる
 // サイトの中に記事リストがある
 // フォーリンキーは特に設定せずライブラリに任せる
-type DbTestSite struct {
+type Site struct {
 	// gorm.Modelをつけると、idとCreatedAtとUpdatedAtとDeletedAtが作られる
 	gorm.Model
-	site_name   string
-	site_url    string
-	rss_url     string
-	icon_url    string
-	description string
-	site_feeds  []*DbTestSiteFeed
+	SiteName    string
+	SiteUrl     string
+	RssUrl      string
+	IconUrl     string
+	Description string
+	Feeds       []Feed
 }
 
-type DbTestSiteFeed struct {
+type Feed struct {
 	gorm.Model
-	site_id      uint
-	site         *DbTestSite
-	title        string
-	url          string
-	icon_url     string
-	description  string
-	published_at time.Time
+	SiteID      uint
+	Title       string `gorm:"column:title"`
+	Url         string
+	IconUrl     string
+	Description string
+	PublishedAt time.Time
 }

@@ -183,22 +183,24 @@ func (s MockDBRepo) FetchAllHistories() ([]Data.ReadActivity, error) {
 	var readActivities []Data.ReadActivity
 	// GIGAZINEの記事を100回読んだことにする
 	for i := 0; i < 100; i++ {
-		readActivities = append(readActivities, Data.ReadActivity{
-			Title: 	"Mock Article",
+		ra := Data.ReadActivity{
+			Title:  "Mock Article",
 			UserID: "Mock User",
-			Link:  "https://gigazine.net/article/20210101-mock-article/",
-		})
+			Link:   "https://gigazine.net/article/20210101-mock-article/",
+		}
+		readActivities = append(readActivities, ra)
 	}
 	// AUTOMATONの記事を50回読んだことにする
 	for i := 0; i < 50; i++ {
-		readActivities = append(readActivities, Data.ReadActivity{
-			Title: 	"Mock Article",
+		ra := Data.ReadActivity{
+			Title:  "Mock Article",
 			UserID: "Mock User",
-			Link:  "https://automaton-media.com/articles/newsjp/20210101-mock-article/",
-		})
+			Link:   "https://automaton-media.com/article/20210101-mock-article/",
+		}
+		readActivities = append(readActivities, ra)
 	}
 
-	return []Data.ReadActivity{}, nil
+	return readActivities, nil
 }
 
 func (s MockDBRepo) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {

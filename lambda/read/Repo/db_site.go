@@ -10,52 +10,53 @@ type Site struct {
 	// gorm.Modelをつけると、idとCreatedAtとUpdatedAtとDeletedAtが作られる
 	// gormでは、gorm.Modelでdeleted_atを作成している場合、Deleteすると、自動的に論理削除になるという仕様
 	gorm.Model
-	site_name        string
-	site_url         string
-	rss_url          string
-	icon_url         string
-	description      string
-	site_feeds       []SiteFeed      `gorm:"foreignKey:site_id"`
-	tags             []Tag           `gorm:"foreignKey:site_id"`
+	SiteName    string
+	SiteUrl     string
+	RssUrl      string
+	IconUrl     string
+	Description string
+	SiteFeeds   []SiteFeed
+	Tags        []Tag
+	Category    string
 }
 
 type SiteFeed struct {
 	gorm.Model
-	site_id      uint
-	feed_index   int
-	title        string
-	url          string
-	icon_url     string
-	description  string
-	published_at time.Time
+	SiteID      uint
+	FeedIndex   int
+	Title       string
+	Url         string
+	IconUrl     string
+	Description string
+	PublishedAt time.Time
 }
 
 type Tag struct {
 	gorm.Model
-	tag_name string
-	site_id  uint
+	TagName string
+	SiteID  uint
 }
 
 type ExploreCategory struct {
 	gorm.Model
-	category_name string
-	description   string
-	country       string
+	CategoryName string
+	Description  string
+	Country      string
 }
 
 type SiteRanking struct {
 	gorm.Model
-	country             string
-	explore_category_id uint
-	site                Site `gorm:"foreignKey:site_id"`
-	ranking_index       int
+	Country           string
+	ExploreCategoryID uint
+	SiteID            uint
+	RankingIndex      int
 }
 
 type FeedRanking struct {
 	gorm.Model
-	country             string
-	explore_category_id uint
-	site                Site     `gorm:"foreignKey:site_id"`
-	feed                SiteFeed `gorm:"foreignKey:feed_id"`
-	ranking_index       int
+	Country           string
+	ExploreCategoryID uint
+	SiteID            uint
+	SiteFeedID        uint
+	RankingIndex      int
 }

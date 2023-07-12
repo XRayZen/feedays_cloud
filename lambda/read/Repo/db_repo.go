@@ -71,7 +71,7 @@ func (s DBRepoImpl) FetchRanking(userID string) (resRanking Data.Ranking, err er
 	}
 	// ユーザーIDからユーザーの国を取得する
 	var user User
-	db.Where(&User{user_id: num}).Select("country").Find(&user)
+	db.Where(&User{UserUniqueID: num}).Select("country").Find(&user)
 	// ユーザーの国をキーにDBからランキングを取得する
 	// TODO:これ以降の作業を進むにはDBユーザーに国を追加定義する必要がある
 	// var ranking SiteRanking
@@ -88,7 +88,7 @@ func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCa
 	}
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
 	var expCats []ExploreCategory
-	result := db.Where(&ExploreCategory{country: country}).Find(&expCats)
+	result := db.Where(&ExploreCategory{Country: country}).Find(&expCats)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -96,8 +96,8 @@ func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCa
 	var categories []Data.ExploreCategories
 	for _, expCat := range expCats {
 		categories = append(categories, Data.ExploreCategories{
-			CategoryName:        expCat.category_name,
-			CategoryDescription: expCat.description,
+			CategoryName:        expCat.CategoryName,
+			CategoryDescription: expCat.Description,
 			CategoryID:          fmt.Sprint(expCat.ID),
 		})
 	}
@@ -111,7 +111,7 @@ func (r DBRepoImpl) IsExistSite(site_url string) bool {
 		return false
 	}
 	var site Site
-	result := db.Where(&Site{site_url: site_url}).Find(&site)
+	result := db.Where(&Site{SiteUrl: site_url}).Find(&site)
 	if result.Error != nil {
 		return false
 	}
@@ -132,7 +132,7 @@ func (r DBRepoImpl) IsSubscribeSite(user_id string, site_url string) bool {
 	}
 	// Userのuser_idとUserの中のSubscriptionSiteのsite_urlをキーにSubscriptionSiteを検索する
 	var res SubscriptionSite
-	result := db.Where(&User{user_id: user_id_int}).Where(&SubscriptionSite{site_url: site_url}).Find(&res)
+	result := db.Where(&User{UserUniqueID: user_id_int}).Where(&SubscriptionSite{site_url: site_url}).Find(&res)
 	// result := db.Model(&User{}).Where("user_id = ?", user_id_int).Where(&SubscriptionSite{site_url: site_url}).Find(&res)
 	if result.Error != nil {
 		return false

@@ -10,4 +10,4 @@ backend.tf
 *.id_rsa.pub
 *.id_rsa
 *.pem
-
+*.db
