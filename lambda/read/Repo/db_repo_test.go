@@ -17,7 +17,7 @@ import (
 // テスト用のモックデータを生成する
 func InitDataBase() DBRepository {
 	dbRepo := DBRepoImpl{}
-	// MockModeでインメモリーsqliteに接続する
+	// MockModeでRDSではなくインメモリーsqliteに接続する
 	if err := dbRepo.ConnectDB(true); err != nil {
 		panic("failed to connect database")
 	}
@@ -43,15 +43,6 @@ func InitDataBase() DBRepository {
 	}
 	// Userを保存する
 	DBMS.Create(&users)
-	// // サイトを生成する
-	// var sites = []Site{
-	// 	{
-	// 		SiteName: "SiteName",
-	// 		SiteUrl:  "https://www.google.com/",
-	// 	},
-	// }
-	// // サイトを保存する
-	// DBMS.Create(&sites)
 	return dbRepo
 }
 
@@ -72,13 +63,18 @@ func GetGIGAZINE() (Data.WebSite, []Data.Article, error) {
 	// Feedを記事に変換する
 	articles := []Data.Article{}
 	for _, v := range feed.Items {
+		// Feedのカテゴリはタグにしておく
+		category := ""
+		if len(v.Categories) > 0 {
+			category = v.Categories[0]
+		}
 		article := Data.Article{
 			Title:        v.Title,
 			Link:         v.Link,
 			Description:  v.Description,
-			Category:     v.Categories,
+			Category:     category,
 			Site:         feed.Title,
-			LastModified: v.PublishedParsed.Format(time.RFC3339),
+			LastModified: v.PublishedParsed.UTC().Format(time.RFC3339),
 		}
 		articles = append(articles, article)
 	}
@@ -88,6 +84,7 @@ func GetGIGAZINE() (Data.WebSite, []Data.Article, error) {
 		SiteRssURL:      url,
 		SiteDescription: feed.Description,
 		SiteTags:        feed.Categories,
+		LastModified:   feed.UpdatedParsed.UTC().Format(time.RFC3339),
 	}, articles, nil
 }
 
@@ -112,6 +109,7 @@ func TestRead(t *testing.T) {
 func TestDBQuerySite(t *testing.T) {
 	dbRepo := InitDataBase()
 	// サイトの登録・存在確認・取得
+	// サイト記事系の処理は
 	t.Run("Write", func(t *testing.T) {
 		site, articles, err := GetGIGAZINE()
 		if err != nil {
@@ -134,8 +132,45 @@ func TestDBQuerySite(t *testing.T) {
 		if !result {
 			t.Errorf("failed to check subscribe site")
 		}
-		//
+		// サイトの最終更新日時を取得
+		lastModified, err := dbRepo.FetchSiteLastModified(site.SiteURL)
+		if err != nil {
+			t.Errorf("failed to fetch site last modified : %v", err)
+		}
+		// 時間が変換されていく中でローカル時間とずれるからUTCに変換して解決
+		siteLastModified, err := time.Parse(time.RFC3339, site.LastModified)
+		if err != nil && lastModified != siteLastModified {
+			t.Errorf("failed to fetch site last modified")
+		}
+		// サイトURLをキーにサイトを検索
+		resultSite, err := dbRepo.SearchSiteByUrl(site.SiteURL)
+		if err != nil && resultSite.SiteURL != site.SiteURL {
+			t.Errorf("failed to search site by url")
+		}
+		// サイト名をキーにサイトを検索
+		resultSites, err := dbRepo.SearchSiteByName(site.SiteName)
+		if err != nil && len(resultSites) == 0 {
+			t.Errorf("failed to search site by name")
+		}
 	})
+}
+
+// 記事系をテストする
+func TestDBQueryArticle(t *testing.T) {
+	dbRepo := InitDataBase()
+	// 記事の登録・存在確認・取得
+	t.Run("Write", func(t *testing.T) {
+		site, articles, err := GetGIGAZINE()
+		if err != nil {
+			t.Errorf("failed to get GIGAZINE")
+		}
+		err = dbRepo.RegisterSite(site, articles)
+		if err != nil {
+			t.Errorf("failed to register site")
+		}
+		// 記事の登録・存在確認・取得
+	})
+
 }
 
 func TestHeavy(t *testing.T) {

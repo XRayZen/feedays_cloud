@@ -29,7 +29,7 @@ type DBRepository interface {
 	IsExistSite(site_url string) bool
 	// ユーザーはサイトを購読しているか確認する
 	IsSubscribeSite(user_unique_id string, site_url string) bool
-	// サイトURLをキーにDBに該当するサイトを検索して返す
+	// サイトURLをキーにサイトを検索
 	SearchSiteByUrl(site_url string) (Data.WebSite, error)
 	// サイト名をキーにサイトを検索
 	SearchSiteByName(siteName string) ([]Data.WebSite, error)
@@ -156,8 +156,22 @@ func (r DBRepoImpl) SearchSiteByUrl(site_url string) (Data.WebSite, error) {
 	if result.Error != nil {
 		return Data.WebSite{}, result.Error
 	}
+	resultSite,_ := convertDbSiteToApi(site)
+	return resultSite, nil
+}
 
-	return Data.WebSite{}, nil
+func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
+	var sites []Site
+	result := DBMS.Where(&Site{SiteName: siteName}).Find(&sites)
+	if result.Error != nil {
+		return []Data.WebSite{}, result.Error
+	}
+	var resultSites []Data.WebSite
+	for _, site := range sites {
+		resultSite, _ := convertDbSiteToApi(site)
+		resultSites = append(resultSites, resultSite)
+	}
+	return resultSites, nil
 }
 
 func (r DBRepoImpl) IsExistSite(site_url string) bool {
@@ -239,12 +253,16 @@ func (r DBRepoImpl) IsSubscribeSite(user_unique_id string, site_url string) bool
 }
 
 func (r DBRepoImpl) FetchSiteLastModified(site_url string) (time.Time, error) {
-	return time.Now(), nil
+	// サイトURLをキーにサイトの最終更新日時だけを取得する
+	var site Site
+	result := DBMS.Model(&Site{}).Where(&Site{SiteUrl: site_url}).Select("LastModified").Find(&site)
+	if result.Error != nil {
+		return time.Now(), result.Error
+	}
+	return site.LastModified, nil
 }
 
-func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
-	return []Data.WebSite{}, nil
-}
+
 
 // 記事系処理
 // 検索・最新記事取得・時間指定記事取得・記事更新

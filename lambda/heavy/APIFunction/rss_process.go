@@ -18,11 +18,16 @@ func fetchRSSArticles(rssUrl string) ([]Data.Article, error) {
 	}
 	articles := []Data.Article{}
 	for _, v := range feed.Items {
+		// Feedのカテゴリはタグにしておく
+		category := ""
+		if len(v.Categories) > 0 {
+			category = v.Categories[0]
+		}
 		article := Data.Article{
 			Title:        v.Title,
 			Link:         v.Link,
 			Description:  v.Description,
-			Category:     v.Categories,
+			Category:     category,
 			Site:         feed.Title,
 			LastModified: v.PublishedParsed.Format(time.RFC3339),
 		}

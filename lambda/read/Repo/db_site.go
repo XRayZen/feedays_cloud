@@ -11,14 +11,15 @@ type Site struct {
 	// gorm.Modelをつけると、idとCreatedAtとUpdatedAtとDeletedAtが作られる
 	// gormでは、gorm.Modelでdeleted_atを作成している場合、Deleteすると、自動的に論理削除になるという仕様
 	gorm.Model
-	SiteName          string
-	SiteUrl           string
-	RssUrl            string
-	IconUrl           string
-	Description       string
-	SiteFeeds         []SiteArticle
-	Tags              []Tag
-	Category          string
+	SiteName    string
+	SiteUrl     string
+	RssUrl      string
+	IconUrl     string
+	Description string
+	SiteFeeds   []SiteArticle
+	Tags        []Tag
+	Category    string
+	// 記事を更新したら、LastModifiedを更新する
 	LastModified      time.Time
 	SubscriptionCount int
 }
@@ -50,6 +51,14 @@ type ExploreCategory struct {
 
 // API型からDB型に変換する
 func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
+	// サイトの最終更新日時をtimeに変換
+	var lastModified time.Time
+	res_time, err := time.Parse(time.RFC3339, site.LastModified)
+	if err != nil {
+		lastModified = time.Now().UTC()
+	} else {
+		lastModified = res_time
+	}
 	var siteArticles []SiteArticle
 	for _, siteArticle := range articles {
 		var publishedAt time.Time
@@ -67,14 +76,22 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 			PublishedAt: publishedAt,
 		})
 	}
+	// タグを変換
+	var tags []Tag
+	for _, tag := range site.SiteTags {
+		tags = append(tags, Tag{TagName: tag})
+	}
+
 	return Site{
-		SiteName:    site.SiteName,
-		SiteUrl:     site.SiteURL,
-		RssUrl:      site.SiteRssURL,
-		SiteFeeds:   siteArticles,
-		IconUrl:     site.SiteImage,
-		Description: site.SiteDescription,
-		Category:    site.SiteCategory,
+		SiteName:     site.SiteName,
+		SiteUrl:      site.SiteURL,
+		RssUrl:       site.SiteRssURL,
+		SiteFeeds:    siteArticles,
+		IconUrl:      site.SiteImage,
+		Description:  site.SiteDescription,
+		Category:     site.SiteCategory,
+		LastModified: lastModified,
+		Tags:         tags,
 	}
 }
 
