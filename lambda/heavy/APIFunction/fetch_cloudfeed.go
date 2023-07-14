@@ -2,89 +2,76 @@ package APIFunction
 
 import (
 	"encoding/json"
-	"errors"
 
 	// "log"
 	"read/Data"
-	"read/Repo"
 
 	// "sort"
 	"time"
 )
 
 func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_argument_json1 string) (string, error) {
-	// jsonからURLを取得する
-	var request Data.FetchFeedRequest
+	// jsonからリクエストを変換する
+	var request Data.FetchArticlesRequest
 	err := json.Unmarshal([]byte(request_argument_json1), &request)
 	if err != nil {
 		return "", err
 	}
-	clientLastModified, err := time.Parse(time.RFC3339, request.LastModified)
-	if err != nil {
-		return "", err
-	}
-	articles, err := refreshSiteArticles(s.DBRepo, request.SiteUrl, request.IntervalMinutes, clientLastModified)
-	if err != nil {
-		return "", err
-	}
 	var response Data.FetchCloudFeedResponse
-	response.Feeds = articles
-	response.ResponseType = "success"
+	// リクエストが新規なら最新記事を100件ぐらい探して返す
+	// リクエストが最新ならクライアント側更新日時より新しい記事を返す
+	// リクエストが古いならクライアント側最古日時より古い記事を返す
+	switch request.RequestType {
+	case "latest":
+		articles, err := s.DBRepo.SearchSiteLatestArticle(request.SiteUrl, 100)
+		if err != nil {
+			return "", err
+		}
+		response = Data.FetchCloudFeedResponse{
+			Feeds:        articles,
+			ResponseType: "success",
+			Error:        "",
+		}
+	case "old":
+		oldestModified, err := time.Parse(time.RFC3339, request.OldestModified)
+		if err != nil {
+			return "", err
+		}
+		// 指定された時間より古い記事を100件取得する
+		articles, err := s.DBRepo.SearchArticlesByTimeAndOrder(request.SiteUrl, oldestModified, 100, false)
+		if err != nil {
+			return "", err
+		}
+		response = Data.FetchCloudFeedResponse{
+			Feeds:        articles,
+			ResponseType: "success",
+			Error:        "",
+		}
+	case "update":
+		var newLastModified time.Time
+		if request.LastModified == "" {
+			newLastModified = time.Now()
+		} else {
+			newLastModified, err = time.Parse(time.RFC3339, request.LastModified)
+			if err != nil {
+				return "", err
+			}
+		}
+		// サイトの記事更新日時を取得する
+		articles, err := s.DBRepo.SearchArticlesByTimeAndOrder(request.SiteUrl, newLastModified, 100, true)
+		if err != nil {
+			return "", err
+		}
+		response = Data.FetchCloudFeedResponse{
+			Feeds:        articles,
+			ResponseType: "success",
+			Error:        "",
+		}
+	}
+
 	responseJson, err := json.Marshal(response)
 	if err != nil {
 		return "", err
 	}
 	return string(responseJson), nil
-}
-
-// 指定したサイトURLの記事が指定された間隔より古くなっていたら更新する
-// まだ鮮度があるのなら更新せずそのままクライアント側更新日時より新しい記事を返す
-func refreshSiteArticles(repo Repo.DBRepository, siteUrl string, intervalMinutes int, clientLastModified time.Time) ([]Data.Article, error) {
-	if repo.IsExistSite(siteUrl) {
-		// サイトの記事更新日時を取得する
-		lastModified, err := repo.FetchSiteLastModified(siteUrl)
-		if err != nil {
-			return nil, err
-		}
-		// 記事更新日時にIntervalMinutesを足した更新期限日時に現時間が過ぎていたら記事更新をする
-		if isUpdateExpired(lastModified, intervalMinutes) {
-			// サイトを取得する
-			site, err := repo.FetchSite(siteUrl)
-			if err != nil {
-				return nil, err
-			}
-			// サイトの記事を取得する
-			no_image_articles, err := fetchRSSArticles(site.SiteRssURL)
-			if err != nil {
-				return nil, err
-			}
-			// サイトのイメージURLを取得する
-			articles, err := getArticleImageURLs(no_image_articles)
-			if err != nil {
-				return nil, err
-			}
-			// サイトの記事をDBに登録する
-			err = repo.UpdateArticles(siteUrl, articles)
-			if err != nil {
-				return nil, err
-			}
-		}
-		// クライアント側更新日時より新しい記事を返す
-		articles, err := repo.SearchArticlesByTime(siteUrl, clientLastModified)
-		if err != nil {
-			return nil, err
-		}
-		return articles, nil
-	}
-	return nil, errors.New("Not Found WebSite")
-}
-
-// 記事更新日時にIntervalMinutesを足した更新期限日時を現時間が過ぎていたらtrueを返す
-func isUpdateExpired(lastModified time.Time, intervalMinutes int) bool {
-	// 現時間を取得する
-	now_time := time.Now()
-	// 記事更新日時にIntervalMinutesを足した更新期限日時を取得する
-	update_expired_time := lastModified.Add(time.Minute * time.Duration(intervalMinutes))
-	// 更新期限日時が現時間より過ぎていたらtrueを返す
-	return update_expired_time.Before(now_time)
 }

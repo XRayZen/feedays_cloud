@@ -1,6 +1,9 @@
 package Repo
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // GORMで使う構造型のメンバは大文字で始めないといけない
 type User struct {
@@ -8,12 +11,13 @@ type User struct {
 	UserName         string
 	UserUniqueID     int `gorm:"uniqueIndex"`
 	AccountType      string
+	Country          string
+	ClientConfig     ClientConfig
 	ApiActivity      ApiActivity
 	FavoriteSite     []FavoriteSite
 	SubscriptionSite []SubscriptionSite
 	ReadHistory      []ReadHistory
 	SearchHistory    []SearchHistory
-	ClientConfig     ClientConfig
 }
 
 type ClientConfig struct {
@@ -41,8 +45,8 @@ type FavoriteSite struct {
 
 type SubscriptionSite struct {
 	gorm.Model
-	UserID   uint
-	site_url string
+	UserID uint
+	SiteID uint
 }
 
 type SearchHistory struct {
@@ -53,9 +57,13 @@ type SearchHistory struct {
 
 type ReadHistory struct {
 	gorm.Model
-	UserID  uint
-	SiteURL string
-	FeedURL string
+	UserID         uint
+	ActivityType   string
+	FeedID         uint
+	SiteID         uint
+	AccessAt       time.Time
+	AccessPlatform string
+	AccessIP       string
 }
 
 type ApiConfig struct {

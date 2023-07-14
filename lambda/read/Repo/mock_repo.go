@@ -10,18 +10,26 @@ type MockDBRepo struct {
 	articles []Data.Article
 }
 
+// DB接続
+func (s MockDBRepo) ConnectDB(isMock bool) error {
+	return nil
+}
+
+// DBオートマイグレート
+func (s MockDBRepo) AutoMigrate() error {
+	return nil
+}
+
 // readで使う
 func (s MockDBRepo) GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error) {
 	return Data.UserInfo{}, nil
 }
 
-func (s MockDBRepo) FetchRanking(userID string) (resRanking Data.Ranking, err error) {
-	return Data.Ranking{}, nil
-}
-
-func (s MockDBRepo) FetchExploreCategories(country string) (resExp Data.ExploreCategories, err error) {
-	return Data.ExploreCategories{
-		CategoryName: "CategoryName",
+func (s MockDBRepo) FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error) {
+	return []Data.ExploreCategory{
+		{
+			CategoryName: "CategoryName",
+		},
 	}, nil
 }
 
@@ -40,7 +48,7 @@ func (s MockDBRepo) IsSubscribeSite(user_id string, site_url string) bool {
 	return true
 }
 
-func (s MockDBRepo) FetchSite(site_url string) (Data.WebSite, error) {
+func (s MockDBRepo) SearchSiteByUrl(site_url string) (Data.WebSite, error) {
 	// テスト用にダミーのWebSiteを返す
 	switch site_url {
 	case "https://automaton-media.com/":
@@ -103,6 +111,35 @@ func (s MockDBRepo) SearchArticlesByKeyword(keyword string) ([]Data.Article, err
 }
 
 func (s MockDBRepo) SearchArticlesByTime(siteUrl string, lastModified time.Time) ([]Data.Article, error) {
+	// 更新日時より新しい記事を返す
+	var articles []Data.Article
+	for _, article := range mockArticles {
+		articleTime, _ := time.Parse(time.RFC3339, article.LastModified)
+		// articleTimeを数値に変換
+		articleTimeUnix := articleTime.Unix()
+		// lastModifiedを数値に変換
+		lastModifiedUnix := lastModified.Unix()
+		// log.Println("articleTimeUnix > lastModifiedUnix: ", articleTimeUnix > lastModifiedUnix)
+		// lastModifiedよりarticleTimeが新しい場合は追加する
+		if articleTimeUnix > lastModifiedUnix {
+			articles = append(articles, article)
+		}
+	}
+	return articles, nil
+}
+
+func (s MockDBRepo) SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error) {
+	return []Data.Article{
+		{
+			Title:        "Found",
+			Link:         "https://example.com",
+			Site:         "https://example.com",
+			LastModified: "2021-01-01T00:00:00+09:00",
+		},
+	}, nil
+}
+
+func (s MockDBRepo) SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isOlder bool) ([]Data.Article, error) {
 	// 更新日時より新しい記事を返す
 	var articles []Data.Article
 	for _, article := range mockArticles {
@@ -209,4 +246,9 @@ func (s MockDBRepo) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data
 
 func (s MockDBRepo) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error) {
 	return nil, nil
+}
+
+// ランキングを更新
+func (s MockDBRepo) UpdateRanking() error {
+	return nil
 }

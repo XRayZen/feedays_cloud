@@ -6,17 +6,14 @@ import (
 	"read/Repo"
 )
 
-type Explore struct {
-	DBrepo Repo.DBRepository
-}
 
-func (e Explore) GetExploreCategories(userID string) (ExploreJson string, err error) {
+func GetExploreCategories(DBrepo Repo.DBRepository,userID string) (ExploreJson string, err error) {
 	//DBからデータを取得する
-	resUserInfo, err := e.DBrepo.GetUserInfo(userID)
+	resUserInfo, err := DBrepo.GetUserInfo(userID)
 	if err != nil {
 		return "err", err
 	}
-	resData, err := e.DBrepo.FetchExploreCategories(resUserInfo.UserCountry)
+	resData, err := DBrepo.FetchExploreCategories(resUserInfo.UserCountry)
 	if err != nil {
 		return "err", err
 	}

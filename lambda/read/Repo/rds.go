@@ -21,16 +21,16 @@ var (
 
 // DBに操作する時に呼び出してDB接続処理がしていないのならDB接続処理をする関数
 // していたらそのままDB接続情報を返す
-func Connect() (*gorm.DB, error) {
+func DataBaseConnect() error {
 	if isDbConnected {
-		return DBMS, nil
+		return nil
 	}
 	// DB接続情報を取得する
 	dbName = os.Getenv("db_name")
 	dbUser = os.Getenv("db_username")
 	secret, err := FetchDbSecret()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	dbPass = secret.Password
 	dbType = "mysql"
@@ -38,11 +38,11 @@ func Connect() (*gorm.DB, error) {
 	dbEndPoint = os.Getenv("rds_endpoint")
 	db, err := RDS_Connect(dbType, dbName, dbUser, dbPass, dbEndPoint, dbPort)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	DBMS = db
 	isDbConnected = true
-	return DBMS, nil
+	return nil
 }
 
 // DBが切断されたらDB接続情報を削除する
@@ -68,7 +68,7 @@ func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint, dbPort string) (*go
 }
 
 // DBに使う全ての型をマイグレートする
-func AutoMigrate(db *gorm.DB)  {
+func AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&Site{})
 	db.AutoMigrate(&User{})
 }

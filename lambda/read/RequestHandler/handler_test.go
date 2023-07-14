@@ -2,14 +2,14 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"read/Repo"
 	"read/Data"
+	"read/Repo"
 	"testing"
 )
 
 func TestParseRequestType(t *testing.T) {
 	// 正解のデータを用意する
-	want_Ex, _ := json.Marshal(Data.ExploreCategories{
+	want_Ex, _ := json.Marshal(Data.ExploreCategory{
 		CategoryName: "CategoryName",
 	})
 	want_ExStr := string(want_Ex)

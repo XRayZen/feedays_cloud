@@ -55,7 +55,7 @@ func searchByURL(repo Repo.DBRepository, apiSearchRequest Data.ApiSearchRequest)
 	// サイトURLをキーにDBに該当するサイトがあるか確認する
 	if repo.IsExistSite(apiSearchRequest.Word) {
 		// サイトURLをキーにDBに該当するサイトを返す
-		webSite, err := repo.FetchSite(apiSearchRequest.Word)
+		webSite, err := repo.SearchSiteByUrl(apiSearchRequest.Word)
 		if err != nil {
 			return Data.SearchResult{}, err
 		}
