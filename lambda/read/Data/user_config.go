@@ -27,7 +27,6 @@ type FavoriteSite struct {
 }
 
 type FavoriteArticle struct {
-	SiteID    uint   `json:"siteID"`
 	ArticleID uint   `json:"articleID"`
 	CreatedAt string `json:"createdAt"`
 }
@@ -43,5 +42,5 @@ type ReadHistory struct {
 
 type SearchHistory struct {
 	SearchWord string `json:"searchWord"`
-	CreatedAt  string `json:"createdAt"`
+	SearchAt   string `json:"searchAt"`
 }

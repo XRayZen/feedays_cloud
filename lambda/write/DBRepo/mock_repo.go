@@ -49,6 +49,6 @@ func (repo MockDBRepo) ModifyFavoriteArticle(userId string, articleInfo Data.Art
 	return nil
 }
 
-func (repo MockDBRepo) GetAPIRequestLimit(userId string) (Data.ApiRequestLimitConfig, error) {
-	return Data.ApiRequestLimitConfig{}, nil
+func (repo MockDBRepo) GetAPIRequestLimit(userId string) (Data.ApiConfig, error) {
+	return Data.ApiConfig{}, nil
 }

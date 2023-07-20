@@ -2,22 +2,22 @@ package RequestHandler
 
 import (
 	"encoding/json"
+	"read/Data"
 	"testing"
 	"write/DBRepo"
-	"read/Data"
 )
 
 // 正常系のテスト
 func TestNormalRequestHandler(t *testing.T) {
 	// テスト用オブジェクトを用意する
 	identInfoJson, _ := json.Marshal(Data.UserAccessIdentInfo{
-		UUid: "test",
+		UUid:           "test",
 		AccessPlatform: "test",
-		PlatformType: "test",
-		Brand: "test",
-		DeviceName: "test",
-		OsVersion: "test",
-		IsPhysics: false,
+		PlatformType:   "test",
+		Brand:          "test",
+		DeviceName:     "test",
+		OsVersion:      "test",
+		IsPhysics:      false,
 	})
 	readActJson, _ := json.Marshal(Data.ReadActivity{
 		UserID: "test",
@@ -39,7 +39,7 @@ func TestNormalRequestHandler(t *testing.T) {
 	apiResUpdateConfig, _ := GenAPIResponse("accept", "Success UpdateConfig", "")
 	apiResModifyFavoriteSite, _ := GenAPIResponse("accept", "Success ModifyFavoriteSite", "")
 	apiResModifyFavoriteArticle, _ := GenAPIResponse("accept", "Success ModifyFavoriteArticle", "")
-	apiRequestLimitCfg, _ := json.Marshal(Data.ApiRequestLimitConfig{})
+	apiRequestLimitCfg, _ := json.Marshal(Data.ApiConfig{})
 	apiRequestLimitCfgJson := string(apiRequestLimitCfg)
 	searchHistoryJson, _ := json.Marshal([]string{})
 

@@ -12,17 +12,17 @@ type DBRepo interface {
 	// 全てのDBRepoに共通する処理であるDB接続を行う
 	ConnectDB(isMock bool) error
 	AutoMigrate() error
-	GetUserConfig(userId string) (Data.UserConfig, error)
+	GetUserConfig(user_unique_Id string) (Data.UserConfig, error)
 	RegisterUser(userInfo Data.UserConfig) error
-	DeleteUser(userId string) error
-	AddApiActivity(userId string, activityInfo Data.Activity) error
-	AddReadActivity(userId string, activityInfo Data.ReadActivity) error
-	UpdateAppConfig(userId string, configInfo Data.UserConfig) error
+	DeleteUser(user_unique_Id string) error
+	AddApiActivity(user_unique_Id string, activityInfo Data.Activity) error
+	AddReadActivity(user_unique_Id string, activityInfo Data.ReadActivity) error
+	UpdateClientConfig(user_unique_Id string, configInfo Data.UserConfig) error
 	// 検索履歴を変更したら履歴を返す
-	ModifySearchHistory(userId string, text string, isAddOrRemove bool) ([]string, error)
-	ModifyFavoriteSite(userId string, siteInfo Data.WebSite, isAddOrRemove bool) error
-	ModifyFavoriteArticle(userId string, articleInfo Data.Article, isAddOrRemove bool) error
-	GetAPIRequestLimit(userId string) (Data.ApiRequestLimitConfig, error)
+	ModifySearchHistory(user_unique_Id string, text string, isAddOrRemove bool) ([]string, error)
+	ModifyFavoriteSite(user_unique_Id string, siteInfo Data.WebSite, isAddOrRemove bool) error
+	ModifyFavoriteArticle(user_unique_Id string, articleInfo Data.Article, isAddOrRemove bool) error
+	GetAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)
 }
 
 type DBRepoImpl struct {
@@ -68,12 +68,12 @@ func (repo DBRepoImpl) AutoMigrate() error {
 	return nil
 }
 
-func (repo DBRepoImpl) GetUserConfig(userId string) (Data.UserConfig, error) {
+func (repo DBRepoImpl) GetUserConfig(user_unique_Id string) (Data.UserConfig, error) {
 	var user User
-	if err := DBMS.Where("user_unique_id = ?", userId).Preload("ClientConfig").Preload("ApiActivity").Preload("FavoriteSite").Preload("SubscriptionSite").Preload("ReadHistory").Preload("SearchHistory").First(&user).Error; err != nil {
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ClientConfig").Preload("ApiActivity").Preload("FavoriteSite").Preload("SubscriptionSite").Preload("ReadHistory").Preload("SearchHistory").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
-	return ConvertToUserConfig(user), nil
+	return ConvertToApiUserConfig(user), nil
 }
 
 func (repo DBRepoImpl) RegisterUser(userInfo Data.UserConfig) error {
@@ -86,46 +86,50 @@ func (repo DBRepoImpl) RegisterUser(userInfo Data.UserConfig) error {
 	return nil
 }
 
-func (repo DBRepoImpl) DeleteUser(userId string) error {
-	err := DBMS.Where("user_unique_id = ?", userId).Delete(&User{})
+func (repo DBRepoImpl) DeleteUser(user_unique_Id string) error {
+	err := DBMS.Where("user_unique_id = ?", user_unique_Id).Delete(&User{})
 	if err != nil {
 		return err.Error
 	}
 	return nil
 }
 
-func (repo DBRepoImpl) UpdateAppConfig(userId string, configInfo Data.UserConfig) error {
-	// UI設定などを更新する為だからそこら辺だけ更新する
-	user := ConvertToDbUserConfig(configInfo)
-	if err := DBMS.Model(&User{}).Where("user_unique_id = ?", userId).Updates(&User{
-		ClientConfig: user.ClientConfig,
-	}).Error; err != nil {
+func (repo DBRepoImpl) UpdateClientConfig(user_unique_Id string, configInfo Data.UserConfig) error {
+	// ユーザー設定からクライアント設定IDを取得する
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ClientConfig").First(&user).Error; err != nil {
+		return err
+	}
+	// クライアント設定を更新する為だからそこら辺だけ更新する
+	user = ConvertToDbUserConfig(configInfo)
+	// クライアント設定テーブルを更新する
+	if err := DBMS.Model(&ClientConfig{}).Where("id = ?", user.ClientConfig.ID).Updates(user.ClientConfig).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (repo DBRepoImpl) AddApiActivity(userId string, activityInfo Data.Activity) error {
+func (repo DBRepoImpl) AddApiActivity(user_unique_Id string, activityInfo Data.Activity) error {
 	// FirstOrCreateで存在しなかったら作成してインサートする
 	return nil
 }
 
-func (repo DBRepoImpl) AddReadActivity(userId string, activityInfo Data.ReadActivity) error {
+func (repo DBRepoImpl) AddReadActivity(user_unique_Id string, activityInfo Data.ReadActivity) error {
 	return nil
 }
 
-func (repo DBRepoImpl) ModifySearchHistory(userId string, text string, isAddOrRemove bool) ([]string, error) {
+func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, isAddOrRemove bool) ([]string, error) {
 	return []string{}, nil
 }
 
-func (repo DBRepoImpl) ModifyFavoriteSite(userId string, siteInfo Data.WebSite, isAddOrRemove bool) error {
+func (repo DBRepoImpl) ModifyFavoriteSite(user_unique_Id string, siteInfo Data.WebSite, isAddOrRemove bool) error {
 	return nil
 }
 
-func (repo DBRepoImpl) ModifyFavoriteArticle(userId string, articleInfo Data.Article, isAddOrRemove bool) error {
+func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, articleInfo Data.Article, isAddOrRemove bool) error {
 	return nil
 }
 
-func (repo DBRepoImpl) GetAPIRequestLimit(userId string) (Data.ApiRequestLimitConfig, error) {
-	return Data.ApiRequestLimitConfig{}, nil
+func (repo DBRepoImpl) GetAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error) {
+	return Data.ApiConfig{}, nil
 }

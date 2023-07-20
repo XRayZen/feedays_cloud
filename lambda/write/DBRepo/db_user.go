@@ -11,7 +11,7 @@ import (
 type User struct {
 	gorm.Model
 	UserName         string
-	UserUniqueID     int `gorm:"uniqueIndex"`
+	UserUniqueID     string `gorm:"uniqueIndex"`
 	AccountType      string
 	Country          string
 	ClientConfig     ClientConfig
@@ -25,10 +25,9 @@ type User struct {
 
 type ClientConfig struct {
 	gorm.Model
-	UserID                 uint
-	ArticleRefreshInterval int
-	UIConfig               UiConfig
-	ApiConfig              ApiConfig
+	UserID    uint
+	UiConfig  UiConfig
+	ApiConfig ApiConfig
 }
 
 type ApiActivity struct {
@@ -65,14 +64,15 @@ type SearchHistory struct {
 	gorm.Model
 	UserID     uint
 	SearchWord string
+	searchAt   time.Time
 }
 
 type ReadHistory struct {
 	gorm.Model
 	UserID         uint
-	ActivityType   string
 	ArticleID      uint
 	SiteID         uint
+	ActivityType   string
 	AccessAt       time.Time
 	AccessPlatform string
 	AccessIP       string
@@ -81,7 +81,7 @@ type ReadHistory struct {
 type ApiConfig struct {
 	gorm.Model
 	ClientConfigID              uint
-	AccountType                 string
+	RefreshArticleInterval      int
 	FetchArticleRequestInterval int
 	FetchArticleRequestLimit    int
 	FetchTrendRequestInterval   int
@@ -90,41 +90,63 @@ type ApiConfig struct {
 
 type UiConfig struct {
 	gorm.Model
-	ClientConfigID    uint
-	MobileTextSize    int
-	TabletTextSize    int
-	ThemeColor        string
-	ThemeMode         string
-	DrawerMenuOpacity float32
+	ClientConfigID        uint
+	MobileTextSize        int
+	TabletTextSize        int
+	ThemeColorValue       int
+	ThemeMode             string
+	DrawerMenuOpacity     float64
+	ArticleListFontSize   UiResponsiveFontSize
+	ArticleDetailFontSize UiResponsiveFontSize
+}
+
+type UiResponsiveFontSize struct {
+	gorm.Model
+	UiConfigID uint
+	Mobile     float64 `json:"mobile"`
+	Tablet     float64 `json:"tablet"`
+	Default    float64 `json:"defaultSize"`
 }
 
 // DB構造体からAPI構造体への変換
-func ConvertToUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
-	uiCfg := UiConfig{
-		ClientConfigID:    dbCfg.ID,
-		MobileTextSize:    dbCfg.ClientConfig.UIConfig.MobileTextSize,
-		TabletTextSize:    dbCfg.ClientConfig.UIConfig.TabletTextSize,
-		ThemeColor:        dbCfg.ClientConfig.UIConfig.ThemeColor,
-		ThemeMode:         dbCfg.ClientConfig.UIConfig.ThemeMode,
-		DrawerMenuOpacity: dbCfg.ClientConfig.UIConfig.DrawerMenuOpacity,
+func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
+	// UiResponsiveFontSizeをData.UiResponsiveFontSizeに変換
+	articleListFontSize := Data.UiResponsiveFontSize{
+		Mobile:  dbCfg.ClientConfig.UiConfig.ArticleListFontSize.Mobile,
+		Tablet:  dbCfg.ClientConfig.UiConfig.ArticleListFontSize.Tablet,
+		Default: dbCfg.ClientConfig.UiConfig.ArticleListFontSize.Default,
 	}
-	apiCfg := ApiConfig{
-		ClientConfigID:              dbCfg.ID,
-		AccountType:                 dbCfg.ClientConfig.ApiConfig.AccountType,
+	articleDetailFontSize := Data.UiResponsiveFontSize{
+		Mobile:  dbCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Mobile,
+		Tablet:  dbCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Tablet,
+		Default: dbCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Default,
+	}
+	uiCfg := Data.UiConfig{
+		ThemeColorValue:       dbCfg.ClientConfig.UiConfig.ThemeColorValue,
+		ThemeMode:             dbCfg.ClientConfig.UiConfig.ThemeMode,
+		DrawerMenuOpacity:     dbCfg.ClientConfig.UiConfig.DrawerMenuOpacity,
+		ArticleListFontSize:   articleListFontSize,
+		ArticleDetailFontSize: articleDetailFontSize,
+	}
+	apiCfg := Data.ApiConfig{
+		RefreshArticleInterval:      dbCfg.ClientConfig.ApiConfig.RefreshArticleInterval,
 		FetchArticleRequestInterval: dbCfg.ClientConfig.ApiConfig.FetchArticleRequestInterval,
 		FetchArticleRequestLimit:    dbCfg.ClientConfig.ApiConfig.FetchArticleRequestLimit,
 		FetchTrendRequestInterval:   dbCfg.ClientConfig.ApiConfig.FetchTrendRequestInterval,
 		FetchTrendRequestLimit:      dbCfg.ClientConfig.ApiConfig.FetchTrendRequestLimit,
 	}
-	// UniqueIDをintからstringに変換
-	uniqueId := string(dbCfg.UserUniqueID)
+	// ClientConfigをData.ClientConfigに変換
+	clientConfig := Data.ClientConfig{
+		UiConfig:  uiCfg,
+		ApiConfig: apiCfg,
+	}
 	// 検索履歴をData.SearchHistoryの配列に変換
 	var searchHistory []Data.SearchHistory
 	for _, searchHistoryDb := range dbCfg.SearchHistory {
 		searchHistory = append(searchHistory, Data.SearchHistory{
 			SearchWord: searchHistoryDb.SearchWord,
 			// 検索履歴の日付をRFC3339に変換
-			CreatedAt: searchHistoryDb.CreatedAt.Format(time.RFC3339),
+			SearchAt: searchHistoryDb.CreatedAt.Format(time.RFC3339),
 		})
 	}
 	// 読んだ記事をData.ReadHistoryの配列に変換
@@ -166,10 +188,10 @@ func ConvertToUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 			CreatedAt: favoriteArticleDb.CreatedAt.Format(time.RFC3339),
 		})
 	}
-	// AppConfigをData.UserConfigに変換
 	return Data.UserConfig{
 		UserName:         dbCfg.UserName,
-		UserUniqueID:     uniqueId,
+		UserUniqueID:     dbCfg.UserUniqueID,
+		ClientConfig:     clientConfig,
 		AccountType:      dbCfg.AccountType,
 		SearchHistory:    searchHistory,
 		SubscribeWebSite: subscribeWebSite,
@@ -179,7 +201,43 @@ func ConvertToUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	}
 }
 
+// 検索履歴と閲覧記事履歴と購読サイトとお気に入りサイト・記事は変換しない
+// 使用用途的には、ユーザー・API設定の更新時に使用するから
 func ConvertToDbUserConfig(apiCfg Data.UserConfig) (resDbUserCfg User) {
-	//
-	return User{}
+	//フォントサイズをData.UiResponsiveFontSizeからDb.UiResponsiveFontSizeに変換
+	articleListFontSize := UiResponsiveFontSize{
+		Mobile:  apiCfg.ClientConfig.UiConfig.ArticleListFontSize.Mobile,
+		Tablet:  apiCfg.ClientConfig.UiConfig.ArticleListFontSize.Tablet,
+		Default: apiCfg.ClientConfig.UiConfig.ArticleListFontSize.Default,
+	}
+	articleDetailFontSize := UiResponsiveFontSize{
+		Mobile:  apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Mobile,
+		Tablet:  apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Tablet,
+		Default: apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Default,
+	}
+	uiCfg := UiConfig{
+		ThemeColorValue:       apiCfg.ClientConfig.UiConfig.ThemeColorValue,
+		ThemeMode:             apiCfg.ClientConfig.UiConfig.ThemeMode,
+		DrawerMenuOpacity:     apiCfg.ClientConfig.UiConfig.DrawerMenuOpacity,
+		ArticleListFontSize:   articleListFontSize,
+		ArticleDetailFontSize: articleDetailFontSize,
+	}
+	apiCfgDb := ApiConfig{
+		RefreshArticleInterval:      apiCfg.ClientConfig.ApiConfig.RefreshArticleInterval,
+		FetchArticleRequestInterval: apiCfg.ClientConfig.ApiConfig.FetchArticleRequestInterval,
+		FetchArticleRequestLimit:    apiCfg.ClientConfig.ApiConfig.FetchArticleRequestLimit,
+		FetchTrendRequestInterval:   apiCfg.ClientConfig.ApiConfig.FetchTrendRequestInterval,
+		FetchTrendRequestLimit:      apiCfg.ClientConfig.ApiConfig.FetchTrendRequestLimit,
+	}
+	// ClientConfigをData.ClientConfigに変換
+	clientConfig := ClientConfig{
+		UiConfig:  uiCfg,
+		ApiConfig: apiCfgDb,
+	}
+	// 検索履歴と閲覧記事履歴と購読サイトとお気に入りサイト・記事は変換しない
+	return User{
+		UserName:     apiCfg.UserName,
+		UserUniqueID: apiCfg.UserUniqueID,
+		ClientConfig: clientConfig,
+	}
 }

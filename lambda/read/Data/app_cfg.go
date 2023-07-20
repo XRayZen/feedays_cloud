@@ -1,33 +1,29 @@
 package Data
 
 type ClientConfig struct {
-	ApiRequestConfig ApiRequestLimitConfig `json:"apiRequestConfig"`
-	RssFeedConfig    RssFeedConfig         `json:"rssFeedConfig"`
-	MobileUiConfig   MobileUiConfig        `json:"mobileUiConfig"`
+	ApiConfig ApiConfig `json:"apiConfig"`
+	UiConfig  UiConfig  `json:"UiConfig"`
 }
 
-type ApiRequestLimitConfig struct {
-	FetchFeedRequestInterval int `json:"fetchFeedRequestInterval"`
-	FetchRssFeedRequestLimit int `json:"fetchRssFeedRequestLimit"`
-	TrendRequestInterval     int `json:"trendRequestInterval"`
-	TrendRequestLimit        int `json:"trendRequestLimit"`
+type ApiConfig struct {
+	RefreshArticleInterval      int `json:"refreshArticleInterval"`
+	FetchArticleRequestInterval int `json:"fetchArticleRequestInterval"`
+	FetchArticleRequestLimit    int `json:"fetchArticleRequestLimit"`
+	FetchTrendRequestInterval   int `json:"trendRequestInterval"`
+	FetchTrendRequestLimit      int `json:"trendRequestLimit"`
 }
 
-type RssFeedConfig struct {
-	FeedRefreshInterval int `json:"feedRefreshInterval"`
-}
-
-type MobileUiConfig struct {
+type UiConfig struct {
 	ThemeColorValue int `json:"themeColorValue"`
 	// light, dark, system
-	ThemeMode            string               `json:"themeMode"`
-	DrawerMenuOpacity    float64              `json:"drawerMenuOpacity"`
-	SiteFeedListFontSize UiResponsiveFontSize `json:"siteFeedListFontSize"`
-	FeedDetailFontSize   UiResponsiveFontSize `json:"feedDetailFontSize"`
+	ThemeMode             string               `json:"themeMode"`
+	DrawerMenuOpacity     float64              `json:"drawerMenuOpacity"`
+	ArticleListFontSize   UiResponsiveFontSize `json:"articleListFontSize"`
+	ArticleDetailFontSize UiResponsiveFontSize `json:"articleDetailFontSize"`
 }
 
 type UiResponsiveFontSize struct {
-	Mobile      float64 `json:"mobile"`
-	Tablet      float64 `json:"tablet"`
-	DefaultSize float64 `json:"defaultSize"`
+	Mobile  float64 `json:"mobile"`
+	Tablet  float64 `json:"tablet"`
+	Default float64 `json:"defaultSize"`
 }

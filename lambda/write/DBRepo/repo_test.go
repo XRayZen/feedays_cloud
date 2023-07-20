@@ -36,7 +36,7 @@ func TestDbRepoTest(t *testing.T) {
 		UserName:      "MockUser",
 		UserUniqueID:  "0000",
 		AccountType:   "JP",
-		SearchHistory: []string{},
+		SearchHistory: []Data.SearchHistory{},
 		ClientConfig:  Data.ClientConfig{},
 	}
 
@@ -49,25 +49,27 @@ func TestDbRepoTest(t *testing.T) {
 		// Userを取得する
 		user, err := dbRepo.GetUserConfig("0000")
 		// 取得出来たのがMockUserか確認する
-		if err != nil && user.UserName != "MockUser" {
+		if err != nil || user.UserName != "MockUser" {
 			t.Errorf("failed to get user: %v", err)
 		}
 		user.ClientConfig = Data.ClientConfig{
-			ApiRequestConfig: Data.ApiRequestLimitConfig{
-				FetchFeedRequestInterval: 4000,
+			ApiConfig: Data.ApiConfig{
+				FetchArticleRequestInterval: 4000,
 			},
 		}
 		// Userを更新する
-		if err := dbRepo.UpdateAppConfig(user.UserUniqueID, user); err != nil {
+		if err := dbRepo.UpdateClientConfig(user.UserUniqueID, user); err != nil {
 			t.Errorf("failed to update user: %v", err)
 		}
 		// Userが更新されているか確認する
-		user, err = dbRepo.GetUserConfig("0000")
-		if err != nil && user.ClientConfig.ApiRequestConfig.FetchFeedRequestInterval != 9000 {
-			t.Errorf("failed to update user: %v", err)
+		user, err = dbRepo.GetUserConfig(user.UserUniqueID)
+		// 数字が反映されていない場合はエラー
+		if err != nil || user.ClientConfig.ApiConfig.FetchArticleRequestInterval != 4000 {
+			// 検証に失敗した場合はエラー
+			t.Errorf("failed to validation user: %v", err)
 		}
 		// Userを削除する
-		if err := dbRepo.DeleteUser("0000"); err != nil {
+		if err := dbRepo.DeleteUser(user.UserUniqueID); err != nil {
 			t.Errorf("failed to delete user: %v", err)
 		}
 	})
