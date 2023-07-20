@@ -5,19 +5,27 @@ import "read/Data"
 type MockDBRepo struct {
 }
 
-func (repo MockDBRepo) GetUserInfo(userId string) (Data.UserInfo, error) {
-	return Data.UserInfo{}, nil
+func (repo MockDBRepo) ConnectDB(isMock bool) error {
+	return nil
+}
+
+func (repo MockDBRepo) AutoMigrate() error {
+	return nil
 }
 
 func (repo MockDBRepo) GetUserConfig(userId string) (Data.UserConfig, error) {
 	return Data.UserConfig{}, nil
 }
 
-func (repo MockDBRepo) RegisterUser(userId string, userInfo Data.UserConfig) error {
+func (repo MockDBRepo) RegisterUser(userInfo Data.UserConfig) error {
 	return nil
 }
 
-func (repo MockDBRepo) UpdateConfig(userId string, configInfo Data.UserConfig) error {
+func (repo MockDBRepo) DeleteUser(userId string) error {
+	return nil
+}
+
+func (repo MockDBRepo) UpdateAppConfig(userId string, configInfo Data.UserConfig) error {
 	return nil
 }
 

@@ -11,17 +11,7 @@ type APIFunctions struct {
 	ip   string
 }
 
-func (s APIFunctions) GetUserInfo(userId string) (string, error) {
-	res, err := s.repo.GetUserInfo(userId)
-	if err != nil {
-		return "", err
-	}
-	str, err := json.Marshal(res)
-	if err != nil {
-		return "", err
-	}
-	return string(str), nil
-}
+
 
 // 設定を同期する
 func (s APIFunctions) ConfigSync(userId string, identInfoJson string) (string, error) {

@@ -1,4 +1,4 @@
-package Repo
+package DBRepo
 
 import (
 	"read/Data"
@@ -16,7 +16,7 @@ type Site struct {
 	RssUrl       string
 	IconUrl      string
 	Description  string
-	SiteArticles []Article
+	SiteArticles []SiteArticle
 	Tags         []Tag
 	Category     string
 	// 記事を更新したら、LastModifiedを更新する
@@ -24,7 +24,7 @@ type Site struct {
 	SubscriptionCount int
 }
 
-type Article struct {
+type SiteArticle struct {
 	gorm.Model
 	SiteID       uint
 	ArticleIndex int
@@ -58,7 +58,7 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 	} else {
 		lastModified = res_time
 	}
-	var siteArticles []Article
+	var siteArticles []SiteArticle
 	for _, siteArticle := range articles {
 		var publishedAt time.Time
 		time, err := time.Parse(time.RFC3339, siteArticle.LastModified)
@@ -67,7 +67,7 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 		} else {
 			publishedAt = time
 		}
-		siteArticles = append(siteArticles, Article{
+		siteArticles = append(siteArticles, SiteArticle{
 			Title:       siteArticle.Title,
 			Url:         siteArticle.Link,
 			IconUrl:     siteArticle.Image.Link,

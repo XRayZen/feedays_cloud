@@ -8,7 +8,7 @@ type UserInfo struct {
 	// ユーザーがゲストかどうか
 	IsGuest bool `json:"isGuest"`
 	// ユーザーの設定
-	Config AppConfig `json:"config"`
+	Config ClientConfig `json:"config"`
 	// ユーザーのアカウントタイプ(ゲスト, フリー, プロ, アルティメット)
 	//
 	// 本来enumだが、stringで保存する
@@ -23,19 +23,19 @@ type UserInfo struct {
 
 type UserAccessIdentInfo struct {
 	// 端末で取得出来たら
-	UUid string 			`json:"UUID"`
+	UUid string `json:"UUID"`
 	//accessPlatform
-	AccessPlatform string 	`json:"accessPlatform"`
+	AccessPlatform string `json:"accessPlatform"`
 	//platformType
-	PlatformType string 	`json:"platformType"`
+	PlatformType string `json:"platformType"`
 	//brand
-	Brand string 			`json:"brand"`
+	Brand string `json:"brand"`
 	//deviceName
-	DeviceName string 		`json:"deviceName"`
+	DeviceName string `json:"deviceName"`
 	//OSのバージョン
-	OsVersion string 		`json:"osVersion"`
+	OsVersion string `json:"osVersion"`
 	//isPhysics
-	IsPhysics bool 			`json:"isPhysics"`
+	IsPhysics bool `json:"isPhysics"`
 }
 
 type ReadActivity struct {

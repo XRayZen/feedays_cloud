@@ -1,8 +1,10 @@
 package Repo
 
 import (
-	"gorm.io/gorm"
+	"read/Data"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // GORMで使う構造型のメンバは大文字で始めないといけない
@@ -85,3 +87,5 @@ type UiConfig struct {
 	ThemeMode         string
 	DrawerMenuOpacity float32
 }
+
+

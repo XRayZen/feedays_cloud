@@ -1,6 +1,6 @@
 package Data
 
-type AppConfig struct {
+type ClientConfig struct {
 	ApiRequestConfig ApiRequestLimitConfig `json:"apiRequestConfig"`
 	RssFeedConfig    RssFeedConfig         `json:"rssFeedConfig"`
 	MobileUiConfig   MobileUiConfig        `json:"mobileUiConfig"`

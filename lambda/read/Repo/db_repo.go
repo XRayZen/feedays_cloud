@@ -27,25 +27,23 @@ type DBRepository interface {
 	RegisterSite(site Data.WebSite, articles []Data.Article) error
 	// サイトURLをキーにサイトテーブルに該当するサイトがあるか確認する
 	IsExistSite(site_url string) bool
+	// サイトを購読登録する
+	SubscribeSite(user_unique_id string, siteUrl string, is_subscribe bool) error
 	// ユーザーはサイトを購読しているか確認する
 	IsSubscribeSite(user_unique_id string, site_url string) bool
 	// サイトURLをキーにサイトを検索
 	SearchSiteByUrl(site_url string) (Data.WebSite, error)
 	// サイト名をキーにサイトを検索
 	SearchSiteByName(siteName string) ([]Data.WebSite, error)
-	// キーワード検索でDBに該当する記事を返す
-	SearchArticlesByKeyword(keyword string) ([]Data.Article, error)
 	// サイトURLをキーに記事更新日時を取得する
 	FetchSiteLastModified(site_url string) (time.Time, error)
+
+	// キーワード検索でDBに該当する記事を返す
+	SearchArticlesByKeyword(keyword string) ([]Data.Article, error)
 	// サイトURLをキーにサイトの最新記事を取得する
 	SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error)
 	// 指定された時間よりも新しいか古いを指定して記事を検索して配列を返す
 	SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isNew bool) ([]Data.Article, error)
-	// サイトの記事を更新する
-	// サイトの更新日時より新しい記事があればDBに登録する
-	UpdateArticles(siteUrl string, articles []Data.Article) error
-	// サイトを購読登録する
-	SubscribeSite(user_unique_id string, siteUrl string, is_subscribe bool) error
 
 	// バッチ処理用
 	// サイトテーブルを全件取得する
@@ -53,6 +51,7 @@ type DBRepository interface {
 	// 閲覧履歴テーブルを全件取得する
 	FetchAllHistories() ([]Data.ReadActivity, error)
 	// サイトと記事を大量に更新する
+	// 記事はサイトの更新日時より新しい記事があればDBにインサートする
 	UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error
 	// 時間（From・To）を指定してリードアクテビティを検索する
 	SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error)
@@ -98,7 +97,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 		DBMS.AutoMigrate(&UiConfig{})
 
 		DBMS.AutoMigrate(&Site{})
-		DBMS.AutoMigrate(&SiteArticle{})
+		DBMS.AutoMigrate(&Article{})
 		DBMS.AutoMigrate(&Tag{})
 		DBMS.AutoMigrate(&ExploreCategory{})
 	}
@@ -156,7 +155,7 @@ func (r DBRepoImpl) SearchSiteByUrl(site_url string) (Data.WebSite, error) {
 	if result.Error != nil {
 		return Data.WebSite{}, result.Error
 	}
-	resultSite,_ := convertDbSiteToApi(site)
+	resultSite, _ := convertDbSiteToApi(site)
 	return resultSite, nil
 }
 
@@ -262,27 +261,57 @@ func (r DBRepoImpl) FetchSiteLastModified(site_url string) (time.Time, error) {
 	return site.LastModified, nil
 }
 
-
-
 // 記事系処理
 // 検索・最新記事取得・時間指定記事取得・記事更新
 
 func (r DBRepoImpl) SearchArticlesByKeyword(keyword string) ([]Data.Article, error) {
-	return nil, nil
+	var articles []Article
+	result := DBMS.Where("title LIKE ?", "%"+keyword+"%").Find(&articles)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	_, resultArticles := convertDbSiteToApi(Site{
+		SiteArticles: articles,
+	})
+	return resultArticles, nil
 }
 
 // サイトURLをキーにサイトの最新記事を取得する
 func (r DBRepoImpl) SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error) {
-
-	return nil, nil
+	var site Site
+	result := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var articles []Article
+	result = DBMS.Where(&Article{SiteID: site.ID}).Order("published_at desc").Limit(get_count).Find(&articles)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	site.SiteArticles = articles
+	_, resultArticles := convertDbSiteToApi(site)
+	return resultArticles, nil
 }
 
 func (r DBRepoImpl) SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isNew bool) ([]Data.Article, error) {
-	return nil, nil
-}
-
-func (r DBRepoImpl) UpdateArticles(siteUrl string, articles []Data.Article) error {
-	return nil
+	var site Site
+	result := DBMS.Where(&Site{SiteUrl: siteUrl}).Find(&site)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var articles []Article
+	if isNew {
+		result = DBMS.Where(&Article{SiteID: site.ID}).Where("published_at BETWEEN ? AND ?", lastModified, time.Now().UTC()).Order("published_at desc").Limit(get_count).Find(&articles)
+	} else {
+		// 指定した時間より前の記事を取得する
+		result = DBMS.Where(&Article{SiteID: site.ID}).Where("published_at BETWEEN ? AND ?", time.Time{}, lastModified).Order("published_at desc").Limit(get_count).Find(&articles)
+	}
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	site.SiteArticles = articles
+	_, resultArticles := convertDbSiteToApi(site)
+	return resultArticles, nil
 }
 
 // バッチ処理用
