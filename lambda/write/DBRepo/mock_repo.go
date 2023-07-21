@@ -13,7 +13,7 @@ func (repo MockDBRepo) AutoMigrate() error {
 	return nil
 }
 
-func (repo MockDBRepo) GetUserConfig(userId string) (Data.UserConfig, error) {
+func (repo MockDBRepo) SearchUserConfig(user_unique_Id string) (Data.UserConfig, error) {
 	return Data.UserConfig{}, nil
 }
 
@@ -25,11 +25,7 @@ func (repo MockDBRepo) DeleteUser(userId string) error {
 	return nil
 }
 
-func (repo MockDBRepo) UpdateAppConfig(userId string, configInfo Data.UserConfig) error {
-	return nil
-}
-
-func (repo MockDBRepo) AddApiActivity(userId string, activityInfo Data.Activity) error {
+func (repo MockDBRepo) UpdateUser(userId string, configInfo Data.UserConfig) error {
 	return nil
 }
 

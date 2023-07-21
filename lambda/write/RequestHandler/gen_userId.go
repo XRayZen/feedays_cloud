@@ -14,10 +14,7 @@ func GenRandomUserID(repo DBRepo.DBRepo, identInfoJson string, ip string) (strin
 	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
 		return "", err
 	}
-	// アクティビティレコードにイベントを追加する
-	if err := ReportAPIActivity(ip, repo, "", identInfo, "GenUserID"); err != nil {
-		return "", err
-	}
+
 	return RandomString(15), nil
 }
 

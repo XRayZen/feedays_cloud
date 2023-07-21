@@ -16,7 +16,6 @@ type DBRepo interface {
 	SearchUserConfig(user_unique_Id string) (Data.UserConfig, error)
 	RegisterUser(userInfo Data.UserConfig) error
 	DeleteUser(user_unique_Id string) error
-	AddApiActivity(user_unique_Id string, activityInfo Data.Activity) error
 	AddReadActivity(user_unique_Id string, activityInfo Data.ReadActivity) error
 	UpdateUser(user_unique_Id string, dataUserCfg Data.UserConfig) error
 	// 検索履歴を変更したら履歴を返す
@@ -127,11 +126,6 @@ func (repo DBRepoImpl) UpdateUser(user_unique_Id string, dataUserCfg Data.UserCo
 	if err := DBMS.Create(&user).Error; err != nil {
 		return err
 	}
-	return nil
-}
-
-func (repo DBRepoImpl) AddApiActivity(user_unique_Id string, activityInfo Data.Activity) error {
-	// FirstOrCreateで存在しなかったら作成してインサートする
 	return nil
 }
 

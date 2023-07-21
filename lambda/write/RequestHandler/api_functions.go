@@ -20,12 +20,8 @@ func (s APIFunctions) ConfigSync(userId string, identInfoJson string) (string, e
 		return "", err
 	}
 	// ユーザー設定を取得する
-	userConfig, err := s.repo.GetUserConfig(userId)
+	userConfig, err := s.repo.SearchUserConfig(userId)
 	if err != nil {
-		return "", err
-	}
-	// アクテビティレコードに設定同期イベントを追加する
-	if err := ReportAPIActivity(s.ip, s.repo, userId, identInfo, "ConfigSync"); err != nil {
 		return "", err
 	}
 	// レスポンスを返す
@@ -46,15 +42,12 @@ func (s APIFunctions) RegisterUser(userId string, userCfgJson string, identInfoJ
 	if err := json.Unmarshal([]byte(userCfgJson), &userConfig); err != nil {
 		return "", err
 	}
-	if err := s.repo.RegisterUser(userId, userConfig); err != nil {
+	if err := s.repo.RegisterUser(userConfig); err != nil {
 		return "", err
 	}
 	// アクテビティレコードにユーザー登録イベントを追加する
 	identInfo := Data.UserAccessIdentInfo{}
 	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
-		return "", err
-	}
-	if err := ReportAPIActivity(s.ip, s.repo, userId, identInfo, "RegisterUser"); err != nil {
 		return "", err
 	}
 	return GenAPIResponse("accept", "Success RegisterUser", "")
@@ -83,10 +76,7 @@ func (s APIFunctions) UpdateConfig(userId string, userCfgJson string, identInfoJ
 	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
 		return "", err
 	}
-	if err := s.repo.UpdateConfig(userId, userConfig); err != nil {
-		return "", err
-	}
-	if err := ReportAPIActivity(s.ip, s.repo, userId, identInfo, "UpdateConfig"); err != nil {
+	if err := s.repo.UpdateUser(userId, userConfig); err != nil {
 		return "", err
 	}
 	return GenAPIResponse("accept", "Success UpdateConfig", "")
@@ -160,10 +150,6 @@ func (s APIFunctions) GetAPIRequestLimit(userId string, identInfoJson string) (s
 	// APIリクエスト制限をjsonに変換する
 	apiRequestLimitJson, err := json.Marshal(apiRequestLimit)
 	if err != nil {
-		return "", err
-	}
-	// アクテビティレコードにAPIリクエスト制限取得イベントを追加する
-	if err := ReportAPIActivity(s.ip, s.repo, userId, identInfo, "GetAPIRequestLimit"); err != nil {
 		return "", err
 	}
 	return string(apiRequestLimitJson), nil
