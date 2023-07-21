@@ -37,7 +37,7 @@ func InitDataBase() DBRepository {
 	var users = []User{
 		{
 			UserName:     "MockUser",
-			UserUniqueID: 0000,
+			UserUniqueID: "0000",
 			Country:      "JP",
 		},
 	}
@@ -139,17 +139,17 @@ func TestDBQuerySite(t *testing.T) {
 		}
 		// 時間が変換されていく中でローカル時間とずれるからUTCに変換して解決
 		siteLastModified, err := time.Parse(time.RFC3339, site.LastModified)
-		if err != nil && lastModified != siteLastModified {
+		if err != nil || lastModified != siteLastModified {
 			t.Errorf("failed to fetch site last modified")
 		}
 		// サイトURLをキーにサイトを検索
 		resultSite, err := dbRepo.SearchSiteByUrl(site.SiteURL)
-		if err != nil && resultSite.SiteURL != site.SiteURL {
+		if err != nil || resultSite.SiteURL != site.SiteURL {
 			t.Errorf("failed to search site by url")
 		}
 		// サイト名をキーにサイトを検索
 		resultSites, err := dbRepo.SearchSiteByName(site.SiteName)
-		if err != nil && len(resultSites) == 0 {
+		if err != nil || len(resultSites) == 0 {
 			t.Errorf("failed to search site by name")
 		}
 	})

@@ -5,6 +5,7 @@ type UserConfig struct {
 	UserUniqueID     string             `json:"userUniqueID"`
 	ClientConfig     ClientConfig       `json:"clientConfig"`
 	AccountType      string             `json:"accountType"`
+	Country          string             `json:"country"`
 	SearchHistory    []SearchHistory    `json:"searchHistory"`
 	SubscribeWebSite []SubscribeWebSite `json:"subscribeWebSite"`
 	FavoriteSite     []FavoriteSite     `json:"favoriteSite"`

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"read/Data"
-	"strconv"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -187,10 +186,6 @@ func (r DBRepoImpl) IsExistSite(site_url string) bool {
 }
 
 func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_subscribe bool) error {
-	user_id_int, err := strconv.Atoi(user_unique_id)
-	if err != nil {
-		return err
-	}
 	// まずはサイトURLをキーにサイトテーブルからサイトを検索する
 	var site Site
 	result := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site)
@@ -199,7 +194,7 @@ func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_sub
 	}
 	// 次に対象のUserを検索する
 	var user User
-	result = DBMS.Where(&User{UserUniqueID: user_id_int}).Find(&user)
+	result = DBMS.Where(&User{UserUniqueID: user_unique_id}).Find(&user)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -228,10 +223,6 @@ func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_sub
 }
 
 func (r DBRepoImpl) IsSubscribeSite(user_unique_id string, site_url string) bool {
-	user_unique_id_int, err := strconv.Atoi(user_unique_id)
-	if err != nil {
-		return false
-	}
 	// まずはサイトURLをキーにサイトテーブルからサイトを検索する
 	var site Site
 	result := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site)
@@ -240,7 +231,7 @@ func (r DBRepoImpl) IsSubscribeSite(user_unique_id string, site_url string) bool
 	}
 	// Userのuser_idとUserの中のSubscriptionSiteのsite_urlをキーにSubscriptionSiteを検索する
 	var res int64
-	result = DBMS.Model(&User{}).Where(&User{UserUniqueID: user_unique_id_int}).Preload("SubscriptionSites", &SubscriptionSite{SiteID: site.ID}).Count(&res)
+	result = DBMS.Model(&User{}).Where(&User{UserUniqueID: user_unique_id}).Preload("SubscriptionSites", &SubscriptionSite{SiteID: site.ID}).Count(&res)
 	if result.Error != nil || res == 0 {
 		log.Println(result.Error)
 		return false
