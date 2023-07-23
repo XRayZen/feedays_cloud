@@ -3,6 +3,9 @@ package DBRepo
 import (
 	"log"
 	"read/Data"
+	"sort"
+	"time"
+
 	// "time"
 
 	"gorm.io/driver/sqlite"
@@ -23,9 +26,9 @@ type DBRepo interface {
 	SearchReadHistory(user_unique_Id string, limit int) ([]Data.ReadHistory, error)
 	// 検索履歴を変更したら履歴を返す
 	ModifySearchHistory(user_unique_Id string, word string, isAddOrRemove bool) ([]string, error)
-	ModifyFavoriteSite(user_unique_Id string, siteInfo Data.WebSite, isAddOrRemove bool) error
-	ModifyFavoriteArticle(user_unique_Id string, articleInfo Data.Article, isAddOrRemove bool) error
-	GetAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)
+	ModifyFavoriteSite(user_unique_Id string, siteUrl string, isAddOrRemove bool) error
+	ModifyFavoriteArticle(user_unique_Id string, articleUrl string, isAddOrRemove bool) error
+	FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)
 }
 
 type DBRepoImpl struct {
@@ -92,12 +95,23 @@ func (repo DBRepoImpl) RegisterUser(userInfo Data.UserConfig) error {
 
 func (repo DBRepoImpl) SearchUserConfig(user_unique_Id string) (Data.UserConfig, error) {
 	var user User
-	// if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ClientConfig").Preload("ApiActivity").Preload("FavoriteSite").Preload("SubscriptionSite").Preload("ReadHistory").Preload("SearchHistory").First(&user).Error; err != nil {
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
 	// AssociationでReadHistoryなどの配列を取得する
 	if err := DBMS.Model(&user).Association("ReadHistories").Find(&user.ReadHistories); err != nil {
+		return Data.UserConfig{}, err
+	}
+	if err := DBMS.Model(&user).Association("FavoriteSites").Find(&user.FavoriteSites); err != nil {
+		return Data.UserConfig{}, err
+	}
+	if err := DBMS.Model(&user).Association("FavoriteArticles").Find(&user.FavoriteArticles); err != nil {
+		return Data.UserConfig{}, err
+	}
+	if err := DBMS.Model(&user).Association("SubscriptionSites").Find(&user.SubscriptionSites); err != nil {
+		return Data.UserConfig{}, err
+	}
+	if err := DBMS.Model(&user).Association("SearchHistories").Find(&user.SearchHistories); err != nil {
 		return Data.UserConfig{}, err
 	}
 	return ConvertToApiUserConfig(user), nil
@@ -164,17 +178,108 @@ func (repo DBRepoImpl) SearchReadHistory(user_unique_Id string, limit int) ([]Da
 }
 
 func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, isAddOrRemove bool) ([]string, error) {
-	return []string{}, nil
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
+		return []string{}, err
+	}
+	if isAddOrRemove {
+		// 追加
+		dbSearchHist := SearchHistory{
+			SearchWord: text,
+			searchAt:   time.Now(),
+		}
+		err := DBMS.Model(&user).Association("SearchHistories").Append(&dbSearchHist)
+		if err != nil {
+			return []string{}, err
+		}
+	} else {
+		// 今のUserテーブルとの参照を削除
+		// 参照先のテーブルからは削除されない
+		err := DBMS.Model(&user).Association("SearchHistories").Delete(&SearchHistory{SearchWord: text})
+		if err != nil {
+			return []string{}, err
+		}
+		// ReadHistoriesテーブルからも削除する
+		err = DBMS.Where("search_word = ?", text).Delete(&SearchHistory{}).Error
+		if err != nil {
+			return []string{}, err
+		}
+	}
+	// 再度取得する
+	var dbSearchHist []SearchHistory
+	if err := DBMS.Model(&user).Association("SearchHistories").Find(&dbSearchHist); err != nil {
+		return []string{}, err
+	}
+	// SearchAtでdescソートしてdbSearchHistに入れる
+	sort.Slice(dbSearchHist, func(i, j int) bool {
+		return dbSearchHist[i].searchAt.After(dbSearchHist[j].searchAt)
+	})
+	var apiSearchHists []string
+	for _, dbSearchHist := range dbSearchHist {
+		apiSearchHists = append(apiSearchHists, dbSearchHist.SearchWord)
+	}
+	return apiSearchHists, nil
 }
 
-func (repo DBRepoImpl) ModifyFavoriteSite(user_unique_Id string, siteInfo Data.WebSite, isAddOrRemove bool) error {
+func (repo DBRepoImpl) ModifyFavoriteSite(user_unique_Id string, siteUrl string, isAddOrRemove bool) error {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
+		return err
+	}
+	// Siteを取得する
+	var site Site
+	if err := DBMS.Where("site_url = ?", siteUrl).First(&site).Error; err != nil {
+		return err
+	}
+	if isAddOrRemove {
+		// 追加
+		if err := DBMS.Model(&user).Association("FavoriteSites").Append(&FavoriteSite{SiteID: site.ID}); err != nil {
+			return err
+		}
+	} else {
+		// 削除
+		if err := DBMS.Model(&user).Association("FavoriteSites").Delete(&FavoriteSite{SiteID: site.ID}); err != nil {
+			return err
+		}
+		// FavoriteSitesテーブルからも削除する
+		if err := DBMS.Where("site_id = ?", site.ID).Delete(&FavoriteSite{}).Error; err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, articleInfo Data.Article, isAddOrRemove bool) error {
+func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, articleUrl string, isAddOrRemove bool) error {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
+		return err
+	}
+	// Articleを取得する
+	var article SiteArticle
+	if err := DBMS.Where("url = ?", articleUrl).First(&article).Error; err != nil {
+		return err
+	}
+	if isAddOrRemove {
+		// 追加
+		if err := DBMS.Model(&user).Association("FavoriteArticles").Append(&FavoriteArticle{ArticleID: article.ID}); err != nil {
+			return err
+		}
+	} else {
+		// 削除
+		if err := DBMS.Model(&user).Association("FavoriteArticles").Delete(&FavoriteArticle{ArticleID: article.ID}); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (repo DBRepoImpl) GetAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error) {
+func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error) {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").First(&user).Error; err != nil {
+		return Data.ApiConfig{}, err
+	}
+	if user.Country != "" {
+		return ConvertToApiUserConfig(user).ClientConfig.ApiConfig, nil
+	}
 	return Data.ApiConfig{}, nil
 }

@@ -10,17 +10,17 @@ import (
 // GORMで使う構造型のメンバは大文字で始めないといけない
 type User struct {
 	gorm.Model
-	UserName         string
-	UserUniqueID     string `gorm:"uniqueIndex"`
-	AccountType      string
-	Country          string
-	ApiConfig        ApiConfig
-	UiConfig         UiConfig
-	ReadHistories    []ReadHistory `gorm:"foreignKey:UserID"`
-	FavoriteSite     []FavoriteSite
-	FavoriteArticle  []FavoriteArticle
-	SubscriptionSite []SubscriptionSite
-	SearchHistory    []SearchHistory
+	UserName          string
+	UserUniqueID      string `gorm:"uniqueIndex"`
+	AccountType       string
+	Country           string
+	ApiConfig         ApiConfig
+	UiConfig          UiConfig
+	ReadHistories     []ReadHistory `gorm:"foreignKey:UserID"`
+	FavoriteSites     []FavoriteSite
+	FavoriteArticles  []FavoriteArticle
+	SubscriptionSites []SubscriptionSite
+	SearchHistories   []SearchHistory
 }
 
 type FavoriteSite struct {
@@ -113,7 +113,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	}
 	// 検索履歴をData.SearchHistoryの配列に変換
 	var searchHistory []Data.SearchHistory
-	for _, searchHistoryDb := range dbCfg.SearchHistory {
+	for _, searchHistoryDb := range dbCfg.SearchHistories {
 		searchHistory = append(searchHistory, Data.SearchHistory{
 			SearchWord: searchHistoryDb.SearchWord,
 			// 検索履歴の日付をRFC3339に変換
@@ -133,7 +133,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	}
 	// 購読サイトをData.SubscribeWebSiteの配列に変換
 	var subscribeWebSite []Data.SubscribeWebSite
-	for _, subscribeWebSiteDb := range dbCfg.SubscriptionSite {
+	for _, subscribeWebSiteDb := range dbCfg.SubscriptionSites {
 		//これだとWebSiteを変換する為に都度クエリが走るから、ここはSiteIDだけ保持してクライアント側で必要になったらSite情報を取得するようにする
 		subscribeWebSite = append(subscribeWebSite, Data.SubscribeWebSite{
 			SiteID:      subscribeWebSiteDb.SiteID,
@@ -144,7 +144,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	}
 	// お気に入りサイトをData.FavoriteSiteの配列に変換
 	var favoriteSite []Data.FavoriteSite
-	for _, favoriteSiteDb := range dbCfg.FavoriteSite {
+	for _, favoriteSiteDb := range dbCfg.FavoriteSites {
 		favoriteSite = append(favoriteSite, Data.FavoriteSite{
 			SiteID:    favoriteSiteDb.SiteID,
 			CreatedAt: favoriteSiteDb.CreatedAt.Format(time.RFC3339),
@@ -152,7 +152,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	}
 	// お気に入り記事をData.FavoriteArticleの配列に変換
 	var favoriteArticle []Data.FavoriteArticle
-	for _, favoriteArticleDb := range dbCfg.FavoriteArticle {
+	for _, favoriteArticleDb := range dbCfg.FavoriteArticles {
 		favoriteArticle = append(favoriteArticle, Data.FavoriteArticle{
 			ArticleID: favoriteArticleDb.ArticleID,
 			CreatedAt: favoriteArticleDb.CreatedAt.Format(time.RFC3339),

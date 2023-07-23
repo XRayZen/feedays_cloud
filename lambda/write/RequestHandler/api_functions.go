@@ -111,7 +111,7 @@ func (s APIFunctions) ModifyFavoriteSite(userId string, webSiteJson string, isAd
 	if err := json.Unmarshal([]byte(webSiteJson), &webSite); err != nil {
 		return "", err
 	}
-	if err := s.repo.ModifyFavoriteSite(userId, webSite, isAddOrRemove); err != nil {
+	if err := s.repo.ModifyFavoriteSite(userId, webSite.SiteURL, isAddOrRemove); err != nil {
 		return "", err
 	}
 	return GenAPIResponse("accept", "Success ModifyFavoriteSite", "")
@@ -128,7 +128,7 @@ func (s APIFunctions) ModifyFavoriteArticle(userId string, articleJson string, i
 	if err := json.Unmarshal([]byte(articleJson), &article); err != nil {
 		return "", err
 	}
-	if err := s.repo.ModifyFavoriteArticle(userId, article, isAddOrRemove); err != nil {
+	if err := s.repo.ModifyFavoriteArticle(userId, article.Link, isAddOrRemove); err != nil {
 		return "", err
 	}
 	return GenAPIResponse("accept", "Success ModifyFavoriteArticle", "")
@@ -141,7 +141,7 @@ func (s APIFunctions) GetAPIRequestLimit(userId string, identInfoJson string) (s
 		return "", err
 	}
 	// APIリクエスト制限を取得する
-	apiRequestLimit, err := s.repo.GetAPIRequestLimit(userId)
+	apiRequestLimit, err := s.repo.FetchAPIRequestLimit(userId)
 	if err != nil {
 		return "", err
 	}
