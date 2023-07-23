@@ -48,12 +48,12 @@ type DBRepository interface {
 	// サイトテーブルを全件取得する
 	FetchAllSites() ([]Data.WebSite, error)
 	// 閲覧履歴テーブルを全件取得する
-	FetchAllHistories() ([]Data.ReadActivity, error)
+	FetchAllHistories() ([]Data.ReadHistory, error)
 	// サイトと記事を大量に更新する
 	// 記事はサイトの更新日時より新しい記事があればDBにインサートする
 	UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error
 	// 時間（From・To）を指定してリードアクテビティを検索する
-	SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error)
+	SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error)
 }
 
 // DBRepoを実装
@@ -310,14 +310,14 @@ func (r DBRepoImpl) FetchAllSites() ([]Data.WebSite, error) {
 	return []Data.WebSite{}, nil
 }
 
-func (r DBRepoImpl) FetchAllHistories() ([]Data.ReadActivity, error) {
-	return []Data.ReadActivity{}, nil
+func (r DBRepoImpl) FetchAllHistories() ([]Data.ReadHistory, error) {
+	return []Data.ReadHistory{}, nil
 }
 
 func (r DBRepoImpl) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
 	return nil
 }
 
-func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error) {
-	return []Data.ReadActivity{}, nil
+func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error) {
+	return []Data.ReadHistory{}, nil
 }

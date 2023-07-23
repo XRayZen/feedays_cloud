@@ -29,8 +29,13 @@ func (repo MockDBRepo) UpdateUser(userId string, configInfo Data.UserConfig) err
 	return nil
 }
 
-func (repo MockDBRepo) AddReadActivity(userId string, activityInfo Data.ReadActivity) error {
+func (repo MockDBRepo) AddReadHistory(userId string, activityInfo Data.ReadHistory) error {
 	return nil
+}
+
+// SearchReadHistory(user_unique_Id string, limit int) ([]Data.ReadHistory, error)
+func (repo MockDBRepo) SearchReadHistory(userId string, limit int) ([]Data.ReadHistory, error) {
+	return []Data.ReadHistory{}, nil
 }
 
 func (repo MockDBRepo) ModifySearchHistory(userId string, text string, isAddOrRemove bool) ([]string, error) {

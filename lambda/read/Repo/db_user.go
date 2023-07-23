@@ -153,9 +153,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	var readHistory []Data.ReadHistory
 	for _, readHistoryDb := range dbCfg.ReadHistory {
 		readHistory = append(readHistory, Data.ReadHistory{
-			ActivityType:   readHistoryDb.ActivityType,
-			ArticleID:      readHistoryDb.ArticleID,
-			SiteID:         readHistoryDb.SiteID,
+			UserID:         dbCfg.UserUniqueID,
 			AccessAt:       readHistoryDb.AccessAt.Format(time.RFC3339),
 			AccessPlatform: readHistoryDb.AccessPlatform,
 			AccessIP:       readHistoryDb.AccessIP,

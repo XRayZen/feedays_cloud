@@ -213,15 +213,14 @@ func (s MockDBRepo) FetchAllSites() ([]Data.WebSite, error) {
 	}, nil
 }
 
-func (s MockDBRepo) FetchAllHistories() ([]Data.ReadActivity, error) {
+func (s MockDBRepo) FetchAllHistories() ([]Data.ReadHistory, error) {
 	// モック用のReadActivityを生成して返す
 	// 一番読まれたのはGIGAZINEの記事（架空）
 	// 二番目に読まれたのはAUTOMATONの記事（架空）
-	var readActivities []Data.ReadActivity
+	var readActivities []Data.ReadHistory
 	// GIGAZINEの記事を100回読んだことにする
 	for i := 0; i < 100; i++ {
-		ra := Data.ReadActivity{
-			Title:  "Mock Article",
+		ra := Data.ReadHistory{
 			UserID: "Mock User",
 			Link:   "https://gigazine.net/article/20210101-mock-article/",
 		}
@@ -229,8 +228,7 @@ func (s MockDBRepo) FetchAllHistories() ([]Data.ReadActivity, error) {
 	}
 	// AUTOMATONの記事を50回読んだことにする
 	for i := 0; i < 50; i++ {
-		ra := Data.ReadActivity{
-			Title:  "Mock Article",
+		ra := Data.ReadHistory{
 			UserID: "Mock User",
 			Link:   "https://automaton-media.com/article/20210101-mock-article/",
 		}
@@ -244,7 +242,7 @@ func (s MockDBRepo) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data
 	return nil
 }
 
-func (s MockDBRepo) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadActivity, error) {
+func (s MockDBRepo) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error) {
 	return nil, nil
 }
 

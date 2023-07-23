@@ -16,21 +16,11 @@ type User struct {
 	Country          string
 	ApiConfig        ApiConfig
 	UiConfig         UiConfig
-	ApiActivity      []ApiActivity
+	ReadHistories    []ReadHistory `gorm:"foreignKey:UserID"`
 	FavoriteSite     []FavoriteSite
 	FavoriteArticle  []FavoriteArticle
 	SubscriptionSite []SubscriptionSite
-	ReadHistory      []ReadHistory
 	SearchHistory    []SearchHistory
-}
-
-type ApiActivity struct {
-	gorm.Model
-	UserID         uint
-	ActivityType   string
-	ActivityTime   string
-	AccessPlatform string
-	AccessIP       string
 }
 
 type FavoriteSite struct {
@@ -64,9 +54,7 @@ type SearchHistory struct {
 type ReadHistory struct {
 	gorm.Model
 	UserID         uint
-	ArticleID      uint
-	SiteID         uint
-	ActivityType   string
+	Link           string
 	AccessAt       time.Time
 	AccessPlatform string
 	AccessIP       string
@@ -134,11 +122,10 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	}
 	// 読んだ記事をData.ReadHistoryの配列に変換
 	var readHistory []Data.ReadHistory
-	for _, readHistoryDb := range dbCfg.ReadHistory {
+	for _, readHistoryDb := range dbCfg.ReadHistories {
 		readHistory = append(readHistory, Data.ReadHistory{
-			ActivityType:   readHistoryDb.ActivityType,
-			ArticleID:      readHistoryDb.ArticleID,
-			SiteID:         readHistoryDb.SiteID,
+			UserUniqueID:   dbCfg.UserUniqueID,
+			Link:           readHistoryDb.Link,
 			AccessAt:       readHistoryDb.AccessAt.Format(time.RFC3339),
 			AccessPlatform: readHistoryDb.AccessPlatform,
 			AccessIP:       readHistoryDb.AccessIP,
@@ -189,7 +176,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 }
 
 // ユーザー・API設定の更新時に使用する
-func ConvertToDbApiCfgAndUiCfg(apiCfg Data.UserConfig, userID uint) (dbApiCfg ApiConfig, dbUiCfg UiConfig) {
+func ConvertToDbApiCfgAndUiCfg(apiCfg Data.UserConfig) (dbApiCfg ApiConfig, dbUiCfg UiConfig) {
 	//フォントサイズをData.UiResponsiveFontSizeからDb.UiResponsiveFontSizeに変換
 	uiCfg := UiConfig{
 		ThemeColorValue:         apiCfg.ClientConfig.UiConfig.ThemeColorValue,
@@ -208,4 +195,30 @@ func ConvertToDbApiCfgAndUiCfg(apiCfg Data.UserConfig, userID uint) (dbApiCfg Ap
 		FetchTrendRequestLimit:      apiCfg.ClientConfig.ApiConfig.FetchTrendRequestLimit,
 	}
 	return apiCfgDb, uiCfg
+}
+
+// DataのReadHistoryをDbのReadHistoryに変換
+func ConvertToDbReadHistory(readHistory Data.ReadHistory) (ReadHistory, error) {
+	// アクセス日時をRFC3339からtime.Timeに変換
+	accessAt, err := time.Parse(time.RFC3339, readHistory.AccessAt)
+	if err != nil {
+		return ReadHistory{}, err
+	}
+	return ReadHistory{
+		Link:           readHistory.Link,
+		AccessAt:       accessAt,
+		AccessPlatform: readHistory.AccessPlatform,
+		AccessIP:       readHistory.AccessIP,
+	}, nil
+}
+
+// ConvertToApiReadHistory DataのReadHistoryをApiのReadHistoryに変換
+func ConvertToApiReadHistory(readHistory ReadHistory, user_unique_id string) Data.ReadHistory {
+	return Data.ReadHistory{
+		UserUniqueID:   user_unique_id,
+		Link:           readHistory.Link,
+		AccessAt:       readHistory.AccessAt.Format(time.RFC3339),
+		AccessPlatform: readHistory.AccessPlatform,
+		AccessIP:       readHistory.AccessIP,
+	}
 }

@@ -38,21 +38,13 @@ type UserAccessIdentInfo struct {
 	IsPhysics bool `json:"isPhysics"`
 }
 
-type ReadActivity struct {
-	// ユーザーID
-	UserID string `json:"userID"`
-	// タイトル
-	Title string `json:"title"`
+type ReadHistory struct {
+	// ユーザーUniqueID
+	UserUniqueID string `json:"userUniqueID"`
 	// リンク
 	Link string `json:"link"`
-	// アクティビティタイプ (  Article or Site,)
-	Type string `json:"type"`
-	// サイト名
-	SiteName string `json:"siteName"`
-	// サイトURL
-	SiteURL string `json:"siteURL"`
-	// アクセス日時
-	AccessTime string `json:"accessTime"`
+	// アクセス日時(ISO8601形式-RFC3339)
+	AccessAt string `json:"accessAt"`
 	// アクセスプラットフォーム
 	AccessPlatform string `json:"accessPlatform"`
 	// アクセスIP

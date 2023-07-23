@@ -2,16 +2,14 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"write/DBRepo"
 	"read/Data"
+	"write/DBRepo"
 )
 
 type APIFunctions struct {
 	repo DBRepo.DBRepo
 	ip   string
 }
-
-
 
 // 設定を同期する
 func (s APIFunctions) ConfigSync(userId string, identInfoJson string) (string, error) {
@@ -55,11 +53,11 @@ func (s APIFunctions) RegisterUser(userId string, userCfgJson string, identInfoJ
 
 // サイト・記事閲覧などのアクテビティを記録する
 func (s APIFunctions) ReportReadActivity(userId string, readActivity string, identInfo string) (string, error) {
-	var activityInfo Data.ReadActivity
+	var activityInfo Data.ReadHistory
 	if err := json.Unmarshal([]byte(readActivity), &activityInfo); err != nil {
 		return "", err
 	}
-	if err := s.repo.AddReadActivity(userId, activityInfo); err != nil {
+	if err := s.repo.AddReadHistory(userId, activityInfo); err != nil {
 		return "", err
 	}
 	// この機能ではAPIアクテビティに記録はしない

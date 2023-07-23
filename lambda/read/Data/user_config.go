@@ -32,15 +32,6 @@ type FavoriteArticle struct {
 	CreatedAt string `json:"createdAt"`
 }
 
-type ReadHistory struct {
-	ActivityType   string `json:"activityType"`
-	ArticleID      uint   `json:"articleID"`
-	SiteID         uint   `json:"siteID"`
-	AccessAt       string `json:"accessAt"`
-	AccessPlatform string `json:"accessPlatform"`
-	AccessIP       string `json:"accessIP"`
-}
-
 type SearchHistory struct {
 	SearchWord string `json:"searchWord"`
 	SearchAt   string `json:"searchAt"`

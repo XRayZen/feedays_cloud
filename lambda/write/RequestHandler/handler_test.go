@@ -19,11 +19,9 @@ func TestNormalRequestHandler(t *testing.T) {
 		OsVersion:      "test",
 		IsPhysics:      false,
 	})
-	readActJson, _ := json.Marshal(Data.ReadActivity{
+	readActJson, _ := json.Marshal(Data.ReadHistory{
 		UserID: "test",
-		Title:  "test",
 		Link:   "test",
-		Type:   "test",
 	})
 	userConfigJson, _ := json.Marshal(Data.UserConfig{})
 	testWebSiteJson, _ := json.Marshal(Data.WebSite{})
