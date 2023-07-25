@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func RefreshArticles(repo Repo.DBRepository) (string, error) {
+func RefreshArticles(repo Repo.DBRepository,RefreshInterval int) (string, error) {
 	// バッチ処理を実行する
 	// サイトテーブルから読み込んで記事を更新する
 	// それによりサイトのフィード鮮度を維持する
@@ -17,8 +17,6 @@ func RefreshArticles(repo Repo.DBRepository) (string, error) {
 		log.Println("BATCH RefreshArticles DB Read ERROR! :", err)
 		return "DB Error", err
 	}
-	// 更新間隔
-	RefreshInterval := 15
 	type temp struct {
 		site     Data.WebSite
 		articles []Data.Article
@@ -40,7 +38,7 @@ func RefreshArticles(repo Repo.DBRepository) (string, error) {
 				}
 				ch <- temp{site: site, articles: articles, err: nil}
 			}
-			ch <- temp{site: site, articles: nil, err: errors.New("Not Expired"), isNotExp: true}
+			ch <- temp{site: site, articles: nil, err: errors.New("not Expired"), isNotExp: true}
 		}(site)
 	}
 	// 並列処理の結果を受け取る
@@ -61,8 +59,6 @@ func RefreshArticles(repo Repo.DBRepository) (string, error) {
 		return "No Update", nil
 	}
 	// 同期でループして記事イメージURLは並列で取得する
-	result_articles := []Data.Article{}
-	result_sites := []Data.WebSite{}
 	for _, t := range fetch_articles_result {
 		articles, err := getArticleImageURLs(t.articles)
 		if err != nil {
@@ -71,13 +67,11 @@ func RefreshArticles(repo Repo.DBRepository) (string, error) {
 		}
 		// サイトの更新日時を更新する
 		t.site.LastModified = time.Now().Format(time.RFC3339)
-		result_articles = append(result_articles, articles...)
-		result_sites = append(result_sites, t.site)
-	}
-	// DBに記事を保存する
-	if err := repo.UpdateSitesAndArticles(result_sites, result_articles); err != nil {
-		log.Println("BATCH RefreshArticles DB Update ERROR! :", err)
-		return "DB Update Error!", err
+		// ここでDBに保存するサイトごと記事を更新する
+		if err := repo.UpdateSiteAndArticle(t.site, articles); err != nil {
+			log.Println("BATCH RefreshArticles DB Update ERROR! :", err)
+			log.Printf("BATCH RefreshArticles DB Update ERROR! name:%s Site:%s ", t.site.SiteName, t.site.SiteURL)
+		}
 	}
 	result_msg := "BATCH RefreshArticles SUCCESS!"
 	return result_msg, nil

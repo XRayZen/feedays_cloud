@@ -16,7 +16,7 @@ type Site struct {
 	RssUrl       string
 	IconUrl      string
 	Description  string
-	SiteArticles []SiteArticle
+	SiteArticles []Article
 	Tags         []Tag
 	Category     string
 	// 記事を更新したら、LastModifiedを更新する
@@ -24,7 +24,7 @@ type Site struct {
 	SubscriptionCount int
 }
 
-type SiteArticle struct {
+type Article struct {
 	gorm.Model
 	SiteID       uint
 	ArticleIndex int
@@ -48,7 +48,7 @@ type ExploreCategory struct {
 	Country      string
 }
 
-// API型からDB型に変換する
+// Data.WebSiteとArticlesからDB型に変換する
 func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 	// サイトの最終更新日時をtimeに変換
 	var lastModified time.Time
@@ -58,7 +58,7 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 	} else {
 		lastModified = res_time
 	}
-	var siteArticles []SiteArticle
+	var siteArticles []Article
 	for _, siteArticle := range articles {
 		var publishedAt time.Time
 		time, err := time.Parse(time.RFC3339, siteArticle.LastModified)
@@ -67,7 +67,7 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 		} else {
 			publishedAt = time
 		}
-		siteArticles = append(siteArticles, SiteArticle{
+		siteArticles = append(siteArticles, Article{
 			Title:       siteArticle.Title,
 			Url:         siteArticle.Link,
 			IconUrl:     siteArticle.Image.Link,
@@ -119,4 +119,19 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 		LastModified:    site.LastModified.Format(time.RFC3339),
 		SiteCategory:    site.Category,
 	}, siteArticles
+}
+
+//API型からDB型に記事を変換する
+func convertApiArticleToDb(site Site,articles []Data.Article) []Article {
+	var siteArticles []Article
+	for _, siteArticle := range site.SiteArticles {
+		siteArticles = append(siteArticles, Article{
+			Title:       siteArticle.Title,
+			Url:         siteArticle.Url,
+			IconUrl:     siteArticle.IconUrl,
+			Description: siteArticle.Description,
+			PublishedAt: siteArticle.PublishedAt,
+		})
+	}
+	return siteArticles
 }

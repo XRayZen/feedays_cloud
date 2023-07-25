@@ -21,8 +21,11 @@ func (s MockDBRepo) AutoMigrate() error {
 }
 
 // readで使う
-func (s MockDBRepo) GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error) {
-	return Data.UserInfo{}, nil
+func (s MockDBRepo) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
+	return Data.UserConfig{
+		UserName:   "UserName",
+		UserUniqueID: "UserUniqueID",
+	}, nil
 }
 
 func (s MockDBRepo) FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error) {
@@ -213,24 +216,24 @@ func (s MockDBRepo) FetchAllSites() ([]Data.WebSite, error) {
 	}, nil
 }
 
-func (s MockDBRepo) FetchAllHistories() ([]Data.ReadHistory, error) {
+func (s MockDBRepo) FetchAllReadHistories() ([]ReadHistory, error) {
 	// モック用のReadActivityを生成して返す
 	// 一番読まれたのはGIGAZINEの記事（架空）
 	// 二番目に読まれたのはAUTOMATONの記事（架空）
-	var readActivities []Data.ReadHistory
+	var readActivities []ReadHistory
 	// GIGAZINEの記事を100回読んだことにする
 	for i := 0; i < 100; i++ {
-		ra := Data.ReadHistory{
-			UserID: "Mock User",
-			Link:   "https://gigazine.net/article/20210101-mock-article/",
+		ra := ReadHistory{
+			// UserUniqueID: "Mock User",
+			Link: "https://gigazine.net/article/20210101-mock-article/",
 		}
 		readActivities = append(readActivities, ra)
 	}
 	// AUTOMATONの記事を50回読んだことにする
 	for i := 0; i < 50; i++ {
-		ra := Data.ReadHistory{
-			UserID: "Mock User",
-			Link:   "https://automaton-media.com/article/20210101-mock-article/",
+		ra := ReadHistory{
+			// UserUniqueID: "Mock User",
+			Link: "https://automaton-media.com/article/20210101-mock-article/",
 		}
 		readActivities = append(readActivities, ra)
 	}
@@ -238,7 +241,7 @@ func (s MockDBRepo) FetchAllHistories() ([]Data.ReadHistory, error) {
 	return readActivities, nil
 }
 
-func (s MockDBRepo) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
+func (s MockDBRepo) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Article) error {
 	return nil
 }
 

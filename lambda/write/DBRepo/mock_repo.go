@@ -42,14 +42,14 @@ func (repo MockDBRepo) ModifySearchHistory(userId string, text string, isAddOrRe
 	return []string{}, nil
 }
 
-func (repo MockDBRepo) ModifyFavoriteSite(userId string, siteInfo Data.WebSite, isAddOrRemove bool) error {
+func (repo MockDBRepo) ModifyFavoriteSite(userId string, site_url string, isAddOrRemove bool) error {
 	return nil
 }
 
-func (repo MockDBRepo) ModifyFavoriteArticle(userId string, articleInfo Data.Article, isAddOrRemove bool) error {
+func (repo MockDBRepo) ModifyFavoriteArticle(userId string, articleUrl string, isAddOrRemove bool) error {
 	return nil
 }
 
-func (repo MockDBRepo) GetAPIRequestLimit(userId string) (Data.ApiConfig, error) {
+func (repo MockDBRepo) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error) {
 	return Data.ApiConfig{}, nil
 }

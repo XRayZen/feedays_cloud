@@ -117,7 +117,7 @@ func TestDBQuerySite(t *testing.T) {
 		}
 		err = dbRepo.RegisterSite(site, articles)
 		if err != nil {
-			t.Errorf("failed to register site")
+			t.Errorf("failed to register site : %v", err)
 		}
 		result := dbRepo.IsExistSite(site.SiteURL)
 		if !result {
@@ -213,16 +213,37 @@ func TestDBQueryArticle(t *testing.T) {
 	})
 }
 
-func TestHeavy(t *testing.T) {
-	t.Run("Write", func(t *testing.T) {
-		// dbRepo := InitDataBase()
-		//記事を検索系
-	})
-}
-
-func TestWrite(t *testing.T) {
-	t.Run("Write", func(t *testing.T) {
-		// dbRepo := InitDataBase()
+func TestBatchQuery(t *testing.T) {
+	dbRepo := InitDataBase()
+	// Userを取得する
+	var user User
+	// Userが取得出来ない
+	if err := DBMS.Where("user_unique_id = ?", "0000").Find(&user).Error; err != nil {
+		t.Errorf("failed to get user")
+	}
+	// ReadHistoryをUserと紐づけて保存する
+	if err := DBMS.Model(&user).Association("ReadHistories").Append(&ReadHistory{
+		// GIGAZINEの記事を入れておく
+		Link:     "https://gigazine.net/news/20201001-ai-robot-artist/",
+		AccessAt: time.Now(),
+	}); err != nil {
+		t.Errorf("failed to append read history")
+	}
+	// GIGAZINEを入れておく
+	site, articles, err := GetGIGAZINE()
+	if err != nil {
+		panic("failed to get GIGAZINE")
+	}
+	// API構造体からDB構造体に変換する
+	dbSite := convertApiSiteToDb(site, articles)
+	DBMS.Create(&dbSite)
+	t.Run("Batch", func(t *testing.T) {
+		// バッチ処理のDB操作をテストする
+		sites, err := dbRepo.FetchAllSites()
+		if err != nil || len(sites) == 0 {
+			t.Errorf("failed to fetch all sites")
+		}
+		
 
 	})
 }

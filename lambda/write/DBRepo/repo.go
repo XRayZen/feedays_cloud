@@ -67,7 +67,7 @@ func (repo DBRepoImpl) AutoMigrate() error {
 		DBMS.AutoMigrate(&UiConfig{})
 
 		DBMS.AutoMigrate(&Site{})
-		DBMS.AutoMigrate(&SiteArticle{})
+		DBMS.AutoMigrate(&Article{})
 		DBMS.AutoMigrate(&Tag{})
 		DBMS.AutoMigrate(&ExploreCategory{})
 	}
@@ -255,7 +255,7 @@ func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, articleUrl s
 		return err
 	}
 	// Articleを取得する
-	var article SiteArticle
+	var article Article
 	if err := DBMS.Where("url = ?", articleUrl).First(&article).Error; err != nil {
 		return err
 	}

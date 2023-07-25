@@ -8,11 +8,14 @@ import (
 )
 
 func TestRefreshArticles(t *testing.T) {
+	// DBRepo
+	mockRepo := Repo.MockDBRepo{}
+	// implRepo := Repo.DBRepoImpl{}
 	// 考えられるテストケースを網羅する
 	// 更新する記事がない場合
 	// 更新する記事がある場合
 	type args struct {
-		repo         Repo.DBRepository
+		repo                 Repo.DBRepository
 		MockSiteLastModified int
 	}
 	tests := []struct {
@@ -24,7 +27,7 @@ func TestRefreshArticles(t *testing.T) {
 		{
 			name: "更新する記事がない場合",
 			args: args{
-				repo:         Repo.MockDBRepo{},
+				repo:                 mockRepo,
 				MockSiteLastModified: 10,
 			},
 			want:    "No Update",
@@ -33,7 +36,7 @@ func TestRefreshArticles(t *testing.T) {
 		{
 			name: "更新する記事がある場合",
 			args: args{
-				repo:         Repo.MockDBRepo{},
+				repo:                 mockRepo,
 				MockSiteLastModified: 30,
 			},
 			want:    "BATCH RefreshArticles SUCCESS!",
@@ -43,7 +46,7 @@ func TestRefreshArticles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			Repo.MockSiteLastModified = tt.args.MockSiteLastModified
-			got, err := RefreshArticles(tt.args.repo)
+			got, err := RefreshArticles(tt.args.repo,15)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RefreshArticles() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -62,45 +65,45 @@ func Test_refreshSiteArticles(t *testing.T) {
 	// サイトが存在していて更新期限を過ぎていない場合は
 	// 更新せずにクライアント側更新日時より新しい記事を返す
 	type args struct {
-		siteUrl string
-		db_repo Repo.MockDBRepo
-		intervalMinutes int
+		siteUrl            string
+		db_repo            Repo.DBRepository
+		intervalMinutes    int
 		clientLastModified time.Time
 	}
 	tests := []struct {
-		name string
-		args args
-		want int
+		name    string
+		args    args
+		want    int
 		wantErr bool
 	}{
 		{
 			name: "サイトが存在していて更新期限を過ぎている場合",
 			args: args{
-				siteUrl: "https://automaton-media.com/",
-				db_repo: Repo.MockDBRepo{},
-				intervalMinutes: 5,
+				siteUrl:            "https://automaton-media.com/",
+				db_repo:            Repo.MockDBRepo{},
+				intervalMinutes:    5,
 				clientLastModified: time.Now().Add(-time.Hour * 160),
 			},
 			// このテストケースはサイトの記事を更新してDBに渡してクライアント側更新日時より新しい記事を返す
-			want: 2,
+			want:    2,
 			wantErr: false,
 		},
 		{
 			name: "サイトが存在していて更新期限を過ぎていない場合",
 			args: args{
-				siteUrl: "https://gigazine.net/",
-				db_repo: Repo.MockDBRepo{},
-				intervalMinutes: 1,
+				siteUrl:            "https://gigazine.net/",
+				db_repo:            Repo.MockDBRepo{},
+				intervalMinutes:    1,
 				clientLastModified: time.Now().Add(-time.Hour * 10),
 			},
 			// このテストケースは更新せずにクライアント側更新日時より新しい記事を返す
-			want: 1,
+			want:    1,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := RefreshArticles(tt.args.db_repo, tt.args.siteUrl, tt.args.intervalMinutes, tt.args.clientLastModified)
+			got, err := RefreshArticles(tt.args.db_repo,15)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("refreshSiteArticles() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -114,7 +117,6 @@ func Test_refreshSiteArticles(t *testing.T) {
 		})
 	}
 }
-
 
 func Test_isUpdateExpired(t *testing.T) {
 	// 更新期限を過ぎている場合はtrueを返す

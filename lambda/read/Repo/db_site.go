@@ -48,7 +48,7 @@ type ExploreCategory struct {
 	Country      string
 }
 
-// API型からDB型に変換する
+// Data.WebSiteとArticlesからDB型に変換する
 func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 	// サイトの最終更新日時をtimeに変換
 	var lastModified time.Time
@@ -120,3 +120,19 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 		SiteCategory:    site.Category,
 	}, siteArticles
 }
+
+//API型からDB型に記事を変換する
+func convertApiArticleToDb(site Site,articles []Data.Article) []Article {
+	var siteArticles []Article
+	for _, siteArticle := range site.SiteArticles {
+		siteArticles = append(siteArticles, Article{
+			Title:       siteArticle.Title,
+			Url:         siteArticle.Url,
+			IconUrl:     siteArticle.IconUrl,
+			Description: siteArticle.Description,
+			PublishedAt: siteArticle.PublishedAt,
+		})
+	}
+	return siteArticles
+}
+

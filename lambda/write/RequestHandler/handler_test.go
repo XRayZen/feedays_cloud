@@ -20,7 +20,6 @@ func TestNormalRequestHandler(t *testing.T) {
 		IsPhysics:      false,
 	})
 	readActJson, _ := json.Marshal(Data.ReadHistory{
-		UserID: "test",
 		Link:   "test",
 	})
 	userConfigJson, _ := json.Marshal(Data.UserConfig{})

@@ -124,7 +124,6 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 	var readHistory []Data.ReadHistory
 	for _, readHistoryDb := range dbCfg.ReadHistories {
 		readHistory = append(readHistory, Data.ReadHistory{
-			UserUniqueID:   dbCfg.UserUniqueID,
 			Link:           readHistoryDb.Link,
 			AccessAt:       readHistoryDb.AccessAt.Format(time.RFC3339),
 			AccessPlatform: readHistoryDb.AccessPlatform,
@@ -215,10 +214,10 @@ func ConvertToDbReadHistory(readHistory Data.ReadHistory) (ReadHistory, error) {
 // ConvertToApiReadHistory DataのReadHistoryをApiのReadHistoryに変換
 func ConvertToApiReadHistory(readHistory ReadHistory, user_unique_id string) Data.ReadHistory {
 	return Data.ReadHistory{
-		UserUniqueID:   user_unique_id,
 		Link:           readHistory.Link,
 		AccessAt:       readHistory.AccessAt.Format(time.RFC3339),
 		AccessPlatform: readHistory.AccessPlatform,
 		AccessIP:       readHistory.AccessIP,
 	}
 }
+

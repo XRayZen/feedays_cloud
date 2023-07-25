@@ -39,8 +39,6 @@ type UserAccessIdentInfo struct {
 }
 
 type ReadHistory struct {
-	// ユーザーUniqueID
-	UserUniqueID string `json:"userUniqueID"`
 	// リンク
 	Link string `json:"link"`
 	// アクセス日時(ISO8601形式-RFC3339)

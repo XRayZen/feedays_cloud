@@ -18,7 +18,7 @@ type DBRepository interface {
 	ConnectDB(isMock bool) error
 	AutoMigrate() error
 	// Readで使う
-	GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error)
+	SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error)
 	FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error)
 
 	// heavyで使う
@@ -47,11 +47,11 @@ type DBRepository interface {
 	// バッチ処理用
 	// サイトテーブルを全件取得する
 	FetchAllSites() ([]Data.WebSite, error)
-	// 閲覧履歴テーブルを全件取得する
-	FetchAllHistories() ([]Data.ReadHistory, error)
+	// 閲覧履歴テーブルを全件取得する 統計を取る為だからData型に変換する必要はない
+	FetchAllReadHistories() ([]ReadHistory, error)
 	// サイトと記事を大量に更新する
 	// 記事はサイトの更新日時より新しい記事があればDBにインサートする
-	UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error
+	UpdateSiteAndArticle(site Data.WebSite, articles []Data.Article) error
 	// 時間（From・To）を指定してリードアクテビティを検索する
 	SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error)
 }
@@ -86,8 +86,6 @@ func (s DBRepoImpl) AutoMigrate() error {
 	// DB接続
 	if DBMS != nil {
 		DBMS.AutoMigrate(&User{})
-		DBMS.AutoMigrate(&ClientConfig{})
-		DBMS.AutoMigrate(&ApiActivity{})
 		DBMS.AutoMigrate(&FavoriteSite{})
 		DBMS.AutoMigrate(&SubscriptionSite{})
 		DBMS.AutoMigrate(&SearchHistory{})
@@ -104,10 +102,32 @@ func (s DBRepoImpl) AutoMigrate() error {
 	return nil
 }
 
-func (s DBRepoImpl) GetUserInfo(userID string) (resUserInfo Data.UserInfo, err error) {
-	// これを使うかは疑問
-	return Data.UserInfo{}, nil
+// Readで使う
+func (s DBRepoImpl) SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error) {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
+		return Data.UserConfig{}, err
+	}
+	if isPreloadRelatedTables {
+		if err := DBMS.Model(&user).Association("ReadHistories").Find(&user.ReadHistories); err != nil {
+			return Data.UserConfig{}, err
+		}
+		if err := DBMS.Model(&user).Association("FavoriteSites").Find(&user.FavoriteSites); err != nil {
+			return Data.UserConfig{}, err
+		}
+		if err := DBMS.Model(&user).Association("FavoriteArticles").Find(&user.FavoriteArticles); err != nil {
+			return Data.UserConfig{}, err
+		}
+		if err := DBMS.Model(&user).Association("SubscriptionSites").Find(&user.SubscriptionSites); err != nil {
+			return Data.UserConfig{}, err
+		}
+		if err := DBMS.Model(&user).Association("SearchHistories").Find(&user.SearchHistories); err != nil {
+			return Data.UserConfig{}, err
+		}
+	}
+	return ConvertToApiUserConfig(user), nil
 }
+
 
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
@@ -136,12 +156,16 @@ func (r DBRepoImpl) RegisterSite(site Data.WebSite, articles []Data.Article) err
 	// サイトを登録する
 	// もし、サイトが存在していたら登録しない
 	if !r.IsExistSite(site.SiteURL) {
-		// サイトが存在しない場合は登録する
 		dbSite := convertApiSiteToDb(site, articles)
-		result := DBMS.Create(&dbSite)
-		if result.Error != nil {
-			return result.Error
-		}
+		DBMS.Transaction(func(tx *gorm.DB) error {
+			result := tx.Create(&dbSite)
+			if result.Error != nil {
+				log.Println("サイト登録失敗 : " + result.Error.Error())
+				tx.Rollback()
+				return result.Error
+			}
+			return nil
+		})
 	} else {
 		return errors.New("サイトが既に存在しています")
 	}
@@ -208,16 +232,25 @@ func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_sub
 		DBMS.Transaction(func(tx *gorm.DB) error {
 			result = tx.Create(&subscriptionSite)
 			if result.Error != nil {
+				log.Println("サブスクリプションサイト登録失敗 : " + result.Error.Error())
+				// エラーが発生したらロールバックする
+				tx.Rollback()
 				return result.Error
 			}
 			return nil
 		})
 	} else if r.IsSubscribeSite(user_unique_id, site_url) && !is_subscribe {
 		// サブスクリブされていたらサブスクリプションサイトから削除する
-		result = DBMS.Where(&SubscriptionSite{UserID: user.ID, SiteID: site.ID}).Delete(&SubscriptionSite{})
-		if result.Error != nil {
-			return result.Error
-		}
+		DBMS.Transaction(func(tx *gorm.DB) error {
+			result = tx.Where(&SubscriptionSite{UserID: user.ID, SiteID: site.ID}).Delete(&SubscriptionSite{})
+			if result.Error != nil {
+				log.Println("サブスクリプションサイト削除失敗 : " + result.Error.Error())
+				// エラーが発生したらロールバックする
+				tx.Rollback()
+				return result.Error
+			}
+			return nil
+		})
 	}
 	return nil
 }
@@ -307,17 +340,93 @@ func (r DBRepoImpl) SearchArticlesByTimeAndOrder(siteUrl string, lastModified ti
 
 // バッチ処理用
 func (r DBRepoImpl) FetchAllSites() ([]Data.WebSite, error) {
-	return []Data.WebSite{}, nil
+	// サイトテーブルから全てのサイトを取得する
+	var sites []Site
+	result := DBMS.Find(&sites)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	// 記事を取得する必要がないので、サイトのみを返す
+	var webSites []Data.WebSite
+	for _, site := range sites {
+		apiSite, _ := convertDbSiteToApi(site)
+		webSites = append(webSites, apiSite)
+	}
+	return webSites, nil
 }
 
-func (r DBRepoImpl) FetchAllHistories() ([]Data.ReadHistory, error) {
-	return []Data.ReadHistory{}, nil
+func (r DBRepoImpl) FetchAllReadHistories() ([]ReadHistory, error) {
+	// 読んだ履歴テーブルから全ての履歴を取得する
+	var histories []ReadHistory
+	result := DBMS.Find(&histories)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return histories, nil
 }
 
-func (r DBRepoImpl) UpdateSitesAndArticles(sites []Data.WebSite, articles []Data.Article) error {
+func (r DBRepoImpl) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Article) error {
+	// サイトごとのリレーションとして記事を探してそれを含めて更新
+	var siteModel Site
+	if err := DBMS.Where(&Site{SiteUrl: site.SiteURL}).Find(&siteModel); err.Error != nil {
+		log.Println("サイトの更新に失敗しました :", err.Error)
+		return err.Error
+	}
+	// サイトの更新日時を更新する
+	lastModified, err := time.Parse(time.RFC1123, site.LastModified)
+	if err != nil {
+		log.Println("サイトの更新日時の変換に失敗しました :", err.Error())
+		return err
+	}
+	siteModel.LastModified = lastModified
+	DBMS.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(&siteModel).Error; err != nil {
+			log.Println("サイトの更新に失敗しました :", err.Error())
+			// 失敗したらロールバック
+			tx.Rollback()
+			return err
+		}
+		return nil
+	})
+	// 記事の更新
+	// そのサイトの記事テーブルの最新の更新日時を取得する
+	var latestArticle Article
+	if err := DBMS.Where(&Article{SiteID: siteModel.ID}).Order("published_at desc").Find(&latestArticle); err.Error != nil {
+		return err.Error
+	}
+	// 記事をAPI型からDB型に変換する
+	dbArticles := convertApiArticleToDb(siteModel, articles)
+	// 最新記事よりも新しい記事をピックアップする
+	var newArticles []Article
+	for _, article := range dbArticles {
+		if article.PublishedAt.After(latestArticle.PublishedAt) {
+			newArticles = append(newArticles, article)
+		}
+	}
+	// トランザクションで記事をDBに保存する
+	DBMS.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&siteModel).Association("SiteArticles").Append(newArticles); err != nil {
+			log.Println("記事の保存に失敗しました : ", err)
+			// 失敗したらロールバック
+			tx.Rollback()
+			return err
+		}
+		return nil
+	})
 	return nil
 }
 
 func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error) {
-	return []Data.ReadHistory{}, nil
+	// 時間（From・To）を指定してリードアクテビティを検索する
+	var histories []ReadHistory
+	result := DBMS.Where("access_at BETWEEN ? AND ?", from, to).Find(&histories)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var apiHistories []Data.ReadHistory
+	for _, history := range histories {
+		apiHistory := ConvertToApiReadHistory(history)
+		apiHistories = append(apiHistories, apiHistory)
+	}
+	return apiHistories, nil
 }
