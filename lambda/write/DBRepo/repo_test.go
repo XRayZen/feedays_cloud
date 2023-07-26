@@ -56,12 +56,12 @@ func GetGIGAZINE() (Data.WebSite, []Data.Article, error) {
 			category = v.Categories[0]
 		}
 		article := Data.Article{
-			Title:        v.Title,
-			Link:         v.Link,
-			Description:  v.Description,
-			Category:     category,
-			Site:         feed.Title,
-			LastModified: v.PublishedParsed.UTC().Format(time.RFC3339),
+			Title:       v.Title,
+			Link:        v.Link,
+			Description: v.Description,
+			Category:    category,
+			Site:        feed.Title,
+			PublishedAt: v.PublishedParsed.UTC().Format(time.RFC3339),
 		}
 		articles = append(articles, article)
 	}

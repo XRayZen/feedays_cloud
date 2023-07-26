@@ -24,12 +24,12 @@ func fetchRSSArticles(rssUrl string) ([]Data.Article, error) {
 			category = v.Categories[0]
 		}
 		article := Data.Article{
-			Title:        v.Title,
-			Link:         v.Link,
-			Description:  v.Description,
-			Category:     category,
-			Site:         feed.Title,
-			LastModified: v.PublishedParsed.Format(time.RFC3339),
+			Title:       v.Title,
+			Link:        v.Link,
+			Description: v.Description,
+			Category:    category,
+			Site:        feed.Title,
+			PublishedAt: v.PublishedParsed.Format(time.RFC3339),
 		}
 		articles = append(articles, article)
 	}
@@ -66,7 +66,7 @@ func getArticleImageURLs(articles []Data.Article) ([]Data.Article, error) {
 	}
 	// articleを日時でソートする
 	sort.Slice(articles, func(i, j int) bool {
-		return articles[i].LastModified > articles[j].LastModified
+		return articles[i].PublishedAt > articles[j].PublishedAt
 	})
 	return articles, nil
 }

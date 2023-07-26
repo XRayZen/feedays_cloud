@@ -60,7 +60,7 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 	var siteArticles []Article
 	for _, siteArticle := range articles {
 		var publishedAt time.Time
-		time, err := time.Parse(time.RFC3339, siteArticle.LastModified)
+		time, err := time.Parse(time.RFC3339, siteArticle.PublishedAt)
 		if err != nil {
 			publishedAt = time.UTC()
 		} else {
@@ -98,14 +98,14 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 	var siteArticles []Data.Article
 	for _, siteArticle := range site.SiteArticles {
 		siteArticles = append(siteArticles, Data.Article{
-			Title:        siteArticle.Title,
-			Description:  siteArticle.Description,
-			Link:         siteArticle.Url,
-			Image:        Data.RssFeedImage{Link: siteArticle.IconUrl},
-			Site:         site.SiteName,
-			LastModified: siteArticle.PublishedAt.Format(time.RFC3339),
-			Category:     site.Category,
-			SiteUrl:      site.SiteUrl,
+			Title:       siteArticle.Title,
+			Description: siteArticle.Description,
+			Link:        siteArticle.Url,
+			Image:       Data.RssFeedImage{Link: siteArticle.IconUrl},
+			Site:        site.SiteName,
+			PublishedAt: siteArticle.PublishedAt.Format(time.RFC3339),
+			Category:    site.Category,
+			SiteUrl:     site.SiteUrl,
 		})
 	}
 	return Data.WebSite{
@@ -123,7 +123,7 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 func convertApiArticleToDb(articles []Data.Article) []Article {
 	var siteArticles []Article
 	for _, siteArticle := range articles {
-		PublishedAt, err := time.Parse(time.RFC3339, siteArticle.LastModified)
+		PublishedAt, err := time.Parse(time.RFC3339, siteArticle.PublishedAt)
 		if err != nil {
 			PublishedAt = time.Now().UTC()
 		}

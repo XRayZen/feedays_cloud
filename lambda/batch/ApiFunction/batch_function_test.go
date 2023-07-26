@@ -43,7 +43,7 @@ func TestBatch(t *testing.T) {
 	})
 }
 
-func setup(t *testing.T,dbRepo Repo.DBRepository) []Data.Article {
+func setup(t *testing.T, dbRepo Repo.DBRepository) []Data.Article {
 	dbRepo.ConnectDB(true)
 	dbRepo.AutoMigrate()
 
@@ -63,7 +63,7 @@ func setup(t *testing.T,dbRepo Repo.DBRepository) []Data.Article {
 	answerArticles := articles[0:10]
 	dbInsertArticles := []Repo.Article{}
 	for _, article := range insertArticles {
-		publicationDate, _ := time.Parse(time.RFC3339, article.LastModified)
+		publicationDate, _ := time.Parse(time.RFC3339, article.PublishedAt)
 		dbArticle := Repo.Article{
 			Title:       article.Title,
 			Url:         article.Link,

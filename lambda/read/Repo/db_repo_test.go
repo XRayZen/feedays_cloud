@@ -69,12 +69,12 @@ func GetGIGAZINE() (Data.WebSite, []Data.Article, error) {
 			category = v.Categories[0]
 		}
 		article := Data.Article{
-			Title:        v.Title,
-			Link:         v.Link,
-			Description:  v.Description,
-			Category:     category,
-			Site:         feed.Title,
-			LastModified: v.PublishedParsed.UTC().Format(time.RFC3339),
+			Title:       v.Title,
+			Link:        v.Link,
+			Description: v.Description,
+			Category:    category,
+			Site:        feed.Title,
+			PublishedAt: v.PublishedParsed.UTC().Format(time.RFC3339),
 		}
 		articles = append(articles, article)
 	}
@@ -186,7 +186,7 @@ func TestDBQueryArticle(t *testing.T) {
 		// 正解を判定する
 		// エラー条件は5時間前以上の記事があったらエラー
 		for _, article := range resultArticles {
-			articleTime, err := time.Parse(time.RFC3339, article.LastModified)
+			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
 			if err != nil {
 				t.Errorf("failed to parse article time")
 			}
@@ -202,7 +202,7 @@ func TestDBQueryArticle(t *testing.T) {
 		// 正解を判定する
 		// エラー条件は5時間前以下の記事があったらエラー
 		for _, article := range resultArticles {
-			articleTime, err := time.Parse(time.RFC3339, article.LastModified)
+			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
 			if err != nil {
 				t.Errorf("failed to parse article time")
 			}
@@ -248,12 +248,12 @@ func TestBatchQuery(t *testing.T) {
 			t.Errorf("failed to fetch all read histories")
 		}
 		// 記事を作る
-		nowArticleTime := time.Now().UTC().Add(time.Hour).AddDate(0,0,10).Format(time.RFC3339)
+		nowArticleTime := time.Now().UTC().Add(time.Hour).AddDate(0, 0, 10).Format(time.RFC3339)
 		article := Data.Article{
 			Link:        "https://gigazine.net/news/20201001-ai-robot-artist/",
 			Title:       "TestArticle",
 			Description: "AIが描いた絵がオークションで約1億円で落札される",
-			LastModified: nowArticleTime,
+			PublishedAt: nowArticleTime,
 		}
 		sites[0].LastModified = nowArticleTime
 		if err := dbRepo.UpdateSiteAndArticle(sites[0], []Data.Article{article}); err != nil {
@@ -261,7 +261,7 @@ func TestBatchQuery(t *testing.T) {
 		}
 		// 記事が更新されているか確認する
 		updatedSite, err := dbRepo.SearchSiteLatestArticle(site.SiteURL, 100)
-		if err != nil || updatedSite[0].LastModified != nowArticleTime {
+		if err != nil || updatedSite[0].PublishedAt != nowArticleTime {
 			t.Errorf("failed to search site latest article")
 		}
 		// サイトの更新時間が更新されているか確認する

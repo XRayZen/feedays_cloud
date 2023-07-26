@@ -33,8 +33,8 @@ type Article struct {
 	Image RssFeedImage `json:"image"`
 	// 記事のサイト名
 	Site string `json:"site"`
-	// 記事の最終更新日時
-	LastModified string `json:"lastModified"`
+	// 記事の公開日時
+	PublishedAt string `json:"PublishedAt"`
 	// 記事が既読かどうか
 	IsReedLate bool `json:"isReedLate"`
 	// 記事のカテゴリー

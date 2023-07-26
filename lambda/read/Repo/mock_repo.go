@@ -23,7 +23,7 @@ func (s MockDBRepo) AutoMigrate() error {
 // readで使う
 func (s MockDBRepo) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
 	return Data.UserConfig{
-		UserName:   "UserName",
+		UserName:     "UserName",
 		UserUniqueID: "UserUniqueID",
 	}, nil
 }
@@ -103,10 +103,10 @@ func (s MockDBRepo) SearchArticlesByKeyword(keyword string) ([]Data.Article, err
 	if keyword == "Found" {
 		return []Data.Article{
 			{
-				Title:        "Found",
-				Link:         "https://example.com",
-				Site:         "https://example.com",
-				LastModified: "2021-01-01T00:00:00+09:00",
+				Title:       "Found",
+				Link:        "https://example.com",
+				Site:        "https://example.com",
+				PublishedAt: "2021-01-01T00:00:00+09:00",
 			},
 		}, nil
 	}
@@ -117,7 +117,7 @@ func (s MockDBRepo) SearchArticlesByTime(siteUrl string, lastModified time.Time)
 	// 更新日時より新しい記事を返す
 	var articles []Data.Article
 	for _, article := range mockArticles {
-		articleTime, _ := time.Parse(time.RFC3339, article.LastModified)
+		articleTime, _ := time.Parse(time.RFC3339, article.PublishedAt)
 		// articleTimeを数値に変換
 		articleTimeUnix := articleTime.Unix()
 		// lastModifiedを数値に変換
@@ -134,10 +134,10 @@ func (s MockDBRepo) SearchArticlesByTime(siteUrl string, lastModified time.Time)
 func (s MockDBRepo) SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error) {
 	return []Data.Article{
 		{
-			Title:        "Found",
-			Link:         "https://example.com",
-			Site:         "https://example.com",
-			LastModified: "2021-01-01T00:00:00+09:00",
+			Title:       "Found",
+			Link:        "https://example.com",
+			Site:        "https://example.com",
+			PublishedAt: "2021-01-01T00:00:00+09:00",
 		},
 	}, nil
 }
@@ -146,7 +146,7 @@ func (s MockDBRepo) SearchArticlesByTimeAndOrder(siteUrl string, lastModified ti
 	// 更新日時より新しい記事を返す
 	var articles []Data.Article
 	for _, article := range mockArticles {
-		articleTime, _ := time.Parse(time.RFC3339, article.LastModified)
+		articleTime, _ := time.Parse(time.RFC3339, article.PublishedAt)
 		// articleTimeを数値に変換
 		articleTimeUnix := articleTime.Unix()
 		// lastModifiedを数値に変換
