@@ -1,7 +1,7 @@
 package RequestHandler
 
 import (
-	"heavy/APIFunction"
+	"site/APIFunction"
 	"read/Repo"
 )
 

@@ -8,8 +8,8 @@ import (
 	// "write/DBRepo"
 	// "write/RequestHandler"
 	// "write/api_gen_code"
-	"heavy/RequestHandler"
-	"heavy/api-gen-code"
+	"site/RequestHandler"
+	"site/api-gen-code"
 	"read/Repo"
 
 	"github.com/aws/aws-lambda-go/events"

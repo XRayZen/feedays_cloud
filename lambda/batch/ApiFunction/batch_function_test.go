@@ -27,7 +27,7 @@ func TestBatch(t *testing.T) {
 		if result != true {
 			t.Fatal("Batch処理が失敗しています")
 		}
-		// ちゃんとDBにサイトと記事が登録されているか確認
+		// ちゃんとDBにサイトが登録されているか確認
 		var sites []Repo.Site
 		err = Repo.DBMS.Find(&sites).Error
 		if err != nil {
@@ -37,6 +37,17 @@ func TestBatch(t *testing.T) {
 		if err = Repo.DBMS.Model(&sites[0]).Association("SiteArticles").Find(&resultArticles); err != nil {
 			t.Fatal(err)
 		}
+		// 結果の記事リストをPublishedAtでソートする
+		for i := 0; i < len(resultArticles); i++ {
+			for j := i + 1; j < len(resultArticles); j++ {
+				if resultArticles[i].PublishedAt.Before(resultArticles[j].PublishedAt) {
+					tmp := resultArticles[i]
+					resultArticles[i] = resultArticles[j]
+					resultArticles[j] = tmp
+				}
+			}
+		}
+		// 結果の記事リストと正解の記事リストを比較してちゃんと最新記事が登録されているか確認する
 		if resultArticles[0].Title != answerArticles[0].Title {
 			t.Fatal("記事が10件登録されていません")
 		}
@@ -51,13 +62,10 @@ func setup(t *testing.T, dbRepo Repo.DBRepository) []Data.Article {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	insertArticles := []Data.Article{}
-	for i, article := range articles {
-		if i > 10 {
-			break
-		}
-		insertArticles = append(insertArticles, article)
+	// 最後から10件までを取得
+	for i := len(articles) - 1; i > len(articles)-11; i-- {
+		insertArticles = append(insertArticles, articles[i])
 	}
 
 	answerArticles := articles[0:10]
@@ -82,19 +90,6 @@ func setup(t *testing.T, dbRepo Repo.DBRepository) []Data.Article {
 	}
 	if err := Repo.DBMS.Create(&dbSite).Error; err != nil {
 		t.Fatal(err)
-	}
-	// ちゃんとDBにサイトと記事が登録されているか確認
-	var sites []Repo.Site
-	err = Repo.DBMS.Find(&sites).Error
-	if err != nil {
-		t.Fatal(err)
-	}
-	resultArticles := []Repo.Article{}
-	if err = Repo.DBMS.Model(&sites[0]).Association("SiteArticles").Find(&resultArticles); err != nil {
-		t.Fatal(err)
-	}
-	if resultArticles[0].Title != answerArticles[0].Title {
-		t.Fatal("記事が10件登録されていません")
 	}
 	return answerArticles
 }
