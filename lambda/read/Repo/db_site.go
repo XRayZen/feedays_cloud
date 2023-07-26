@@ -26,13 +26,12 @@ type Site struct {
 
 type Article struct {
 	gorm.Model
-	SiteID       uint
-	ArticleIndex int
-	Title        string
-	Url          string
-	IconUrl      string
-	Description  string
-	PublishedAt  time.Time
+	SiteID      uint
+	Title       string
+	Url         string
+	IconUrl     string
+	Description string
+	PublishedAt time.Time
 }
 
 type Tag struct {
@@ -99,7 +98,6 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 	var siteArticles []Data.Article
 	for _, siteArticle := range site.SiteArticles {
 		siteArticles = append(siteArticles, Data.Article{
-			Index:        0,
 			Title:        siteArticle.Title,
 			Description:  siteArticle.Description,
 			Link:         siteArticle.Url,
@@ -121,18 +119,21 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 	}, siteArticles
 }
 
-//API型からDB型に記事を変換する
-func convertApiArticleToDb(site Site,articles []Data.Article) []Article {
+// API型からDB型に記事を変換する
+func convertApiArticleToDb(articles []Data.Article) []Article {
 	var siteArticles []Article
-	for _, siteArticle := range site.SiteArticles {
+	for _, siteArticle := range articles {
+		PublishedAt, err := time.Parse(time.RFC3339, siteArticle.LastModified)
+		if err != nil {
+			PublishedAt = time.Now().UTC()
+		}
 		siteArticles = append(siteArticles, Article{
 			Title:       siteArticle.Title,
-			Url:         siteArticle.Url,
-			IconUrl:     siteArticle.IconUrl,
+			Url:         siteArticle.Link,
+			IconUrl:     siteArticle.Image.Link,
 			Description: siteArticle.Description,
-			PublishedAt: siteArticle.PublishedAt,
+			PublishedAt: PublishedAt,
 		})
 	}
 	return siteArticles
 }
-

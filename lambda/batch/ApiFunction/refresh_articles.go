@@ -1,10 +1,10 @@
 package ApiFunction
 
 import (
+	"batch/Repo"
+	"batch/Data"
 	"errors"
 	"log"
-	"read/Data"
-	"read/Repo"
 	"time"
 )
 

@@ -1,7 +1,15 @@
 package main
 
 import (
+	// "batch/ApiFunction"
+	"batch/ApiFunction"
 	"context"
+	"log"
+
+	// "os"
+	// "read/Repo"
+	// "strconv"
+
 	// "encoding/json"
 	"net/http"
 
@@ -12,16 +20,23 @@ import (
 	// "github.com/mitchellh/mapstructure"
 )
 
-func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// バッチ処理なのでリクエストを受け付けずコードを実行するだけ
-	
-	return events.APIGatewayProxyResponse{
-		Body:       string(""),
-		StatusCode: http.StatusOK,
-	}, nil
-}
-
-
 func main() {
 	lambda.Start(HandleRequest)
+}
+
+func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// バッチ処理なのでリクエストをパースせずコードを実行するだけ
+	dbRepo,inertVal,err := ApiFunction.InitDataBase(false)
+	result, err := ApiFunction.Batch(dbRepo, inertVal)
+	if err != nil || !result {
+		log.Println("BATCH ERROR! :", err)
+		return events.APIGatewayProxyResponse{
+			Body:       string("BATCH ERROR! :" + err.Error()),
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:       string("BATCH SUCCESS!"),
+		StatusCode: http.StatusOK,
+	}, nil
 }

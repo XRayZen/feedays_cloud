@@ -243,7 +243,41 @@ func TestBatchQuery(t *testing.T) {
 		if err != nil || len(sites) == 0 {
 			t.Errorf("failed to fetch all sites")
 		}
-		
+		readHists, err := dbRepo.FetchAllReadHistories()
+		if err != nil || len(readHists) == 0 {
+			t.Errorf("failed to fetch all read histories")
+		}
+		// 記事を作る
+		nowArticleTime := time.Now().UTC().Add(time.Hour).AddDate(0,0,10).Format(time.RFC3339)
+		article := Data.Article{
+			Link:        "https://gigazine.net/news/20201001-ai-robot-artist/",
+			Title:       "TestArticle",
+			Description: "AIが描いた絵がオークションで約1億円で落札される",
+			LastModified: nowArticleTime,
+		}
+		sites[0].LastModified = nowArticleTime
+		if err := dbRepo.UpdateSiteAndArticle(sites[0], []Data.Article{article}); err != nil {
+			t.Errorf("failed to update site and article")
+		}
+		// 記事が更新されているか確認する
+		updatedSite, err := dbRepo.SearchSiteLatestArticle(site.SiteURL, 100)
+		if err != nil || updatedSite[0].LastModified != nowArticleTime {
+			t.Errorf("failed to search site latest article")
+		}
+		// サイトの更新時間が更新されているか確認する
+		// サイトを取得する
+		var dbSite Site
+		if err := DBMS.Where("site_url = ?", site.SiteURL).Find(&dbSite).Error; err != nil {
+			t.Errorf("failed to get site")
+		}
+		// サイトの更新時間が更新されているか確認する
+		timeLastModified, err := time.Parse(time.RFC3339, nowArticleTime)
+		if err != nil {
+			t.Errorf("failed to parse time")
+		}
+		if dbSite.LastModified != timeLastModified {
+			t.Errorf("failed to update site last modified")
+		}
 
 	})
 }

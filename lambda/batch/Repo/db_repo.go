@@ -1,18 +1,16 @@
 package Repo
 
 import (
+	"batch/Data"
 	"errors"
 	"fmt"
 	"log"
-	"read/Data"
 	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-// テストを容易にするためDependency Injection（依存性の注入）を採用
-// DBを呼び出す層はインターフェースを定義する
 type DBRepository interface {
 	// 全てのDBRepoに共通する処理であるDB接続を行う
 	ConnectDB(isMock bool) error
@@ -20,29 +18,6 @@ type DBRepository interface {
 	// Readで使う
 	SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error)
 	FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error)
-
-	// heavyで使う
-	// 新規サイトをDB(サイトテーブル)に登録する
-	RegisterSite(site Data.WebSite, articles []Data.Article) error
-	// サイトURLをキーにサイトテーブルに該当するサイトがあるか確認する
-	IsExistSite(site_url string) bool
-	// サイトを購読登録する
-	SubscribeSite(user_unique_id string, siteUrl string, is_subscribe bool) error
-	// ユーザーはサイトを購読しているか確認する
-	IsSubscribeSite(user_unique_id string, site_url string) bool
-	// サイトURLをキーにサイトを検索
-	SearchSiteByUrl(site_url string) (Data.WebSite, error)
-	// サイト名をキーにサイトを検索
-	SearchSiteByName(siteName string) ([]Data.WebSite, error)
-	// サイトURLをキーに記事更新日時を取得する
-	FetchSiteLastModified(site_url string) (time.Time, error)
-
-	// キーワード検索でDBに該当する記事を返す
-	SearchArticlesByKeyword(keyword string) ([]Data.Article, error)
-	// サイトURLをキーにサイトの最新記事を取得する
-	SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error)
-	// 指定された時間よりも新しいか古いを指定して記事を検索して配列を返す
-	SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isNew bool) ([]Data.Article, error)
 
 	// バッチ処理用
 	// サイトテーブルを全件取得する
