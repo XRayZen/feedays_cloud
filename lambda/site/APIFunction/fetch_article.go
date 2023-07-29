@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 
 	// "log"
-	"read/Data"
+	"site/Data"
+	// "site/Repo"
 
 	// "sort"
 	"time"
 )
 
-func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_argument_json1 string) (string, error) {
+func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_argument_json1 string) (string, error) {
 	// jsonからリクエストを変換する
 	var request Data.FetchArticlesRequest
 	err := json.Unmarshal([]byte(request_argument_json1), &request)
@@ -18,12 +19,12 @@ func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_a
 		return "", err
 	}
 	var response Data.FetchCloudFeedResponse
-	// リクエストが新規なら最新記事を100件ぐらい探して返す
-	// リクエストが最新ならクライアント側更新日時より新しい記事を返す
+	// リクエストが新規なら最新記事を指定された件数で返す
 	// リクエストが古いならクライアント側最古日時より古い記事を返す
+	// リクエストが更新ならクライアント側更新日時より新しい記事を返す
 	switch request.RequestType {
-	case "latest":
-		articles, err := s.DBRepo.SearchSiteLatestArticle(request.SiteUrl, 100)
+	case "Latest":
+		articles, err := s.DBRepo.SearchSiteLatestArticle(request.SiteUrl, request.ReadCount)
 		if err != nil {
 			return "", err
 		}
@@ -47,7 +48,7 @@ func (s APIFunctions) FetchCloudFeed(access_ip string, user_id string, request_a
 			ResponseType: "success",
 			Error:        "",
 		}
-	case "update":
+	case "Update":
 		var newLastModified time.Time
 		if request.LastModified == "" {
 			newLastModified = time.Now()

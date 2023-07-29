@@ -2,9 +2,9 @@ package APIFunction
 
 import (
 	"encoding/json"
-	"read/Data"
-	"read/Repo"
 	"testing"
+	"site/Data"
+	"site/Repo"
 )
 
 func Test_Search(t *testing.T) {

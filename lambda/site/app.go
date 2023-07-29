@@ -10,7 +10,7 @@ import (
 	// "write/api_gen_code"
 	"site/RequestHandler"
 	"site/api-gen-code"
-	"read/Repo"
+	"site/Repo"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

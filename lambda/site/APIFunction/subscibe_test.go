@@ -2,8 +2,8 @@ package APIFunction
 
 import (
 	"encoding/json"
-	"read/Data"
-	"read/Repo"
+	"site/Data"
+	"site/Repo"
 	"testing"
 )
 

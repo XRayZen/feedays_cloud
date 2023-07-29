@@ -3,8 +3,8 @@ package APIFunction
 import (
 	"encoding/json"
 	"errors"
-	"read/Data"
-	"read/Repo"
+	"site/Data"
+	"site/Repo"
 )
 
 func (s APIFunctions) Search(access_ip string, user_id string, request_argument_json1 string) (string, error) {

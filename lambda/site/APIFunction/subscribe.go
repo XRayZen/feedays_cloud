@@ -2,11 +2,11 @@ package APIFunction
 
 import (
 	"encoding/json"
-	"read/Data"
+	"site/Data"
+	// "site/Repo"
 )
 
 func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
-	// サイトが登録されていなかったら登録処理をしてから購読を登録する
 	// Feedの時間はRFC3339形式で返す
 	var webSite Data.WebSite
 	if err := json.Unmarshal([]byte(request_argument_json1), &webSite); err != nil {
@@ -24,6 +24,7 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 		}
 		return "Success Subscribe Site", nil
 	} else {
+		// サイトが登録されていなかったら登録処理をしてから購読を登録する
 		// サイトのRSSを取得する
 		no_image_articles, err := fetchRSSArticles(webSite.SiteRssURL)
 		if err != nil {

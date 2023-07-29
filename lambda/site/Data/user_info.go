@@ -1,5 +1,7 @@
 package Data
 
+
+
 type ReadHistory struct {
 	// リンク
 	Link string `json:"link"`

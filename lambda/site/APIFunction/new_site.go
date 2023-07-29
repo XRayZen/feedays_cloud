@@ -3,7 +3,7 @@ package APIFunction
 import (
 	"fmt"
 	"net/http"
-	"read/Data"
+	"site/Data"
 
 	"github.com/PuerkitoBio/goquery"
 )
