@@ -24,16 +24,17 @@ func TestParseHandlerBySearch(t *testing.T) {
 	dbRepo := Repo.DBRepoImpl{}
 	setup(t, dbRepo)
 	// テスト用のリクエストを作成
-	searchRequestByKeyword := Data.ApiSearchRequest{
-		Word:       "GIGAZINE",
-		SearchType: "keyword",
-	}
 	searchRequestByURL := Data.ApiSearchRequest{
 		Word:       "https://gigazine.net/",
 		SearchType: "url",
 	}
+	// 記事へのキーワード検索
+	searchRequestByKeyword := Data.ApiSearchRequest{
+		Word:       "GIGAZINE",
+		SearchType: "keyword",
+	}
 	searchRequestBySiteName := Data.ApiSearchRequest{
-		Word:       "ギガジン",
+		Word:       "GIGAZINE",
 		SearchType: "siteName",
 	}
 	// リクエストをJSONに変換
@@ -113,6 +114,8 @@ func TestParseHandlerBySearch(t *testing.T) {
 			if searchResult.ApiResponse == "accept" {
 				return
 			}
+			// リザルトが失敗してたらエラー
+			t.Errorf("ParseRequestType() = %v, want %v", searchResult.ApiResponse, "accept")
 		})
 	}
 }
@@ -120,14 +123,24 @@ func TestParseHandlerBySearch(t *testing.T) {
 // サイトを購読する機能の統合テスト
 func TestParseHandlerBySubscribe(t *testing.T) {
 	// DBを初期化
-	setup(t, Repo.DBRepoImpl{})
+	dbRepo := Repo.DBRepoImpl{}
+	setup(t, dbRepo)
 	// 購読サイトのリクエストを作成
-	subscribeRequest := Data.WebSite{
+	subscribeWebSite := Data.WebSite{
 		SiteName: "GIGAZINE",
 		SiteURL:  "https://gigazine.net/",
 	}
+	newSubscribeWebSite := Data.WebSite{
+		SiteName:   "理想ちゃんねる",
+		SiteURL:    "http://ideal2ch.livedoor.biz/",
+		SiteRssURL: "http://ideal2ch.livedoor.biz/index.rdf",
+	}
 	// リクエストをJSONに変換
-	subscribeRequestJSON, err := json.Marshal(subscribeRequest)
+	subscribeRequestJSON, err := json.Marshal(subscribeWebSite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	newSubscribeRequestJSON, err := json.Marshal(newSubscribeWebSite)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,6 +157,7 @@ func TestParseHandlerBySubscribe(t *testing.T) {
 	type args struct {
 		access_ip     string
 		user_id       string
+		request_type  string
 		request_json  string
 		request_json2 string
 	}
@@ -159,6 +173,7 @@ func TestParseHandlerBySubscribe(t *testing.T) {
 			args: args{
 				access_ip:     "",
 				user_id:       "test",
+				request_type:  "SubscribeSite",
 				request_json:  string(subscribeRequestJSON),
 				request_json2: string(isSubscribeByTrueJason),
 			},
@@ -169,52 +184,72 @@ func TestParseHandlerBySubscribe(t *testing.T) {
 			args: args{
 				access_ip:     "",
 				user_id:       "test",
+				request_type:  "SubscribeSite",
 				request_json:  string(subscribeRequestJSON),
 				request_json2: string(isSubscribeByFalseJason),
+			},
+		},
+		// 新規サイト登録テスト
+		{
+			name: "新規サイト登録テスト",
+			args: args{
+				access_ip:     "",
+				user_id:       "test",
+				request_type:  "SubscribeSite",
+				request_json:  string(newSubscribeRequestJSON),
+				request_json2: string(isSubscribeByTrueJason),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ParseRequestType("", Repo.DBRepoImpl{}, "Subscribe", tt.args.user_id, tt.args.request_json, tt.args.request_json2)
+			result, err := ParseRequestType("", dbRepo, tt.args.request_type, tt.args.user_id, tt.args.request_json, tt.args.request_json2)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if result != "true"{
-				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
+			// リザルトがSuccess Subscribe SiteかSuccess Unsubscribe SiteかSuccess Register Siteでなければエラー
+			if result != "Success Subscribe Site" && result != "Success Unsubscribe Site" && result != "Success Register Site" {
+				t.Errorf("ParseRequestType() = %v, want %v", result, "Success Subscribe Site or Success Unsubscribe Site")
 				return
+			}
+			// もし新規サイト登録だったらDBに登録されているか確認
+			if result == "Success Register Site" {
+				if dbRepo.IsExistSite(newSubscribeWebSite.SiteURL) == false {
+					t.Errorf("ParseRequestType() = %v, want %v", result, "Success Register Site")
+					return
+				}
 			}
 		})
 	}
 }
 
-  // 記事を取得する機能の統合テスト
+// 記事を取得する機能の統合テスト
 func TestParseHandlerByFetchArticles(t *testing.T) {
 	// DBを初期化
 	setup(t, Repo.DBRepoImpl{})
 	// 記事取得のリクエストを作成
 	getArticlesRequestByLatest := Data.FetchArticlesRequest{
 		RequestType: "Latest",
-		SiteUrl:    "https://gigazine.net/",
-		ReadCount: 10,
+		SiteUrl:     "https://gigazine.net/",
+		ReadCount:   10,
 	}
 	// 今日の0時を取得
 	now := time.Now()
 	nowRfc3339Str := now.Format(time.RFC3339)
 	getArticlesRequestByOldest := Data.FetchArticlesRequest{
-		RequestType: "Old",
-		SiteUrl:    "https://gigazine.net/",
-		ReadCount: 10,
+		RequestType:    "Old",
+		SiteUrl:        "https://gigazine.net/",
+		ReadCount:      10,
 		OldestModified: nowRfc3339Str,
 	}
 	// 昨日の0時を取得
 	yesterday := now.AddDate(0, 0, -1)
 	yesterdayRfc3339Str := yesterday.Format(time.RFC3339)
 	getArticlesRequestByUpdate := Data.FetchArticlesRequest{
-		RequestType: "Update",
-		SiteUrl:    "https://gigazine.net/",
-		ReadCount: 10,
+		RequestType:    "Update",
+		SiteUrl:        "https://gigazine.net/",
+		ReadCount:      10,
 		OldestModified: yesterdayRfc3339Str,
 	}
 	// リクエストをJSONに変換
@@ -233,6 +268,7 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 	type args struct {
 		access_ip     string
 		user_id       string
+		request_type  string
 		request_json  string
 		request_json2 string
 	}
@@ -280,7 +316,7 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if result != "true"{
+			if result != "true" {
 				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

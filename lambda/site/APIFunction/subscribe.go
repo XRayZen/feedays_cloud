@@ -22,7 +22,11 @@ func (s APIFunctions) SubscribeSite(access_ip string, user_id string, request_ar
 		if err := s.DBRepo.SubscribeSite(user_id, webSite.SiteURL, isSubscribe); err != nil {
 			return "", err
 		}
-		return "Success Subscribe Site", nil
+		if isSubscribe {
+			return "Success Subscribe Site", nil
+		} else {
+			return "Success Unsubscribe Site", nil
+		}
 	} else {
 		// サイトが登録されていなかったら登録処理をしてから購読を登録する
 		// サイトのRSSを取得する

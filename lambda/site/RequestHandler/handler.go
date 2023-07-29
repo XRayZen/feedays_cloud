@@ -1,12 +1,12 @@
 package RequestHandler
 
 import (
-	"site/Repo"
+	"fmt"
 	"site/APIFunction"
+	"site/Repo"
 )
 
-
-
+// リクエストタイプはSearch, SubscribeSite, fetchArticleの3種類
 func ParseRequestType(access_ip string, db_repo Repo.DBRepository, request_type string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
 	functions :=APIFunction.APIFunctions{
 		DBRepo: db_repo,
@@ -19,6 +19,7 @@ func ParseRequestType(access_ip string, db_repo Repo.DBRepository, request_type 
 	case "fetchArticle":
 		return functions.FetchArticle(access_ip, user_id, request_argument_json1)
 	default:
-		return "", nil
+		// リクエストタイプが不正な場合はエラーを返す
+		return "", fmt.Errorf("invalid request type")
 	}
 }
