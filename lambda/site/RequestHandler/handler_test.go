@@ -2,15 +2,12 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
+
 	"site/Data"
 	"site/Repo"
-	"sort"
 	"testing"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -284,6 +281,7 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 			args: args{
 				access_ip:     "",
 				user_id:       "test",
+				request_type:  "FetchArticle",
 				request_json:  string(getArticlesRequestByLatestJSON),
 				request_json2: "",
 			},
@@ -294,6 +292,7 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 			args: args{
 				access_ip:     "",
 				user_id:       "test",
+				request_type:  "FetchArticle",
 				request_json:  string(getArticlesRequestByOldestJSON),
 				request_json2: "",
 			},
@@ -304,6 +303,7 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 			args: args{
 				access_ip:     "",
 				user_id:       "test",
+				request_type:  "FetchArticle",
 				request_json:  string(getArticlesRequestByUpdateJSON),
 				request_json2: "",
 			},
@@ -311,13 +311,20 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ParseRequestType("", Repo.DBRepoImpl{}, "FetchArticles", tt.args.user_id, tt.args.request_json, tt.args.request_json2)
+			result, err := ParseRequestType("", Repo.DBRepoImpl{}, tt.args.request_type, tt.args.user_id, tt.args.request_json, tt.args.request_json2)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if result != "true" {
-				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
+			// まずは最初のテストケースが上手く行くようにする
+			// レスポンスを構造体に変換
+			var fetchArticleResponse Data.FetchArticleResponse
+			err = json.Unmarshal([]byte(result), &fetchArticleResponse)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if fetchArticleResponse.ResponseType != "success" {
+				t.Errorf("ParseRequestType() = %v, want %v", fetchArticleResponse.ResponseType, "success")
 				return
 			}
 		})
@@ -394,82 +401,4 @@ func fetchRSSArticles(rssUrl string) ([]Data.Article, error) {
 		articles = append(articles, article)
 	}
 	return articles, nil
-}
-
-// 並列処理で記事のイメージURLを取得する
-func getArticleImageURLs(articles []Data.Article) ([]Data.Article, error) {
-	// 並列処理で記事のイメージURLを取得する
-	// 1. og:imageを取得する
-	// 3. それでもなければfavicon.icoを取得する
-	ch := make(chan Data.Article)
-	for _, article := range articles {
-		go func(article Data.Article) {
-			// 1. og:imageを取得する
-			doc, err := getHtmlGoQueryDoc(article.Link)
-			if err != nil {
-				ch <- article
-				return
-			}
-			imageUrl, err := getArticleImageURL(doc, article.Link)
-			if err != nil {
-				ch <- article
-				return
-			}
-			article.Image = Data.RssFeedImage{
-				Link: imageUrl,
-			}
-			ch <- article
-		}(article)
-	}
-	for i := 0; i < len(articles); i++ {
-		articles[i] = <-ch
-	}
-	// articleを日時でソートする
-	sort.Slice(articles, func(i, j int) bool {
-		return articles[i].PublishedAt > articles[j].PublishedAt
-	})
-	return articles, nil
-}
-
-// 記事のイメージURLを取得する
-func getArticleImageURL(doc *goquery.Document, articleUrl string) (string, error) {
-	// 記事のイメージURLを取得する
-	// 1. og:imageを取得する
-	// 3. それでもなければfavicon.icoを取得する
-	imageUrl := ""
-	// 1. og:imageを取得する
-	doc.Find("meta").Each(func(_ int, s *goquery.Selection) {
-		property, exists := s.Attr("property")
-		if exists {
-			if property == "og:image" {
-				imageUrl = s.AttrOr("content", "")
-				return
-			}
-		}
-	})
-	// 2. それでもなければfavicon.icoを取得する
-	if imageUrl == "" {
-		imageUrl = articleUrl + "/favicon.ico"
-	}
-	return imageUrl, nil
-}
-
-func getHtmlGoQueryDoc(url string) (*goquery.Document, error) {
-	// /を消す
-	if url[len(url)-1] == '/' {
-		url = url[:len(url)-1]
-	}
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("HTTP GET error: %v", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP status error: %d", resp.StatusCode)
-	}
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("goquery error: %v", err)
-	}
-	return doc, nil
 }

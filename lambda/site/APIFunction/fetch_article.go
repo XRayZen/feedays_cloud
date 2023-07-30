@@ -18,7 +18,7 @@ func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_arg
 	if err != nil {
 		return "", err
 	}
-	var response Data.FetchCloudFeedResponse
+	var response Data.FetchArticleResponse
 	// リクエストが新規なら最新記事を指定された件数で返す
 	// リクエストが古いならクライアント側最古日時より古い記事を返す
 	// リクエストが更新ならクライアント側更新日時より新しい記事を返す
@@ -28,12 +28,12 @@ func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_arg
 		if err != nil {
 			return "", err
 		}
-		response = Data.FetchCloudFeedResponse{
-			Feeds:        articles,
+		response = Data.FetchArticleResponse{
+			Articles:     articles,
 			ResponseType: "success",
 			Error:        "",
 		}
-	case "old":
+	case "Old":
 		oldestModified, err := time.Parse(time.RFC3339, request.OldestModified)
 		if err != nil {
 			return "", err
@@ -43,8 +43,8 @@ func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_arg
 		if err != nil {
 			return "", err
 		}
-		response = Data.FetchCloudFeedResponse{
-			Feeds:        articles,
+		response = Data.FetchArticleResponse{
+			Articles:     articles,
 			ResponseType: "success",
 			Error:        "",
 		}
@@ -63,8 +63,8 @@ func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_arg
 		if err != nil {
 			return "", err
 		}
-		response = Data.FetchCloudFeedResponse{
-			Feeds:        articles,
+		response = Data.FetchArticleResponse{
+			Articles:     articles,
 			ResponseType: "success",
 			Error:        "",
 		}

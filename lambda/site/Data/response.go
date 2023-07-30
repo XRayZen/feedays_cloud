@@ -20,9 +20,9 @@ type APIResponse struct {
 	Error        string `json:"error"`
 }
 
-type FetchCloudFeedResponse struct {
+type FetchArticleResponse struct {
 	ResponseType string    `json:"responseType"`
-	Feeds        []Article `json:"feeds"`
+	Articles     []Article `json:"feeds"`
 	Error        string    `json:"error"`
 }
 
