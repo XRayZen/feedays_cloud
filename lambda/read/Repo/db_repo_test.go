@@ -104,56 +104,7 @@ func TestRead(t *testing.T) {
 	})
 }
 
-// Heavy系のテスト
-// サイトの登録・存在確認・取得
-func TestDBQuerySite(t *testing.T) {
-	dbRepo := InitDataBase()
-	// サイトの登録・存在確認・取得
-	// サイト記事系の処理は
-	t.Run("Write", func(t *testing.T) {
-		site, articles, err := GetGIGAZINE()
-		if err != nil {
-			t.Errorf("failed to get GIGAZINE")
-		}
-		err = dbRepo.RegisterSite(site, articles)
-		if err != nil {
-			t.Errorf("failed to register site : %v", err)
-		}
-		result := dbRepo.IsExistSite(site.SiteURL)
-		if !result {
-			t.Errorf("failed to check site")
-		}
-		// サイト購読・確認
-		err = dbRepo.SubscribeSite("0000", site.SiteURL, true)
-		if err != nil {
-			t.Errorf("failed to subscribe site")
-		}
-		result = dbRepo.IsSubscribeSite("0000", site.SiteURL)
-		if !result {
-			t.Errorf("failed to check subscribe site")
-		}
-		// サイトの最終更新日時を取得
-		lastModified, err := dbRepo.FetchSiteLastModified(site.SiteURL)
-		if err != nil {
-			t.Errorf("failed to fetch site last modified : %v", err)
-		}
-		// 時間が変換されていく中でローカル時間とずれるからUTCに変換して解決
-		siteLastModified, err := time.Parse(time.RFC3339, site.LastModified)
-		if err != nil || lastModified != siteLastModified {
-			t.Errorf("failed to fetch site last modified")
-		}
-		// サイトURLをキーにサイトを検索
-		resultSite, err := dbRepo.SearchSiteByUrl(site.SiteURL)
-		if err != nil || resultSite.SiteURL != site.SiteURL {
-			t.Errorf("failed to search site by url")
-		}
-		// サイト名をキーにサイトを検索
-		resultSites, err := dbRepo.SearchSiteByName(site.SiteName)
-		if err != nil || len(resultSites) == 0 {
-			t.Errorf("failed to search site by name")
-		}
-	})
-}
+
 
 // 記事系をテストする
 func TestDBQueryArticle(t *testing.T) {

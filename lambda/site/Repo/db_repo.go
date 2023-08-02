@@ -19,15 +19,16 @@ type DBRepository interface {
 	SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error)
 	FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error)
 	// Siteで使う
+	IsExistSite(site_url string) bool
+	RegisterSite(site Data.WebSite, articles []Data.Article) error
+	SubscribeSite(user_unique_id string, site_url string, is_subscribe bool) error
+	IsSubscribeSite(user_unique_id string, site_url string) bool
+	FetchSiteLastModified(site_url string) (time.Time, error)
+	SearchSiteByUrl(site_url string) (Data.WebSite, error)
+	SearchSiteByName(siteName string) ([]Data.WebSite, error)
 	SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error)
 	SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isNew bool) ([]Data.Article, error)
-	IsExistSite(site_url string) bool
-	SubscribeSite(user_unique_id string, site_url string, is_subscribe bool) error
-	RegisterSite(site Data.WebSite, articles []Data.Article) error
-	SearchSiteByUrl(site_url string) (Data.WebSite, error)
 	SearchArticlesByKeyword(keyword string) ([]Data.Article, error)
-	SearchSiteByName(siteName string) ([]Data.WebSite, error)
-
 }
 
 // DBRepoを実装
@@ -121,8 +122,6 @@ func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCa
 	}
 	return categories, nil
 }
-
-// heavyで使う
 
 // サイト系処理
 // 登録・存在確認・購読・購読確認・URL検索
