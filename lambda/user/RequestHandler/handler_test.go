@@ -4,25 +4,19 @@ import (
 	"encoding/json"
 	"read/Data"
 	"testing"
-	"write/DBRepo"
+	"user/DBRepo"
 )
 
 // 正常系のテスト
 func TestNormalRequestHandler(t *testing.T) {
 	// テスト用オブジェクトを用意する
-	identInfoJson, _ := json.Marshal(Data.UserAccessIdentInfo{
-		UUid:           "test",
-		AccessPlatform: "test",
-		PlatformType:   "test",
-		Brand:          "test",
-		DeviceName:     "test",
-		OsVersion:      "test",
-		IsPhysics:      false,
-	})
 	readActJson, _ := json.Marshal(Data.ReadHistory{
 		Link:   "test",
 	})
-	userConfigJson, _ := json.Marshal(Data.UserConfig{})
+	userConfigJson, _ := json.Marshal(Data.UserConfig{
+		UserName: "test",
+		UserUniqueID: "test",
+	})
 	testWebSiteJson, _ := json.Marshal(Data.WebSite{})
 	testArticleJson, _ := json.Marshal(Data.Article{})
 	// 正解を用意する
@@ -69,7 +63,7 @@ func TestNormalRequestHandler(t *testing.T) {
 			args: args{
 				requestType:    "ConfigSync",
 				userId:         "",
-				argumentJson_1: string(identInfoJson),
+				argumentJson_1: "",
 				argumentJson_2: "",
 			},
 			want:    string(configSyncResJson),
@@ -85,7 +79,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				requestType:    "RegisterUser",
 				userId:         "",
 				argumentJson_1: string(userConfigJson),
-				argumentJson_2: string(identInfoJson),
+				argumentJson_2: "",
 			},
 			want:    string(apiResRegisterUser),
 			wantErr: false,
@@ -115,7 +109,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				requestType:    "UpdateConfig",
 				userId:         "",
 				argumentJson_1: string(userConfigJson),
-				argumentJson_2: string(identInfoJson),
+				argumentJson_2: "",
 			},
 			want:    string(apiResUpdateConfig),
 			wantErr: false,
@@ -173,8 +167,8 @@ func TestNormalRequestHandler(t *testing.T) {
 			},
 			args: args{
 				requestType:    "GetAPIRequestLimit",
-				userId:         "",
-				argumentJson_1: string(identInfoJson),
+				userId:         "test",
+				argumentJson_1: "",
 				argumentJson_2: "",
 			},
 			want:    apiRequestLimitCfgJson,
@@ -183,10 +177,6 @@ func TestNormalRequestHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// handler := &RequestHandler{
-			// 	repo: tt.fields.repo,
-			// 	ip:   tt.fields.ip,
-			// }
 			got, err := ParseRequestType(tt.fields.ip, tt.fields.repo,
 				tt.args.requestType, tt.args.userId, tt.args.argumentJson_1, tt.args.argumentJson_2)
 			if (err != nil) != tt.wantErr {

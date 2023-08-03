@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"write/DBRepo"
-	"write/RequestHandler"
-	"write/api_gen_code"
-
+	"user/RequestHandler"
+	"user/DBRepo"
+	"user/api_gen_code"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/mitchellh/mapstructure"

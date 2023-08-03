@@ -2,7 +2,7 @@ package RequestHandler
 
 import (
 	"errors"
-	"write/DBRepo"
+	"user/DBRepo"
 )
 
 // ParseRequestType はリクエストタイプに応じて処理を分岐する
@@ -14,15 +14,15 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 	}
 	switch requestType {
 	case "GenUserID":
-		return GenRandomUserID(dbRepo, argumentJson_1, access_ip)
+		return GenRandomUserID(dbRepo, access_ip)
 	case "ConfigSync":
-		return functions.ConfigSync(userId, argumentJson_1)
+		return functions.ConfigSync(userId)
 	case "RegisterUser":
-		return functions.RegisterUser(userId, argumentJson_1, argumentJson_2)
+		return functions.RegisterUser(userId, argumentJson_1)
 	case "ReportReadActivity":
-		return functions.ReportReadActivity(userId, argumentJson_1, argumentJson_2)
+		return functions.ReportReadActivity(userId, argumentJson_1)
 	case "UpdateConfig":
-		return functions.UpdateConfig(userId, argumentJson_1, argumentJson_2)
+		return functions.UpdateConfig(userId, argumentJson_1)
 	case "ModifySearchHistory":
 		return functions.ModifySearchHistory(userId, argumentJson_1, argumentJson_2)
 	case "ModifyFavoriteSite":
@@ -30,7 +30,7 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 	case "ModifyFavoriteArticle":
 		return functions.ModifyFavoriteArticle(userId, argumentJson_1, argumentJson_2)
 	case "GetAPIRequestLimit":
-		return functions.GetAPIRequestLimit(userId, argumentJson_1)
+		return functions.GetAPIRequestLimit(userId)
 	default:
 		return "", errors.New("invalid request type")
 	}

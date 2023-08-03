@@ -3,7 +3,7 @@ package RequestHandler
 import (
 	"encoding/json"
 	"read/Data"
-	"write/DBRepo"
+	"user/DBRepo"
 )
 
 type APIFunctions struct {
@@ -11,12 +11,8 @@ type APIFunctions struct {
 	ip   string
 }
 
-// 設定を同期する
-func (s APIFunctions) ConfigSync(userId string, identInfoJson string) (string, error) {
-	var identInfo Data.UserAccessIdentInfo
-	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
-		return "", err
-	}
+// 設定を同期する為にユーザー設定を取得する
+func (s APIFunctions) ConfigSync(userId string,) (string, error) {
 	// ユーザー設定を取得する
 	userConfig, err := s.repo.SearchUserConfig(userId)
 	if err != nil {
@@ -34,7 +30,7 @@ func (s APIFunctions) ConfigSync(userId string, identInfoJson string) (string, e
 	return string(response), nil
 }
 
-func (s APIFunctions) RegisterUser(userId string, userCfgJson string, identInfoJson string) (string, error) {
+func (s APIFunctions) RegisterUser(userId string, userCfgJson string) (string, error) {
 	// ユーザー設定をjsonから変換してDBに登録する
 	var userConfig Data.UserConfig
 	if err := json.Unmarshal([]byte(userCfgJson), &userConfig); err != nil {
@@ -43,16 +39,11 @@ func (s APIFunctions) RegisterUser(userId string, userCfgJson string, identInfoJ
 	if err := s.repo.RegisterUser(userConfig); err != nil {
 		return "", err
 	}
-	// アクテビティレコードにユーザー登録イベントを追加する
-	identInfo := Data.UserAccessIdentInfo{}
-	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
-		return "", err
-	}
 	return GenAPIResponse("accept", "Success RegisterUser", "")
 }
 
 // サイト・記事閲覧などのアクテビティを記録する
-func (s APIFunctions) ReportReadActivity(userId string, readActivity string, identInfo string) (string, error) {
+func (s APIFunctions) ReportReadActivity(userId string, readActivity string,) (string, error) {
 	var activityInfo Data.ReadHistory
 	if err := json.Unmarshal([]byte(readActivity), &activityInfo); err != nil {
 		return "", err
@@ -64,14 +55,10 @@ func (s APIFunctions) ReportReadActivity(userId string, readActivity string, ide
 	return GenAPIResponse("accept", "Success ReportReadActivity", "")
 }
 
-func (s APIFunctions) UpdateConfig(userId string, userCfgJson string, identInfoJson string) (string, error) {
+func (s APIFunctions) UpdateConfig(userId string, userCfgJson string) (string, error) {
 	// UI設定を変更したらクラウドに送信してクラウドの設定を上書きする
 	var userConfig Data.UserConfig
 	if err := json.Unmarshal([]byte(userCfgJson), &userConfig); err != nil {
-		return "", err
-	}
-	identInfo := Data.UserAccessIdentInfo{}
-	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
 		return "", err
 	}
 	if err := s.repo.UpdateUser(userId, userConfig); err != nil {
@@ -135,11 +122,7 @@ func (s APIFunctions) ModifyFavoriteArticle(userId string, articleJson string, i
 }
 
 // APIリクエスト制限を取得して返す 起動時に呼び出される
-func (s APIFunctions) GetAPIRequestLimit(userId string, identInfoJson string) (string, error) {
-	var identInfo Data.UserAccessIdentInfo
-	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
-		return "", err
-	}
+func (s APIFunctions) GetAPIRequestLimit(userId string) (string, error) {
 	// APIリクエスト制限を取得する
 	apiRequestLimit, err := s.repo.FetchAPIRequestLimit(userId)
 	if err != nil {

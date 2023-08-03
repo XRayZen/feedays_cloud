@@ -5,6 +5,6 @@ use (
 	./lambda/site
 	./lambda/read
 	./lambda/test
-	./lambda/write
+	./lambda/user
 	./testClient
 )

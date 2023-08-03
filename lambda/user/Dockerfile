@@ -1,5 +1,5 @@
 FROM golang:1.20 as builder
-WORKDIR /write
+WORKDIR /user
 COPY go.mod go.sum ./
 # build
 COPY . .
@@ -7,6 +7,6 @@ COPY . .
 RUN GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build .
 # ARMで動かすにはprovidedランタイムを使う
 FROM public.ecr.aws/lambda/provided:al2
-WORKDIR /write
-COPY --from=builder /write/write /write
-ENTRYPOINT [ "./write" ]
+WORKDIR /user
+COPY --from=builder /user/user /user
+ENTRYPOINT [ "./user" ]

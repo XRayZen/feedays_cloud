@@ -1,20 +1,13 @@
 package RequestHandler
 
 import (
-	"encoding/json"
-	"write/DBRepo"
-	"read/Data"
+	"user/DBRepo"
 
 	// "fmt"
 	"math/rand"
 )
 
-func GenRandomUserID(repo DBRepo.DBRepo, identInfoJson string, ip string) (string, error) {
-	var identInfo Data.UserAccessIdentInfo
-	if err := json.Unmarshal([]byte(identInfoJson), &identInfo); err != nil {
-		return "", err
-	}
-
+func GenRandomUserID(repo DBRepo.DBRepo,ip string) (string, error) {
 	return RandomString(15), nil
 }
 
