@@ -1,7 +1,7 @@
 package DBRepo
 
 import (
-	"read/Data"
+	"user/Data"
 	"time"
 
 	"gorm.io/gorm"

@@ -2,7 +2,7 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"read/Data"
+	"user/Data"
 )
 
 func GenAPIResponse(responseType string, msg string, errorMsg string) (string, error) {
