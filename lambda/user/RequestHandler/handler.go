@@ -12,6 +12,7 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 		repo: dbRepo,
 		ip:   access_ip,
 	}
+	// リクエストタイプに応じて処理を分岐
 	switch requestType {
 	case "GenUserID":
 		return GenRandomUserID(dbRepo, access_ip)
