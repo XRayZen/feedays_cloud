@@ -7,13 +7,9 @@ import (
 	"log"
 
 	// "os"
-	// "read/Repo"
-	// "strconv"
 
 	// "encoding/json"
 	"net/http"
-
-	// "read/Repo"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

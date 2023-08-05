@@ -22,7 +22,7 @@ type APIResponse struct {
 
 type FetchArticleResponse struct {
 	ResponseType string    `json:"responseType"`
-	Articles     []Article `json:"feeds"`
+	Articles     []Article `json:"articles"`
 	Error        string    `json:"error"`
 }
 

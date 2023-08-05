@@ -11,9 +11,6 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// "site/APIFunction"
-// "read/Repo"
-
 // Lambda・Site関数の統合テスト
 // リクエストごとにテストを分ける
 func TestParseHandlerBySearch(t *testing.T) {

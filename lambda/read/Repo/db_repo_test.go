@@ -5,11 +5,9 @@ import (
 	"read/Data"
 	"time"
 
-	// "read/Data"
 	"testing"
 
 	"github.com/mmcdole/gofeed"
-	// "write/DBRepo"
 )
 
 // DBRepoImplをテストしてSQLクエリが正しく動作するか検証する

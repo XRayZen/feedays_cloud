@@ -5,13 +5,12 @@ package RequestHandler
 import (
 	"errors"
 	"read/Repo"
-	// "read/Data"
 )
 
 func ParseRequestType(diDBRepo Repo.DBRepository, requestType string, userID string) (res string, err error) {
 	// DB接続
 	diDBRepo.ConnectDB(false)
-
+	diDBRepo.AutoMigrate()
 	// DBからデータを取得するだけの処理をする
 	switch requestType {
 	case "ExploreCategories":
