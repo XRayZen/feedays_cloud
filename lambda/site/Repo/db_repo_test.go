@@ -161,3 +161,61 @@ func TestDBQuerySite(t *testing.T) {
 		}
 	})
 }
+
+// 記事系をテストする
+func TestDBQueryArticle(t *testing.T) {
+	dbRepo := InitDataBase()
+	// 記事の登録・存在確認・取得
+	t.Run("Write", func(t *testing.T) {
+		site, articles, err := GetGIGAZINE()
+		if err != nil {
+			t.Errorf("failed to get GIGAZINE")
+		}
+		err = dbRepo.RegisterSite(site, articles)
+		if err != nil {
+			t.Errorf("failed to register site")
+		}
+		// 記事の検索・存在確認・取得
+		resultArticles, err := dbRepo.SearchArticlesByKeyword("AI")
+		if err != nil && len(resultArticles) == 0 {
+			t.Errorf("failed to search articles by keyword")
+		}
+		resultArticles, err = dbRepo.SearchSiteLatestArticle(site.SiteURL, 100)
+		if err != nil && len(resultArticles) == 0 {
+			t.Errorf("failed to search site latest article")
+		}
+		// 今から五時間前から最新の記事を取得
+		previousTime := time.Now().UTC().Add(-10 * time.Hour)
+		resultArticles, err = dbRepo.SearchArticlesByTimeAndOrder(site.SiteURL, previousTime, 100, true)
+		if err != nil && len(resultArticles) == 0 {
+			t.Errorf("failed to search articles by time and order")
+		}
+		// 正解を判定する
+		// エラー条件は5時間前以上の記事があったらエラー
+		for _, article := range resultArticles {
+			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
+			if err != nil {
+				t.Errorf("failed to parse article time")
+			}
+			if articleTime.Before(time.Now().Add(-10 * time.Hour)) {
+				t.Errorf("failed to search articles by time and order")
+			}
+		}
+		// 今から10時間前よりも古い記事を取得
+		resultArticles, err = dbRepo.SearchArticlesByTimeAndOrder(site.SiteURL, previousTime, 100, false)
+		if err != nil && len(resultArticles) == 0 {
+			t.Errorf("failed to search articles by time and order")
+		}
+		// 正解を判定する
+		// エラー条件は5時間前以下の記事があったらエラー
+		for _, article := range resultArticles {
+			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
+			if err != nil {
+				t.Errorf("failed to parse article time")
+			}
+			if articleTime.After(time.Now().Add(-10 * time.Hour)) {
+				t.Errorf("failed to search articles by time and order")
+			}
+		}
+	})
+}
