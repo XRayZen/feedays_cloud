@@ -17,10 +17,10 @@ func (s APIFunctions) Search(access_ip string, user_id string, request_argument_
 	}
 	// Wordが空文字の場合はエラー
 	if apiSearchRequest.Word == "" {
-		return "", errors.New("Word is empty")
+		return "", errors.New("search word is empty")
 	}
 	switch apiSearchRequest.SearchType {
-	case "url":
+	case "URL":
 		// URL検索
 		// DBに存在しない場合は新規サイト処理
 		res, err := searchByURL(s.DBRepo, apiSearchRequest)
@@ -28,13 +28,13 @@ func (s APIFunctions) Search(access_ip string, user_id string, request_argument_
 			return "", err
 		}
 		result = res
-	case "keyword":
+	case "Keyword":
 		res, err := searchByKeyword(s.DBRepo, apiSearchRequest)
 		if err != nil {
 			return "", err
 		}
 		result = res
-	case "siteName":
+	case "SiteName":
 		res, err := searchBySiteName(s.DBRepo, apiSearchRequest)
 		if err != nil {
 			return "", err

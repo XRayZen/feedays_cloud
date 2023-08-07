@@ -15,7 +15,8 @@ import (
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// アクセスしてきたIPアドレスを取得する
 	access_ip := request.RequestContext.Identity.SourceIP
-	var api_req api_gen_code.PostWriteJSONBody
+	// リクエストを変換する為にPostUserJSONBodyを使う
+	var api_req api_gen_code.PostUserJSONBody
 	decoderConfig := &mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           &api_req,
