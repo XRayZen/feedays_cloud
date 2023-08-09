@@ -34,15 +34,15 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// ここでDIする
 	dbRepo := DBRepo.DBRepoImpl{}
 	if err := dbRepo.ConnectDB(false); err != nil {
-		return errorResponse(err)
+		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
 	}
 	if err := dbRepo.AutoMigrate(); err != nil {
-		return errorResponse(err)
+		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
 	}
 	res, err := RequestHandler.ParseRequestType(access_ip, dbRepo, *api_req.RequestType, *api_req.UserId,
 		*api_req.RequestArgumentJson1, *api_req.RequestArgumentJson2)
 	if err != nil {
-		return errorResponse(err)
+		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
 	}
 	// ここでレスポンスを作る
 	response := api_gen_code.APIResponse{
@@ -65,18 +65,22 @@ func main() {
 }
 
 // エラーレスポンスを返す
-func errorResponse(err error) (events.APIGatewayProxyResponse, error) {
+func errorResponse(er error, RequestType string, userId string) (events.APIGatewayProxyResponse, error) {
+	errorMessage := er.Error()
 	response := api_gen_code.APIResponse{
-		RequestType:   nil,
-		UserId:        nil,
-		ResponseValue: nil,
+		ResponseValue: &errorMessage,
+		RequestType:   &RequestType,
+		UserId:        &userId,
 	}
 	body, err := json.Marshal(response)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return events.APIGatewayProxyResponse{
+			Body:       "Generate Response Error",
+			StatusCode: http.StatusInternalServerError,
+		}, err
 	}
 	return events.APIGatewayProxyResponse{
 		Body:       string(body),
 		StatusCode: http.StatusInternalServerError,
-	}, err
+	}, er
 }

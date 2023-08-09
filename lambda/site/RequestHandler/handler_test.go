@@ -20,16 +20,16 @@ func TestParseHandlerBySearch(t *testing.T) {
 	// テスト用のリクエストを作成
 	searchRequestByURL := Data.ApiSearchRequest{
 		Word:       "https://gigazine.net/",
-		SearchType: "url",
+		SearchType: "URL",
 	}
 	// 記事へのキーワード検索
 	searchRequestByKeyword := Data.ApiSearchRequest{
 		Word:       "GIGAZINE",
-		SearchType: "keyword",
+		SearchType: "Keyword",
 	}
 	searchRequestBySiteName := Data.ApiSearchRequest{
 		Word:       "GIGAZINE",
-		SearchType: "siteName",
+		SearchType: "SiteName",
 	}
 	// リクエストをJSONに変換
 	searchRequestByKeywordJSON, err := json.Marshal(searchRequestByKeyword)

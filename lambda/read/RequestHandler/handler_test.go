@@ -9,8 +9,10 @@ import (
 
 func TestParseRequestType(t *testing.T) {
 	// 正解のデータを用意する
-	want_Ex, _ := json.Marshal(Data.ExploreCategory{
-		CategoryName: "CategoryName",
+	want_Ex, _ := json.Marshal([]Data.ExploreCategory{
+		{
+			CategoryName: "Test",
+		},
 	})
 	want_ExStr := string(want_Ex)
 	type args struct {

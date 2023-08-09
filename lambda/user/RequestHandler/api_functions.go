@@ -2,32 +2,13 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"user/Data"
 	"user/DBRepo"
+	"user/Data"
 )
 
 type APIFunctions struct {
 	repo DBRepo.DBRepo
 	ip   string
-}
-
-// 設定を同期する為にユーザー設定を取得する
-func (s APIFunctions) ConfigSync(userId string,) (string, error) {
-	// ユーザー設定を取得する
-	userConfig, err := s.repo.SearchUserConfig(userId)
-	if err != nil {
-		return "", err
-	}
-	// レスポンスを返す
-	response, err := json.Marshal(Data.ConfigSyncResponse{
-		UserConfig:   userConfig,
-		ResponseType: "accept",
-		Error:        "",
-	})
-	if err != nil {
-		return "", err
-	}
-	return string(response), nil
 }
 
 func (s APIFunctions) RegisterUser(userId string, userCfgJson string) (string, error) {
@@ -42,10 +23,29 @@ func (s APIFunctions) RegisterUser(userId string, userCfgJson string) (string, e
 	return GenAPIResponse("accept", "Success RegisterUser", "")
 }
 
+// 設定を同期する為にユーザー設定を取得する
+func (s APIFunctions) ConfigSync(userId string) (string, error) {
+	// ユーザー設定を取得する
+	userConfig, err := s.repo.SearchUserConfig(userId)
+	if err != nil {
+		return "", err
+	}
+	// レスポンスを返す
+	response, err := json.Marshal(Data.ConfigSyncResponse{
+		UserConfig:   userConfig,
+		ResponseType: "accept",
+		Error:        "",
+	})
+	if err != nil {
+		return "", err
+	}
+	return GenAPIResponse("accept", string(response), "")
+}
+
 // サイト・記事閲覧などのアクテビティを記録する
-func (s APIFunctions) ReportReadActivity(userId string, readActivity string,) (string, error) {
+func (s APIFunctions) ReportReadActivity(userId string, readActivityJson string) (string, error) {
 	var activityInfo Data.ReadHistory
-	if err := json.Unmarshal([]byte(readActivity), &activityInfo); err != nil {
+	if err := json.Unmarshal([]byte(readActivityJson), &activityInfo); err != nil {
 		return "", err
 	}
 	if err := s.repo.AddReadHistory(userId, activityInfo); err != nil {
@@ -84,7 +84,7 @@ func (s APIFunctions) ModifySearchHistory(userId string, text string, isAddOrRem
 	if err != nil {
 		return "", err
 	}
-	return string(resJson), nil
+	return GenAPIResponse("accept", string(resJson), "")
 }
 
 func (s APIFunctions) ModifyFavoriteSite(userId string, webSiteJson string, isAddOrRemoveBool string) (string, error) {
@@ -133,5 +133,5 @@ func (s APIFunctions) GetAPIRequestLimit(userId string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(apiRequestLimitJson), nil
+	return GenAPIResponse("accept", string(apiRequestLimitJson), "")
 }

@@ -275,11 +275,20 @@ func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, articleUrl s
 
 func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error) {
 	var user User
-	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").First(&user).Error; err != nil {
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return Data.ApiConfig{}, err
 	}
-	if user.Country != "" {
-		return ConvertToApiUserConfig(user).ClientConfig.ApiConfig, nil
+	var apiConfig ApiConfig
+	if err := DBMS.Model(&user).Association("ApiConfig").Find(&apiConfig); err != nil {
+		return Data.ApiConfig{}, err
 	}
-	return Data.ApiConfig{}, nil
+	user.ApiConfig = apiConfig
+	// DB型からAPI型に変換する
+	return Data.ApiConfig{
+		RefreshArticleInterval: user.ApiConfig.RefreshArticleInterval,
+		FetchArticleRequestInterval: user.ApiConfig.FetchArticleRequestInterval,
+		FetchArticleRequestLimit: user.ApiConfig.FetchArticleRequestLimit,
+		FetchTrendRequestInterval: user.ApiConfig.FetchTrendRequestInterval,
+		FetchTrendRequestLimit: user.ApiConfig.FetchTrendRequestLimit,
+	}, nil
 }

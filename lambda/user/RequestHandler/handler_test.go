@@ -2,10 +2,10 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"user/Data"
 	"testing"
 	"time"
 	"user/DBRepo"
+	"user/Data"
 )
 
 // 正常系のテスト
@@ -46,32 +46,47 @@ func TestNormalRequestHandler(t *testing.T) {
 	// RFC3339でフォーマットする
 	nowStr := now.Format(time.RFC3339)
 	readActJson, _ := json.Marshal(Data.ReadHistory{
-		Link: "test",
+		Link:     "test",
 		AccessAt: nowStr,
 	})
-	userConfigJson, _ := json.Marshal(Data.UserConfig{
+	userCfg := Data.UserConfig{
 		UserName:     "test",
 		UserUniqueID: test_user_id,
-	})
+		ClientConfig: Data.ClientConfig{
+			ApiConfig: Data.ApiConfig{
+				RefreshArticleInterval: 10,
+			},
+		},
+	}
+	userConfigJson, _ := json.Marshal(userCfg)
 	testWebSiteJson, _ := json.Marshal(site)
 	testArticleJson, _ := json.Marshal(article)
 	// 正解を用意する
 	configSyncResJson, _ := json.Marshal(Data.ConfigSyncResponse{
+		ResponseType: "accept",
 		UserConfig: Data.UserConfig{
 			UserName:     "test",
 			UserUniqueID: test_user_id,
+			ClientConfig: Data.ClientConfig{
+				ApiConfig: Data.ApiConfig{
+					RefreshArticleInterval: 10,
+				},
+			},
 		},
-		ResponseType: "accept",
-		Error:        "",
+		Error: "",
 	})
+	configSyncExpected, _ := GenAPIResponse("accept", string(configSyncResJson), "")
 	apiResRegisterUser, _ := GenAPIResponse("accept", "Success RegisterUser", "")
 	apiResReportReadActivity, _ := GenAPIResponse("accept", "Success ReportReadActivity", "")
 	apiResUpdateConfig, _ := GenAPIResponse("accept", "Success UpdateConfig", "")
 	apiResModifyFavoriteSite, _ := GenAPIResponse("accept", "Success ModifyFavoriteSite", "")
 	apiResModifyFavoriteArticle, _ := GenAPIResponse("accept", "Success ModifyFavoriteArticle", "")
-	apiRequestLimitCfg, _ := json.Marshal(Data.ApiConfig{})
-	apiRequestLimitCfgJson := string(apiRequestLimitCfg)
+	apiRequestLimitCfgJson, _ := json.Marshal(Data.ApiConfig{
+		RefreshArticleInterval: 10,
+	})
+	apiRequestLimitCfgExpected, _ := GenAPIResponse("accept", string(apiRequestLimitCfgJson), "")
 	searchHistoryJson, _ := json.Marshal([]string{"test"})
+	searchHistoryJsonExpected, _ := GenAPIResponse("accept", string(searchHistoryJson), "")
 	// テスト引数
 	type fields struct {
 		repo DBRepo.DBRepo
@@ -119,7 +134,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    string(configSyncResJson),
+			want:    configSyncExpected,
 			wantErr: false,
 		},
 		{
@@ -164,7 +179,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "test",
 				argumentJson_2: "true",
 			},
-			want:    string(searchHistoryJson),
+			want:    searchHistoryJsonExpected,
 			wantErr: false,
 		},
 		{
@@ -205,11 +220,11 @@ func TestNormalRequestHandler(t *testing.T) {
 			},
 			args: args{
 				requestType:    "GetAPIRequestLimit",
-				userId:         "test",
+				userId:         test_user_id,
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    apiRequestLimitCfgJson,
+			want:    apiRequestLimitCfgExpected,
 			wantErr: false,
 		},
 	}

@@ -2,6 +2,7 @@ package test_lambda_function
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,12 +15,36 @@ import (
 // "github.com/aws/aws-lambda-go/events"
 // "github.com/aws/aws-lambda-go/lambda"
 
-func execTest() {
+func execTest() (bool, error) {
 	// Userのテスト
-
+	result,userCfg,err := TestApiUser()
+	if err != nil || !result {
+		return false, err
+	}
 	// Siteのテスト
-	TestApiSiteSearch()
-
+	result, sites, err := TestApiSiteSearch(userCfg.UserUniqueID)
+	if err != nil {
+		return false, err
+	}
+	if !result {
+		log.Println("TestApiSiteSearch: Failed")
+	}
+	// 購読する
+	result, err = TestApiSiteSubscribe(sites[0])
+	if err != nil {
+		return false, err
+	}
+	if !result {
+		log.Println("TestApiSiteSubscribe: Failed")
+	}
+	result, err = TestApiSiteFetchArticles(sites[0])
+	if err != nil {
+		return false, err
+	}
+	if !result {
+		log.Println("TestApiSiteFetchArticles: Failed")
+	}
+	return true, nil
 }
 
 // リクエストを送信

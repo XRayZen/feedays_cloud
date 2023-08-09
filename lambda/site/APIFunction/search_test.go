@@ -26,7 +26,7 @@ func Test_Search(t *testing.T) {
 				user_id:   "test",
 				apiSearchRequest: Data.ApiSearchRequest{
 					Word:        "https://jp.ign.com/",
-					SearchType: "url",
+					SearchType: "URL",
 				},
 			},
 			// 新規サイト処理をしてnew siteを返す
@@ -40,7 +40,7 @@ func Test_Search(t *testing.T) {
 				user_id:          "test",
 				apiSearchRequest: Data.ApiSearchRequest{
 					Word:        "https://gigazine.net/",
-					SearchType: "url",
+					SearchType: "URL",
 				},
 			},
 			// 結果にサイトを含めてfoundを返す
@@ -54,7 +54,7 @@ func Test_Search(t *testing.T) {
 				user_id:          "test",
 				apiSearchRequest: Data.ApiSearchRequest{
 					Word: 	  "test",
-					SearchType: "keyword",
+					SearchType: "Keyword",
 				},
 			},
 			want:    "none",
@@ -67,7 +67,7 @@ func Test_Search(t *testing.T) {
 				user_id:          "test",
 				apiSearchRequest: Data.ApiSearchRequest{
 					Word: 	  "Found",
-					SearchType: "keyword",
+					SearchType: "Keyword",
 				},
 			},
 			want:    "found",
@@ -80,7 +80,7 @@ func Test_Search(t *testing.T) {
 				user_id:          "test",
 				apiSearchRequest: Data.ApiSearchRequest{
 					Word: 	  "Found",
-					SearchType: "siteName",
+					SearchType: "SiteName",
 				},
 			},
 			want:    "found",

@@ -16,10 +16,10 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 	switch requestType {
 	case "GenUserID":
 		return GenRandomUserID(dbRepo, access_ip)
-	case "ConfigSync":
-		return functions.ConfigSync(userId)
 	case "RegisterUser":
 		return functions.RegisterUser(userId, argumentJson_1)
+	case "ConfigSync":
+		return functions.ConfigSync(userId)
 	case "ReportReadActivity":
 		return functions.ReportReadActivity(userId, argumentJson_1)
 	case "UpdateConfig":
