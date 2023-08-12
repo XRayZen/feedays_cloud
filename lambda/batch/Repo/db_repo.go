@@ -39,18 +39,18 @@ type DBRepoImpl struct {
 }
 
 // DB接続
-func (s DBRepoImpl) ConnectDB(isMock bool) error {
+func (s DBRepoImpl) ConnectDB(is_mock_mode bool) error {
 	// DB接続
-	if isMock {
+	if is_mock_mode {
 		// もしモックモードが有効ならSqliteに接続する
-		InMemoryStr := "file::memory:"
+		in_memory_str := "file::memory:"
 		// fileSqlStr := "test_1.db"
-		DB, err := gorm.Open(sqlite.Open(InMemoryStr))
+		db, err := gorm.Open(sqlite.Open(in_memory_str))
 		if err != nil {
 			panic("failed to connect database")
 		}
 		isDbConnected = true
-		DBMS = DB
+		DBMS = db
 		return nil
 	}
 	if err := DataBaseConnect(); err != nil {
@@ -81,12 +81,12 @@ func (s DBRepoImpl) AutoMigrate() error {
 }
 
 // Readで使う
-func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
+func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, is_preload_related_tables bool) (Data.UserConfig, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
-	if isPreloadRelatedTables {
+	if is_preload_related_tables {
 		if err := DBMS.Model(&user).Association("ReadHistories").Find(&user.ReadHistories); err != nil {
 			return Data.UserConfig{}, err
 		}
@@ -108,18 +108,18 @@ func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTabl
 
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
-	var expCats []ExploreCategory
-	result := DBMS.Where(&ExploreCategory{Country: country}).Find(&expCats)
+	var exp_catagories []ExploreCategory
+	result := DBMS.Where(&ExploreCategory{Country: country}).Find(&exp_catagories)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	// カテゴリーをExploreCategories型に変換する
 	var categories []Data.ExploreCategory
-	for _, expCat := range expCats {
+	for _, exp_category := range exp_catagories {
 		categories = append(categories, Data.ExploreCategory{
-			CategoryName:        expCat.CategoryName,
-			CategoryDescription: expCat.Description,
-			CategoryID:          fmt.Sprint(expCat.ID),
+			CategoryName:        exp_category.CategoryName,
+			CategoryDescription: exp_category.Description,
+			CategoryID:          fmt.Sprint(exp_category.ID),
 		})
 	}
 	return categories, nil
@@ -134,16 +134,16 @@ func (r DBRepoImpl) FetchAllSites() ([]Data.WebSite, error) {
 		return nil, result.Error
 	}
 	// 記事を取得する必要がないので、サイトのみを返す
-	var webSites []Data.WebSite
+	var web_sites []Data.WebSite
 	for _, site := range sites {
-		apiSite, _ := convertDbSiteToApi(site)
-		webSites = append(webSites, apiSite)
+		api_site, _ := convertDbSiteToApi(site)
+		web_sites = append(web_sites, api_site)
 	}
-	return webSites, nil
+	return web_sites, nil
 }
 
+// 読んだ履歴テーブルから全ての履歴を取得する
 func (r DBRepoImpl) FetchAllReadHistories() ([]ReadHistory, error) {
-	// 読んだ履歴テーブルから全ての履歴を取得する
 	var histories []ReadHistory
 	result := DBMS.Find(&histories)
 	if result.Error != nil {
@@ -152,21 +152,21 @@ func (r DBRepoImpl) FetchAllReadHistories() ([]ReadHistory, error) {
 	return histories, nil
 }
 
+// サイトごとのリレーションとして記事を探してそれを含めて更新
 func (r DBRepoImpl) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Article) error {
-	// サイトごとのリレーションとして記事を探してそれを含めて更新
-	var siteModel Site
-	if err := DBMS.Where(&Site{SiteUrl: site.SiteURL}).Find(&siteModel); err.Error != nil {
+	var site_model Site
+	if err := DBMS.Where(&Site{SiteUrl: site.SiteURL}).Find(&site_model); err.Error != nil {
 		log.Println("サイトの検索に失敗しました :", err)
 		return err.Error
 	}
 	// サイトの更新日時を更新する
-	lastModified, err := time.Parse(time.RFC3339, site.LastModified)
+	last_modified, err := time.Parse(time.RFC3339, site.LastModified)
 	if err != nil {
 		log.Println("更新日時の変換に失敗しました :", err.Error())
 		return err
 	}
 	DBMS.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&siteModel).Update("LastModified", lastModified).Error; err != nil {
+		if err := tx.Model(&site_model).Update("LastModified", last_modified).Error; err != nil {
 			log.Println("サイトの更新に失敗しました :", err.Error())
 			// 失敗したらロールバック
 			tx.Rollback()
@@ -176,22 +176,22 @@ func (r DBRepoImpl) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Arti
 	})
 	// 記事の更新
 	// そのサイトの記事テーブルの最新の更新日時を取得する
-	var latestArticle Article
-	if err := DBMS.Where(&Article{SiteID: siteModel.ID}).Order("published_at desc").Find(&latestArticle); err.Error != nil {
+	var latest_article Article
+	if err := DBMS.Where(&Article{SiteID: site_model.ID}).Order("published_at desc").Find(&latest_article); err.Error != nil {
 		return err.Error
 	}
 	// 記事をAPI型からDB型に変換する
-	dbArticles := convertApiArticleToDb(articles)
+	db_articles := convertApiArticleToDb(articles)
 	// 最新記事よりも新しい記事をピックアップする
-	var newArticles []Article
-	for _, article := range dbArticles {
-		if article.PublishedAt.After(latestArticle.PublishedAt) {
-			newArticles = append(newArticles, article)
+	var new_articles []Article
+	for _, article := range db_articles {
+		if article.PublishedAt.After(latest_article.PublishedAt) {
+			new_articles = append(new_articles, article)
 		}
 	}
 	// トランザクションで記事をDBに保存する
 	DBMS.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&siteModel).Association("SiteArticles").Append(newArticles); err != nil {
+		if err := tx.Model(&site_model).Association("SiteArticles").Append(new_articles); err != nil {
 			log.Println("記事の保存に失敗しました : ", err)
 			// 失敗したらロールバック
 			tx.Rollback()
@@ -202,19 +202,19 @@ func (r DBRepoImpl) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Arti
 	return nil
 }
 
+// 時間（From・To）を指定してリードアクテビティを検索する
 func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error) {
-	// 時間（From・To）を指定してリードアクテビティを検索する
 	var histories []ReadHistory
 	result := DBMS.Where("access_at BETWEEN ? AND ?", from, to).Find(&histories)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	var apiHistories []Data.ReadHistory
+	var api_histories []Data.ReadHistory
 	for _, history := range histories {
-		apiHistory := ConvertToApiReadHistory(history)
-		apiHistories = append(apiHistories, apiHistory)
+		api_history := ConvertToApiReadHistory(history)
+		api_histories = append(api_histories, api_history)
 	}
-	return apiHistories, nil
+	return api_histories, nil
 }
 
 // サイトURLをキーにサイトの最新記事を取得する
@@ -230,7 +230,6 @@ func (r DBRepoImpl) SearchSiteLatestArticle(site_url string, get_count int) ([]D
 		return nil, result.Error
 	}
 	site.SiteArticles = articles
-	_, resultArticles := convertDbSiteToApi(site)
-	return resultArticles, nil
+	_, result_articles := convertDbSiteToApi(site)
+	return result_articles, nil
 }
-

@@ -10,11 +10,11 @@ import (
 
 // 正常系のテスト
 func TestNormalRequestHandler(t *testing.T) {
-	dbRepo := DBRepo.DBRepoImpl{}
-	if err := dbRepo.ConnectDB(true); err != nil {
+	db_repo := DBRepo.DBRepoImpl{}
+	if err := db_repo.ConnectDB(true); err != nil {
 		t.Fatal(err)
 	}
-	if err := dbRepo.AutoMigrate(); err != nil {
+	if err := db_repo.AutoMigrate(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -24,18 +24,18 @@ func TestNormalRequestHandler(t *testing.T) {
 		SiteURL:    "testSiteURL",
 		SiteRssURL: "testRssURL",
 	}
-	dbSite := DBRepo.Site{
+	db_site := DBRepo.Site{
 		SiteName: site.SiteName,
 		SiteUrl:  site.SiteURL,
 		RssUrl:   site.SiteRssURL,
 	}
-	DBRepo.DBMS.Create(&dbSite)
+	DBRepo.DBMS.Create(&db_site)
 	article := Data.Article{
 		Title: "test",
 		Link:  "testArticleLink",
 		Site:  site.SiteName,
 	}
-	if err := DBRepo.DBMS.Model(&dbSite).Association("SiteArticles").Append(&DBRepo.Article{
+	if err := DBRepo.DBMS.Model(&db_site).Association("SiteArticles").Append(&DBRepo.Article{
 		Title: article.Title,
 		Url:   article.Link,
 	}); err != nil {
@@ -46,12 +46,12 @@ func TestNormalRequestHandler(t *testing.T) {
 	test_user_id := "test"
 	now := time.Now()
 	// RFC3339でフォーマットする
-	nowStr := now.Format(time.RFC3339)
-	readActJson, _ := json.Marshal(Data.ReadHistory{
+	now_str := now.Format(time.RFC3339)
+	read_act_json, _ := json.Marshal(Data.ReadHistory{
 		Link:     "test",
-		AccessAt: nowStr,
+		AccessAt: now_str,
 	})
-	userCfg := Data.UserConfig{
+	user_config := Data.UserConfig{
 		UserName:     "test",
 		UserUniqueID: test_user_id,
 		ClientConfig: Data.ClientConfig{
@@ -60,12 +60,12 @@ func TestNormalRequestHandler(t *testing.T) {
 			},
 		},
 	}
-	userConfigJson, _ := json.Marshal(userCfg)
-	testWebSiteJson, _ := json.Marshal(site)
-	testArticleJson, _ := json.Marshal(article)
+	user_config_json, _ := json.Marshal(user_config)
+	test_web_site_json, _ := json.Marshal(site)
+	test_article_json, _ := json.Marshal(article)
 
 	// 正解データを用意する
-	configSyncResJson, _ := json.Marshal(Data.ConfigSyncResponse{
+	config_sync_response_json, _ := json.Marshal(Data.ConfigSyncResponse{
 		ResponseType: "accept",
 		UserConfig: Data.UserConfig{
 			UserName:     "test",
@@ -78,25 +78,25 @@ func TestNormalRequestHandler(t *testing.T) {
 		},
 		Error: "",
 	})
-	ExpectedConfigSync := string(configSyncResJson)
-	ExpectedRegisterUser := "Success RegisterUser"
-	ExpectedReportReadActivity := "Success ReportReadActivity"
-	ExpectedUpdateConfig := "Success UpdateConfig"
-	ExpectedModifyFavoriteSite := "Success ModifyFavoriteSite"
-	ExpectedModifyFavoriteArticle := "Success ModifyFavoriteArticle"
-	apiRequestLimitCfgJson, _ := json.Marshal(Data.ApiConfig{
+	expected_config_sync := string(config_sync_response_json)
+	expected_register_user := "Success RegisterUser"
+	expected_report_read_activity := "Success ReportReadActivity"
+	expected_update_config := "Success UpdateConfig"
+	expected_modify_favorite_site := "Success ModifyFavoriteSite"
+	expected_modify_favorite_article := "Success ModifyFavoriteArticle"
+	api_request_limit_config_json, _ := json.Marshal(Data.ApiConfig{
 		RefreshArticleInterval: 10,
 	})
-	ExpectedApiRequestLimitCfg := string(apiRequestLimitCfgJson)
-	searchHistoryJson, _ := json.Marshal([]string{"test"})
-	ExpectedSearchHistoryJson := string(searchHistoryJson)
-	UpdateApiConfig := Data.ApiConfig{
+	expected_api_request_limit_config := string(api_request_limit_config_json)
+	search_history_json, _ := json.Marshal([]string{"test"})
+	expected_search_history_json := string(search_history_json)
+	update_api_config := Data.ApiConfig{
 		RefreshArticleInterval: 20,
 	}
-	updateApiConfigJson, _ := json.Marshal(UpdateApiConfig)
-	ExpectedUpdateApiConfigJson := "Success UpdateAPIRequestLimit"
-	DeletedUserDataIsScoped, _ := json.Marshal(true)
-	ExpectedDeleteUserData := "Success DeleteUserData"
+	update_api_config_json, _ := json.Marshal(update_api_config)
+	expected_update_api_config_json := "Success UpdateAPIRequestLimit"
+	deleted_user_data_is_scoped, _ := json.Marshal(true)
+	expected_delete_user_data := "Success DeleteUserData"
 
 	// テスト引数
 	type fields struct {
@@ -120,23 +120,23 @@ func TestNormalRequestHandler(t *testing.T) {
 		{
 			name: "RegisterUser",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "RegisterUser",
 				userId:         test_user_id,
-				argumentJson_1: string(userConfigJson),
+				argumentJson_1: string(user_config_json),
 				argumentJson_2: "",
 			},
-			want:    string(ExpectedRegisterUser),
+			want:    string(expected_register_user),
 			wantErr: false,
 		},
 		// GenUserIDは単純なのでテストしない
 		{
 			name: "ConfigSync",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
@@ -145,43 +145,43 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    ExpectedConfigSync,
+			want:    expected_config_sync,
 			wantErr: false,
 		},
 		{
 			name: "ReportReadActivity",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "ReportReadActivity",
 				userId:         test_user_id,
-				argumentJson_1: string(readActJson),
+				argumentJson_1: string(read_act_json),
 				argumentJson_2: "",
 			},
-			want:    string(ExpectedReportReadActivity),
+			want:    string(expected_report_read_activity),
 			wantErr: false,
 		},
 		{
 			name: "UpdateConfig",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "UpdateConfig",
 				userId:         test_user_id,
-				argumentJson_1: string(userConfigJson),
+				argumentJson_1: string(user_config_json),
 				argumentJson_2: "",
 			},
-			want:    string(ExpectedUpdateConfig),
+			want:    string(expected_update_config),
 			wantErr: false,
 		},
 		{
 			name: "ModifySearchHistory",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
@@ -190,43 +190,43 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "test",
 				argumentJson_2: "true",
 			},
-			want:    ExpectedSearchHistoryJson,
+			want:    expected_search_history_json,
 			wantErr: false,
 		},
 		{
 			name: "ModifyFavoriteSite",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "ModifyFavoriteSite",
 				userId:         test_user_id,
-				argumentJson_1: string(testWebSiteJson),
+				argumentJson_1: string(test_web_site_json),
 				argumentJson_2: "true",
 			},
-			want:    string(ExpectedModifyFavoriteSite),
+			want:    string(expected_modify_favorite_site),
 			wantErr: false,
 		},
 		{
 			name: "ModifyFavoriteArticle",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "ModifyFavoriteArticle",
 				userId:         test_user_id,
-				argumentJson_1: string(testArticleJson),
+				argumentJson_1: string(test_article_json),
 				argumentJson_2: "true",
 			},
-			want:    string(ExpectedModifyFavoriteArticle),
+			want:    string(expected_modify_favorite_article),
 			wantErr: false,
 		},
 		{
 			name: "GetApiRequestLimit",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
@@ -235,39 +235,39 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    ExpectedApiRequestLimitCfg,
+			want:    expected_api_request_limit_config,
 			wantErr: false,
 		},
 		// UpdateApiRequestLimit
 		{
 			name: "UpdateApiRequestLimit",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "UpdateAPIRequestLimit",
 				userId:         test_user_id,
-				argumentJson_1: string(updateApiConfigJson),
+				argumentJson_1: string(update_api_config_json),
 				argumentJson_2: "",
 			},
-			want:    ExpectedUpdateApiConfigJson,
+			want:    expected_update_api_config_json,
 			wantErr: false,
 		},
 		// DeleteUserData
 		{
 			name: "DeleteUserData",
 			fields: fields{
-				repo: dbRepo,
+				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
 				requestType:    "DeleteUserData",
 				userId:         test_user_id,
-				argumentJson_1: string(DeletedUserDataIsScoped),
+				argumentJson_1: string(deleted_user_data_is_scoped),
 				argumentJson_2: "",
 			},
-			want:    ExpectedDeleteUserData,
+			want:    expected_delete_user_data,
 			wantErr: false,
 		},
 	}

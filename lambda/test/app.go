@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	FetchSecret "test/fetch_secret"
+	FetchSecret "test/FetchSecret"
 	Internet "test/internet"
 	RDS "test/rds"
 

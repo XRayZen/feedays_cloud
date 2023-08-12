@@ -15,11 +15,11 @@ import (
 
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var api_req api_gen_code.PostReadJSONBody
-	decoderConfig := &mapstructure.DecoderConfig{
+	decoder_config := &mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           &api_req,
 	}
-	decoder, err := mapstructure.NewDecoder(decoderConfig)
+	decoder, err := mapstructure.NewDecoder(decoder_config)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}

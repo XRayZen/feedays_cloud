@@ -102,12 +102,12 @@ func TestApiSitePart2(site Data.WebSite, userID string) (bool, error) {
 	}
 	log.Println("TestApiSiteChangeSiteCategory: Success")
 	// カテゴリー検索をする
-	requestSearchByCategory := Data.ApiSearchRequest{
+	request_search_by_category := Data.ApiSearchRequest{
 		SearchType: "Category",
 		Word:       "IT",
 		UserID:     userID,
 	}
-	result, err := SendSearchRequest(requestSearchByCategory, userID)
+	result, err := SendSearchRequest(request_search_by_category, userID)
 	if err != nil {
 		return false, err
 	}
@@ -142,18 +142,18 @@ func TestApiSitePart3(site Data.WebSite, userID string) (bool, error) {
 // サイトの記事を取得する
 func TestApiSitePart4(site Data.WebSite, userID string) (bool, Data.Article, error) {
 	// サイトの最新記事を取得する
-	requestFetchArticleByLatest := Data.FetchArticlesRequest{
+	request_fetch_article_by_latest := Data.FetchArticlesRequest{
 		SiteUrl:     site.SiteURL,
 		RequestType: "Latest",
 		ReadCount:   10,
 	}
-	res, err := SendFetchArticleRequest(requestFetchArticleByLatest, userID)
+	res, err := SendFetchArticleRequest(request_fetch_article_by_latest, userID)
 	if err != nil {
 		return false, Data.Article{}, err
 	}
-	var resultFetchArticleByLatest Data.FetchArticleResponse
-	err = json.Unmarshal([]byte(res), &resultFetchArticleByLatest)
-	if err != nil || len(resultFetchArticleByLatest.Articles) == 0 {
+	var result_fetch_article_by_latest Data.FetchArticleResponse
+	err = json.Unmarshal([]byte(res), &result_fetch_article_by_latest)
+	if err != nil || len(result_fetch_article_by_latest.Articles) == 0 {
 		log.Println("TestApiSiteFetchArticlesByLatest: Failed")
 		return false, Data.Article{}, err
 	}
@@ -162,15 +162,15 @@ func TestApiSitePart4(site Data.WebSite, userID string) (bool, Data.Article, err
 	// 指定された時間より古い記事を100件取得する
 	// 1日前の時間を取得する
 	now := time.Now()
-	oneDayAgo := now.AddDate(0, 0, -1)
+	one_day_ago := now.AddDate(0, 0, -1)
 	// 1日前の時間をRFC3339文字列に変換する
-	oneDayAgoStr := oneDayAgo.Format(time.RFC3339)
-	requestOlder := Data.FetchArticlesRequest{
+	one_day_ago_str := one_day_ago.Format(time.RFC3339)
+	request_older := Data.FetchArticlesRequest{
 		SiteUrl:        site.SiteURL,
 		RequestType:    "Older",
-		OldestModified: oneDayAgoStr,
+		OldestModified: one_day_ago_str,
 	}
-	res, err = SendFetchArticleRequest(requestOlder, userID)
+	res, err = SendFetchArticleRequest(request_older, userID)
 	if err != nil {
 		return false, Data.Article{}, err
 	}
@@ -182,29 +182,29 @@ func TestApiSitePart4(site Data.WebSite, userID string) (bool, Data.Article, err
 	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteFetchArticlesByOlder: Success")
 	// 更新をテストだが、ここから更新はテスト出来ない 該当関数内で十分テストされている
-	return true, resultFetchArticleByLatest.Articles[0], nil
+	return true, result_fetch_article_by_latest.Articles[0], nil
 }
 
 func SendSearchRequest(request Data.ApiSearchRequest, userID string) (Data.SearchResult, error) {
 	// リクエストをjsonに変換する
-	requestJson, err := json.Marshal(request)
+	request_json, err := json.Marshal(request)
 	if err != nil {
 		return Data.SearchResult{}, err
 	}
-	requestJsonStr := string(requestJson)
-	requestTypeStr := "Search"
-	PostRequestSite := api_gen_code.PostSiteJSONRequestBody{
-		RequestType:          &requestTypeStr,
+	request_json_str := string(request_json)
+	request_type_str := "Search"
+	post_request_site := api_gen_code.PostSiteJSONRequestBody{
+		RequestType:          &request_type_str,
 		UserId:               &userID,
-		RequestArgumentJson1: &requestJsonStr,
+		RequestArgumentJson1: &request_json_str,
 	}
 	// リクエストをjsonに変換する
-	requestPostJson, err := json.Marshal(PostRequestSite)
+	request_post_json, err := json.Marshal(post_request_site)
 	if err != nil {
 		return Data.SearchResult{}, err
 	}
 	// リクエストを作ったら、APIエンドポイントにリクエストを送る
-	response, err := SendApiRequest(string(requestPostJson), "site")
+	response, err := SendApiRequest(string(request_post_json), "site")
 	if err != nil {
 		return Data.SearchResult{}, err
 	}
@@ -219,30 +219,30 @@ func SendSearchRequest(request Data.ApiSearchRequest, userID string) (Data.Searc
 
 func SendSubscribeSiteRequest(requestWebSite Data.WebSite, isSubscribe bool, userID string) (string, error) {
 	// サイトとisSubscribeをjsonに変換する
-	requestJson, err := json.Marshal(requestWebSite)
+	request_json, err := json.Marshal(requestWebSite)
 	if err != nil {
 		return "", err
 	}
-	requestJsonStr := string(requestJson)
-	isSubscribeJson, err := json.Marshal(isSubscribe)
+	request_json_str := string(request_json)
+	is_subscribe_json, err := json.Marshal(isSubscribe)
 	if err != nil {
 		return "", err
 	}
-	isSubscribeJsonStr := string(isSubscribeJson)
-	reqType := "SubscribeSite"
-	request := api_gen_code.PostSiteJSONRequestBody{
-		RequestType:          &reqType,
+	is_subscribe_json_str := string(is_subscribe_json)
+	request_type := "SubscribeSite"
+	post_request := api_gen_code.PostSiteJSONRequestBody{
+		RequestType:          &request_type,
 		UserId:               &userID,
-		RequestArgumentJson1: &requestJsonStr,
-		RequestArgumentJson2: &isSubscribeJsonStr,
+		RequestArgumentJson1: &request_json_str,
+		RequestArgumentJson2: &is_subscribe_json_str,
 	}
 	// リクエストをjsonに変換する
-	requestPostJson, err := json.Marshal(request)
+	request_post_json, err := json.Marshal(post_request)
 	if err != nil {
 		return "", err
 	}
 	// リクエストを作ったら、APIエンドポイントにリクエストを送る
-	response, err := SendApiRequest(string(requestPostJson), "site")
+	response, err := SendApiRequest(string(request_post_json), "site")
 	if err != nil {
 		return "", err
 	}
@@ -251,24 +251,24 @@ func SendSubscribeSiteRequest(requestWebSite Data.WebSite, isSubscribe bool, use
 
 func SendFetchArticleRequest(request Data.FetchArticlesRequest, userID string) (string, error) {
 	// リクエストをjsonに変換する
-	requestJson, err := json.Marshal(request)
+	request_json, err := json.Marshal(request)
 	if err != nil {
 		return "", err
 	}
-	requestJsonStr := string(requestJson)
-	reqType := "FetchArticle"
-	requestBody := api_gen_code.PostSiteJSONRequestBody{
-		RequestType:          &reqType,
+	request_json_str := string(request_json)
+	request_type := "FetchArticle"
+	request_body := api_gen_code.PostSiteJSONRequestBody{
+		RequestType:          &request_type,
 		UserId:               &userID,
-		RequestArgumentJson1: &requestJsonStr,
+		RequestArgumentJson1: &request_json_str,
 	}
 	// リクエストをjsonに変換する
-	requestPostJson, err := json.Marshal(requestBody)
+	request_post_json, err := json.Marshal(request_body)
 	if err != nil {
 		return "", err
 	}
 	// リクエストを作ったら、APIエンドポイントにリクエストを送る
-	response, err := SendApiRequest(string(requestPostJson), "site")
+	response, err := SendApiRequest(string(request_post_json), "site")
 	if err != nil {
 		return "", err
 	}

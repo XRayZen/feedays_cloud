@@ -45,9 +45,9 @@ func (s DBRepoImpl) ConnectDB(isMock bool) error {
 	// DB接続
 	if isMock {
 		// もしモックモードが有効ならSqliteに接続する
-		InMemoryStr := "file::memory:"
+		in_memory_str := "file::memory:"
 		// fileSqlStr := "test_1.db"
-		DB, err := gorm.Open(sqlite.Open(InMemoryStr))
+		DB, err := gorm.Open(sqlite.Open(in_memory_str))
 		if err != nil {
 			panic("failed to connect database")
 		}
@@ -83,12 +83,12 @@ func (s DBRepoImpl) AutoMigrate() error {
 }
 
 // Readで使う
-func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
+func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, is_preload_related_tables bool) (Data.UserConfig, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
-	if isPreloadRelatedTables {
+	if is_preload_related_tables {
 		if err := DBMS.Model(&user).Association("ReadHistories").Find(&user.ReadHistories); err != nil {
 			return Data.UserConfig{}, err
 		}
@@ -110,18 +110,18 @@ func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTabl
 
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
-	var expCats []ExploreCategory
-	result := DBMS.Where(&ExploreCategory{Country: country}).Find(&expCats)
+	var explore_categories []ExploreCategory
+	result := DBMS.Where(&ExploreCategory{Country: country}).Find(&explore_categories)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	// カテゴリーをExploreCategories型に変換する
 	var categories []Data.ExploreCategory
-	for _, expCat := range expCats {
+	for _, category := range explore_categories {
 		categories = append(categories, Data.ExploreCategory{
-			CategoryName:        expCat.CategoryName,
-			CategoryDescription: expCat.Description,
-			CategoryID:          fmt.Sprint(expCat.ID),
+			CategoryName:        category.CategoryName,
+			CategoryDescription: category.Description,
+			CategoryID:          fmt.Sprint(category.ID),
 		})
 	}
 	return categories, nil
@@ -133,9 +133,9 @@ func (r DBRepoImpl) RegisterSite(site Data.WebSite, articles []Data.Article) err
 	// サイトを登録する
 	// もし、サイトが存在していたら登録しない
 	if !r.IsExistSite(site.SiteURL) {
-		dbSite := convertApiSiteToDb(site, articles)
+		db_site := convertApiSiteToDb(site, articles)
 		if err := DBMS.Transaction(func(tx *gorm.DB) error {
-			result := tx.Create(&dbSite)
+			result := tx.Create(&db_site)
 			if result.Error != nil {
 				log.Println("サイト登録失敗 : " + result.Error.Error())
 				tx.Rollback()
@@ -157,8 +157,8 @@ func (r DBRepoImpl) SearchSiteByUrl(site_url string) (Data.WebSite, error) {
 	if result.Error != nil {
 		return Data.WebSite{}, result.Error
 	}
-	resultSite, _ := convertDbSiteToApi(site)
-	return resultSite, nil
+	result_site, _ := convertDbSiteToApi(site)
+	return result_site, nil
 }
 
 func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
@@ -167,12 +167,12 @@ func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
 	if result.Error != nil {
 		return []Data.WebSite{}, result.Error
 	}
-	var resultSites []Data.WebSite
+	var result_sites []Data.WebSite
 	for _, site := range sites {
-		resultSite, _ := convertDbSiteToApi(site)
-		resultSites = append(resultSites, resultSite)
+		result_site, _ := convertDbSiteToApi(site)
+		result_sites = append(result_sites, result_site)
 	}
-	return resultSites, nil
+	return result_sites, nil
 }
 
 func (r DBRepoImpl) SearchSiteByCategory(category string) ([]Data.WebSite, error) {
@@ -180,12 +180,12 @@ func (r DBRepoImpl) SearchSiteByCategory(category string) ([]Data.WebSite, error
 	if err := DBMS.Where(&Site{Category: category}).Find(&sites).Error; err != nil {
 		return []Data.WebSite{}, err
 	}
-	var resultSites []Data.WebSite
+	var result_sites []Data.WebSite
 	for _, site := range sites {
-		resultSite, _ := convertDbSiteToApi(site)
-		resultSites = append(resultSites, resultSite)
+		result_site, _ := convertDbSiteToApi(site)
+		result_sites = append(result_sites, result_site)
 	}
-	return resultSites, nil
+	return result_sites, nil
 }
 
 func (r DBRepoImpl) IsExistSite(site_url string) bool {
@@ -214,13 +214,13 @@ func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_sub
 	}
 	// サブスクリブされていなかったらサブスクリプションサイトに追加する
 	if !r.IsSubscribeSite(user_unique_id, site_url) && is_subscribe {
-		subscriptionSite := SubscriptionSite{
+		subscription_site := SubscriptionSite{
 			UserID: user.ID,
 			SiteID: site.ID,
 		}
 		// トランザクション内で処理する
 		if err := DBMS.Transaction(func(tx *gorm.DB) error {
-			if err := tx.Create(&subscriptionSite).Error; err != nil {
+			if err := tx.Create(&subscription_site).Error; err != nil {
 				log.Println("サブスクリプションサイト登録失敗 : " + err.Error())
 				// エラーが発生したらロールバックする
 				tx.Rollback()
@@ -286,10 +286,10 @@ func (r DBRepoImpl) SearchArticlesByKeyword(keyword string) ([]Data.Article, err
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	_, resultArticles := convertDbSiteToApi(Site{
+	_, result_articles := convertDbSiteToApi(Site{
 		SiteArticles: articles,
 	})
-	return resultArticles, nil
+	return result_articles, nil
 }
 
 // サイトURLをキーにサイトの最新記事を取得する
@@ -305,8 +305,8 @@ func (r DBRepoImpl) SearchSiteLatestArticle(site_url string, get_count int) ([]D
 		return nil, result.Error
 	}
 	site.SiteArticles = articles
-	_, resultArticles := convertDbSiteToApi(site)
-	return resultArticles, nil
+	_, result_articles := convertDbSiteToApi(site)
+	return result_articles, nil
 }
 
 func (r DBRepoImpl) SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isNew bool) ([]Data.Article, error) {
@@ -326,8 +326,8 @@ func (r DBRepoImpl) SearchArticlesByTimeAndOrder(siteUrl string, lastModified ti
 		return nil, result.Error
 	}
 	site.SiteArticles = articles
-	_, resultArticles := convertDbSiteToApi(site)
-	return resultArticles, nil
+	_, result_articles := convertDbSiteToApi(site)
+	return result_articles, nil
 }
 
 // サイトのカテゴリを変更する
@@ -414,7 +414,7 @@ func (r DBRepoImpl) DeleteSiteByUnscoped(site_url string) error {
 // ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
 func (r DBRepoImpl) ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error {
 	if err := DBMS.Transaction(func(tx *gorm.DB) error {
-		exploreCategory := ExploreCategory{
+		explore_category := ExploreCategory{
 			CategoryName: category.CategoryName,
 			Description:  category.CategoryDescription,
 			Country:      category.CategoryCountry,
@@ -422,13 +422,13 @@ func (r DBRepoImpl) ModifyExploreCategory(category Data.ExploreCategory, is_add_
 		}
 		if is_add_or_remove {
 			// カテゴリを追加する
-			if err := tx.Create(&exploreCategory).Error; err != nil {
+			if err := tx.Create(&explore_category).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
 		} else {
 			// カテゴリを削除する
-			if err := tx.Where(&exploreCategory).Delete(&exploreCategory).Error; err != nil {
+			if err := tx.Where(&explore_category).Delete(&explore_category).Error; err != nil {
 				tx.Rollback()
 				return err
 			}

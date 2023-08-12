@@ -15,27 +15,27 @@ func newSite(siteUrl string) (Data.WebSite, []Data.Article, error) {
 		return Data.WebSite{}, nil, fmt.Errorf("getHtmlGoQueryDoc error: %v", err)
 	}
 	// RSSのURLを取得する
-	rssUrls, err := getRSSUrls(doc, siteUrl)
+	rss_urls, err := getRSSUrls(doc, siteUrl)
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("getRSSUrl error: %v", err)
 	}
 	// サイトメタデータを取得する
-	siteMeta, err := getSiteMeta(doc, siteUrl)
+	site_meta, err := getSiteMeta(doc, siteUrl)
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("getSiteMeta error: %v", err)
 	}
 	// RSSをパースする
-	no_image_articles, err := fetchRSSArticles(rssUrls[0])
+	no_image_articles, err := fetchRSSArticles(rss_urls[0])
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("parseRssFeed error: %v", err)
 	}
-	siteMeta.SiteRssURL = rssUrls[0]
+	site_meta.SiteRssURL = rss_urls[0]
 	// 記事のイメージURLを取得する
 	articles, err := getArticleImageURLs(no_image_articles)
 	if err != nil {
 		return Data.WebSite{}, nil, fmt.Errorf("getArticleImageURLs error: %v", err)
 	}
-	return siteMeta, articles, nil
+	return site_meta, articles, nil
 }
 
 func getHtmlGoQueryDoc(url string) (*goquery.Document, error) {
@@ -59,11 +59,11 @@ func getHtmlGoQueryDoc(url string) (*goquery.Document, error) {
 }
 
 func getRSSUrls(doc *goquery.Document, siteUrl string) ([]string, error) {
-	rssUrl := []string{}
+	rss_url := []string{}
 	doc.Find("link[type='application/rss+xml']").Each(func(i int, s *goquery.Selection) {
 		href, exists := s.Attr("href")
 		if exists {
-			rssUrl = append(rssUrl, href)
+			rss_url = append(rss_url, href)
 			return
 		}
 	})
@@ -71,52 +71,46 @@ func getRSSUrls(doc *goquery.Document, siteUrl string) ([]string, error) {
 	doc.Find("link[type='application/atom+xml']").Each(func(i int, s *goquery.Selection) {
 		href, exists := s.Attr("href")
 		if exists {
-			rssUrl = append(rssUrl, href)
+			rss_url = append(rss_url, href)
 			return
 		}
 	})
-	if rssUrl == nil {
+	if rss_url == nil {
 		return nil, fmt.Errorf("RSS URL not found")
 	}
 	//RSSのURLが相対パスの場合の処理
-	for i, v := range rssUrl {
+	for i, v := range rss_url {
 		if v[0] == '/' {
-			rssUrl[i] = siteUrl + v
+			rss_url[i] = siteUrl + v
 		}
 	}
-	for i, v := range rssUrl {
+	for i, v := range rss_url {
 		// 最後のURLに/がある場合は消す
 		if v[len(v)-1] == '/' {
-			rssUrl[i] = v[:len(v)-1]
+			rss_url[i] = v[:len(v)-1]
 		}
 	}
-	return rssUrl, nil
+	return rss_url, nil
 }
 
 // サイトのHTMLを取得してパースしてメタ情報を取得する
 func getSiteMeta(doc *goquery.Document, siteUrl string) (Data.WebSite, error) {
 	// メタ情報を取得する
-	siteName := ""
-	siteImage := ""
-	siteDescription := ""
-	siteTags := []string{}
+	site_name, site_image, site_description := "", "", ""
+	site_tags := []string{}
 	doc.Find("head meta").Each(func(i int, s *goquery.Selection) {
 		name, exists := s.Attr("name")
 		if exists {
 			switch name {
 			case "og:title":
-				siteName = s.AttrOr("content", "")
+				site_name = s.AttrOr("content", "")
 			case "og:image":
-				siteImage = s.AttrOr("content", "")
+				site_image = s.AttrOr("content", "")
 			case "og:description":
-				siteDescription = s.AttrOr("content", "")
+				site_description = s.AttrOr("content", "")
 			case "keywords":
-				siteTags = append(siteTags, s.AttrOr("content", ""))
+				site_tags = append(site_tags, s.AttrOr("content", ""))
 			}
-			// // カテゴリーも取得する
-			// if name == "keywords" {
-			// 	siteTags = append(siteTags, s.AttrOr("content", ""))
-			// }
 			return
 		}
 
@@ -124,20 +118,20 @@ func getSiteMeta(doc *goquery.Document, siteUrl string) (Data.WebSite, error) {
 		if exists {
 			switch property {
 			case "og:title":
-				siteName = s.AttrOr("content", "")
+				site_name = s.AttrOr("content", "")
 			case "og:image":
-				siteImage = s.AttrOr("content", "")
+				site_image = s.AttrOr("content", "")
 			case "og:description":
-				siteDescription = s.AttrOr("content", "")
+				site_description = s.AttrOr("content", "")
 			}
 			return
 		}
 	})
 	return Data.WebSite{
-		SiteName:        siteName,
-		SiteImage:       siteImage,
-		SiteDescription: siteDescription,
+		SiteName:        site_name,
+		SiteImage:       site_image,
+		SiteDescription: site_description,
 		SiteURL:         siteUrl,
-		SiteTags:        siteTags,
+		SiteTags:        site_tags,
 	}, nil
 }

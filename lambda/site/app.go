@@ -19,12 +19,12 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// アクセスしてきたIPアドレスを取得する
 	access_ip := request.RequestContext.Identity.SourceIP
 	var api_req api_gen_code.PostSiteJSONBody
-	decoderConfig := &mapstructure.DecoderConfig{
+	decoder_config := &mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           &api_req,
 	}
 	// mapstructureではなくBodyをデコードした方がいいのではないか
-	decoder, err := mapstructure.NewDecoder(decoderConfig)
+	decoder, err := mapstructure.NewDecoder(decoder_config)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}

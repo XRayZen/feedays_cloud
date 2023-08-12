@@ -7,14 +7,14 @@ import (
 	"read/Repo"
 )
 
-func ParseRequestType(diDBRepo Repo.DBRepository, requestType string, userID string) (res string, err error) {
+func ParseRequestType(di_db_repo Repo.DBRepository, request_type string, user_id string) (res string, err error) {
 	// DB接続
-	diDBRepo.ConnectDB(false)
-	diDBRepo.AutoMigrate()
+	di_db_repo.ConnectDB(false)
+	di_db_repo.AutoMigrate()
 	// DBからデータを取得するだけの処理をする
-	switch requestType {
+	switch request_type {
 	case "ExploreCategories":
-		res, err = GetExploreCategories(diDBRepo, userID)
+		res, err = GetExploreCategories(di_db_repo, user_id)
 		return res, err
 	default:
 		return "", errors.New("invalid request type")

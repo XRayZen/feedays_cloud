@@ -60,7 +60,12 @@ func LambdaApiTest() (bool, error) {
 		return false, err
 	}
 	// テストが全て成功したら削除する
-	
+	result,err = DeleteTestData(user_cfg.UserUniqueID, sites[0].SiteURL)
+	if err != nil || !result {
+		log.Println("DeleteTestData: Failed : ", err)
+		return false, err
+	}
+	log.Println("ALL TESTS ARE SUCCESSFUL")
 	return true, nil
 }
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	FetchSecret "test/fetch_secret"
+	FetchSecret "test/FetchSecret"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

@@ -90,12 +90,12 @@ func Test_Search(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// 検索リクエストをJsonに変換
-			SearchJson, _ := json.Marshal(tt.args.apiSearchRequest)
+			search_json, _ := json.Marshal(tt.args.apiSearchRequest)
 			// ここでモックへの依存性を注入
 			functions := APIFunctions{
 				DBRepo: Repo.MockDBRepo{},
 			}
-			got, err := functions.Search(tt.args.access_ip, tt.args.user_id, string(SearchJson))
+			got, err := functions.Search(tt.args.access_ip, tt.args.user_id, string(search_json))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Search() error = %v, wantErr %v", err, tt.wantErr)
 				return

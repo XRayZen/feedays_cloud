@@ -10,7 +10,7 @@ import (
 )
 
 func TestBatchDbRepo(t *testing.T) {
-	dbRepo := InitDataBase()
+	db_repo := InitDataBase()
 	// Userを取得する
 	var user User
 	// Userが取得出来ない
@@ -31,47 +31,47 @@ func TestBatchDbRepo(t *testing.T) {
 		panic("failed to get GIGAZINE")
 	}
 	// API構造体からDB構造体に変換する
-	dbSite := convertApiSiteToDb(site, articles)
-	DBMS.Create(&dbSite)
+	db_site := convertApiSiteToDb(site, articles)
+	DBMS.Create(&db_site)
 	t.Run("Batch", func(t *testing.T) {
 		// バッチ処理のDB操作をテストする
-		sites, err := dbRepo.FetchAllSites()
+		sites, err := db_repo.FetchAllSites()
 		if err != nil || len(sites) == 0 {
 			t.Errorf("failed to fetch all sites")
 		}
-		readHists, err := dbRepo.FetchAllReadHistories()
-		if err != nil || len(readHists) == 0 {
+		read_hist, err := db_repo.FetchAllReadHistories()
+		if err != nil || len(read_hist) == 0 {
 			t.Errorf("failed to fetch all read histories")
 		}
 		// 記事を作る
-		nowArticleTime := time.Now().UTC().Add(time.Hour).AddDate(0, 0, 10).Format(time.RFC3339)
+		now_article_time := time.Now().UTC().Add(time.Hour).AddDate(0, 0, 10).Format(time.RFC3339)
 		article := Data.Article{
 			Link:        "https://gigazine.net/news/20201001-ai-robot-artist/",
 			Title:       "TestArticle",
 			Description: "AIが描いた絵がオークションで約1億円で落札される",
-			PublishedAt: nowArticleTime,
+			PublishedAt: now_article_time,
 		}
-		sites[0].LastModified = nowArticleTime
-		if err := dbRepo.UpdateSiteAndArticle(sites[0], []Data.Article{article}); err != nil {
+		sites[0].LastModified = now_article_time
+		if err := db_repo.UpdateSiteAndArticle(sites[0], []Data.Article{article}); err != nil {
 			t.Errorf("failed to update site and article")
 		}
 		// 記事が更新されているか確認する
-		updatedSite, err := dbRepo.SearchSiteLatestArticle(site.SiteURL, 100)
-		if err != nil || updatedSite[0].PublishedAt != nowArticleTime {
+		updated_site, err := db_repo.SearchSiteLatestArticle(site.SiteURL, 100)
+		if err != nil || updated_site[0].PublishedAt != now_article_time {
 			t.Errorf("failed to search site latest article")
 		}
 		// サイトの更新時間が更新されているか確認する
 		// サイトを取得する
-		var dbSite Site
-		if err := DBMS.Where("site_url = ?", site.SiteURL).Find(&dbSite).Error; err != nil {
+		var db_site Site
+		if err := DBMS.Where("site_url = ?", site.SiteURL).Find(&db_site).Error; err != nil {
 			t.Errorf("failed to get site")
 		}
 		// サイトの更新時間が更新されているか確認する
-		timeLastModified, err := time.Parse(time.RFC3339, nowArticleTime)
+		timeLastModified, err := time.Parse(time.RFC3339, now_article_time)
 		if err != nil {
 			t.Errorf("failed to parse time")
 		}
-		if dbSite.LastModified != timeLastModified {
+		if db_site.LastModified != timeLastModified {
 			t.Errorf("failed to update site last modified")
 		}
 	})

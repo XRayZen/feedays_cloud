@@ -14,12 +14,12 @@ import (
 
 // テスト用のモックデータを生成する
 func InitDataBase() DBRepository {
-	dbRepo := DBRepoImpl{}
+	db_repo := DBRepoImpl{}
 	// MockModeでRDSではなくインメモリーsqliteに接続する
-	if err := dbRepo.ConnectDB(true); err != nil {
+	if err := db_repo.ConnectDB(true); err != nil {
 		panic("failed to connect database")
 	}
-	if err := dbRepo.AutoMigrate(); err != nil {
+	if err := db_repo.AutoMigrate(); err != nil {
 		panic("failed to migrate database")
 	}
 	// カテゴリを生成する
@@ -41,7 +41,7 @@ func InitDataBase() DBRepository {
 	}
 	// Userを保存する
 	DBMS.Create(&users)
-	return dbRepo
+	return db_repo
 }
 
 // GIGAZINEのRSSを取得する
@@ -89,9 +89,9 @@ func GetGIGAZINE() (Data.WebSite, []Data.Article, error) {
 func TestRead(t *testing.T) {
 	// テストを実行する
 	t.Run("Read", func(t *testing.T) {
-		dbRepo := InitDataBase()
+		db_repo := InitDataBase()
 		//カテゴリーが取得できるか検証する
-		result, err := dbRepo.FetchExploreCategories("JP")
+		result, err := db_repo.FetchExploreCategories("JP")
 		if err != nil {
 			t.Errorf("failed to fetch categories")
 		}

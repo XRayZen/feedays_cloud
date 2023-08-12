@@ -15,21 +15,21 @@ import (
 // DBRepo はDBにアクセスするためのインターフェース
 type DBRepo interface {
 	// 全てのDBRepoに共通する処理であるDB接続を行う
-	ConnectDB(isMock bool) error
+	ConnectDB(is_mock bool) error
 	AutoMigrate() error
 	SearchUserConfig(user_unique_Id string) (Data.UserConfig, error)
-	RegisterUser(userInfo Data.UserConfig) error
+	RegisterUser(user_info Data.UserConfig) error
 	DeleteUser(user_unique_Id string) error
-	UpdateUser(user_unique_Id string, dataUserCfg Data.UserConfig) error
+	UpdateUser(user_unique_Id string, data_user_config Data.UserConfig) error
 
-	AddReadHistory(user_unique_Id string, activityInfo Data.ReadHistory) error
+	AddReadHistory(user_unique_Id string, activity_info Data.ReadHistory) error
 	SearchReadHistory(user_unique_Id string, limit int) ([]Data.ReadHistory, error)
 	// 検索履歴を変更したら履歴を返す
-	ModifySearchHistory(user_unique_Id string, word string, isAddOrRemove bool) ([]string, error)
-	ModifyFavoriteSite(user_unique_Id string, siteUrl string, isAddOrRemove bool) error
-	ModifyFavoriteArticle(user_unique_Id string, articleUrl string, isAddOrRemove bool) error
+	ModifySearchHistory(user_unique_Id string, word string, is_add_or_remove bool) ([]string, error)
+	ModifyFavoriteSite(user_unique_Id string, siteUrl string, is_add_or_remove bool) error
+	ModifyFavoriteArticle(user_unique_Id string, articleUrl string, is_add_or_remove bool) error
 	FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)
-	UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error
+	UpdateAPIRequestLimit(user_unique_Id string, api_config Data.ApiConfig) error
 	DeleteUserData(user_unique_Id string) error
 	DeletesUnscopedUserData(user_unique_Id string) error
 }
@@ -40,8 +40,8 @@ type DBRepoImpl struct {
 func (repo DBRepoImpl) ConnectDB(isMock bool) error {
 	if isMock {
 		// もしモックモードが有効ならSqliteに接続する
-		InMemoryStr := "file::memory:"
-		DB, err := gorm.Open(sqlite.Open(InMemoryStr))
+		in_memory_str := "file::memory:"
+		DB, err := gorm.Open(sqlite.Open(in_memory_str))
 		if err != nil {
 			panic("failed to connect database")
 		}
@@ -79,14 +79,14 @@ func (repo DBRepoImpl) AutoMigrate() error {
 
 func (repo DBRepoImpl) RegisterUser(userInfo Data.UserConfig) error {
 	// API構造体からDB構造体に変換する
-	dbApiCfg, dbUiCfg := ConvertToDbApiCfgAndUiCfg(userInfo)
+	db_api_config, db_ui_config := ConvertToDbApiCfgAndUiCfg(userInfo)
 	user := User{
 		UserName:      userInfo.UserName,
 		UserUniqueID:  userInfo.UserUniqueID,
 		AccountType:   userInfo.AccountType,
 		Country:       userInfo.Country,
-		ApiConfig:     dbApiCfg,
-		UiConfig:      dbUiCfg,
+		ApiConfig:     db_api_config,
+		UiConfig:      db_ui_config,
 		ReadHistories: []ReadHistory{},
 	}
 	// DBに保存する
@@ -134,12 +134,12 @@ func (repo DBRepoImpl) UpdateUser(user_unique_Id string, dataUserCfg Data.UserCo
 		return err
 	}
 	// クライアント設定を更新する為だからそこら辺だけ更新する
-	dbApiCfg, dbUiCfg := ConvertToDbApiCfgAndUiCfg(dataUserCfg)
+	db_api_config, db_ui_config := ConvertToDbApiCfgAndUiCfg(dataUserCfg)
 	// Associationでリプレースする
-	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&dbApiCfg); err != nil {
+	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&db_api_config); err != nil {
 		return err
 	}
-	if err := DBMS.Model(&user).Association("UiConfig").Replace(&dbUiCfg); err != nil {
+	if err := DBMS.Model(&user).Association("UiConfig").Replace(&db_ui_config); err != nil {
 		return err
 	}
 	return nil
@@ -147,7 +147,7 @@ func (repo DBRepoImpl) UpdateUser(user_unique_Id string, dataUserCfg Data.UserCo
 
 func (repo DBRepoImpl) AddReadHistory(user_unique_Id string, readHst Data.ReadHistory) error {
 	// DB型に変換する
-	dbReadHist, err := ConvertToDbReadHistory(readHst)
+	db_read_History, err := ConvertToDbReadHistory(readHst)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func (repo DBRepoImpl) AddReadHistory(user_unique_Id string, readHst Data.ReadHi
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return err
 	}
-	err = DBMS.Model(&user).Association("ReadHistories").Append(&dbReadHist)
+	err = DBMS.Model(&user).Association("ReadHistories").Append(&db_read_History)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -169,29 +169,29 @@ func (repo DBRepoImpl) SearchReadHistory(user_unique_Id string, limit int) ([]Da
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return []Data.ReadHistory{}, err
 	}
-	var dbReadHist []ReadHistory
-	if err := DBMS.Where("user_id = ?", user.ID).Order("created_at desc").Limit(limit).Find(&dbReadHist).Error; err != nil {
+	var db_read_histories []ReadHistory
+	if err := DBMS.Where("user_id = ?", user.ID).Order("created_at desc").Limit(limit).Find(&db_read_histories).Error; err != nil {
 		return []Data.ReadHistory{}, err
 	}
-	var apiHists []Data.ReadHistory
-	for _, dbReadHist := range dbReadHist {
-		apiHists = append(apiHists, ConvertToApiReadHistory(dbReadHist, user.UserUniqueID))
+	var api_histories []Data.ReadHistory
+	for _, db_read_history := range db_read_histories {
+		api_histories = append(api_histories, ConvertToApiReadHistory(db_read_history, user.UserUniqueID))
 	}
-	return apiHists, nil
+	return api_histories, nil
 }
 
-func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, isAddOrRemove bool) ([]string, error) {
+func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, is_add_or_remove bool) ([]string, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return []string{}, err
 	}
-	if isAddOrRemove {
+	if is_add_or_remove {
 		// 追加
-		dbSearchHist := SearchHistory{
+		db_search_history := SearchHistory{
 			SearchWord: text,
 			searchAt:   time.Now(),
 		}
-		err := DBMS.Model(&user).Association("SearchHistories").Append(&dbSearchHist)
+		err := DBMS.Model(&user).Association("SearchHistories").Append(&db_search_history)
 		if err != nil {
 			return []string{}, err
 		}
@@ -209,19 +209,19 @@ func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, i
 		}
 	}
 	// 再度取得する
-	var dbSearchHist []SearchHistory
-	if err := DBMS.Model(&user).Association("SearchHistories").Find(&dbSearchHist); err != nil {
+	var db_search_history []SearchHistory
+	if err := DBMS.Model(&user).Association("SearchHistories").Find(&db_search_history); err != nil {
 		return []string{}, err
 	}
 	// SearchAtでdescソートしてdbSearchHistに入れる
-	sort.Slice(dbSearchHist, func(i, j int) bool {
-		return dbSearchHist[i].searchAt.After(dbSearchHist[j].searchAt)
+	sort.Slice(db_search_history, func(i, j int) bool {
+		return db_search_history[i].searchAt.After(db_search_history[j].searchAt)
 	})
-	var apiSearchHists []string
-	for _, dbSearchHist := range dbSearchHist {
-		apiSearchHists = append(apiSearchHists, dbSearchHist.SearchWord)
+	var api_search_histories []string
+	for _, db_search_history := range db_search_history {
+		api_search_histories = append(api_search_histories, db_search_history.SearchWord)
 	}
-	return apiSearchHists, nil
+	return api_search_histories, nil
 }
 
 func (repo DBRepoImpl) ModifyFavoriteSite(user_unique_Id string, siteUrl string, isAddOrRemove bool) error {
@@ -252,17 +252,17 @@ func (repo DBRepoImpl) ModifyFavoriteSite(user_unique_Id string, siteUrl string,
 	return nil
 }
 
-func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, articleUrl string, isAddOrRemove bool) error {
+func (repo DBRepoImpl) ModifyFavoriteArticle(user_unique_Id string, article_url string, is_add_or_remove bool) error {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return err
 	}
 	// Articleを取得する
 	var article Article
-	if err := DBMS.Where("url = ?", articleUrl).First(&article).Error; err != nil {
+	if err := DBMS.Where("url = ?", article_url).First(&article).Error; err != nil {
 		return err
 	}
-	if isAddOrRemove {
+	if is_add_or_remove {
 		// 追加
 		if err := DBMS.Model(&user).Association("FavoriteArticles").Append(&FavoriteArticle{ArticleID: article.ID}); err != nil {
 			return err
@@ -281,11 +281,11 @@ func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConf
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return Data.ApiConfig{}, err
 	}
-	var apiConfig ApiConfig
-	if err := DBMS.Model(&user).Association("ApiConfig").Find(&apiConfig); err != nil {
+	var api_config ApiConfig
+	if err := DBMS.Model(&user).Association("ApiConfig").Find(&api_config); err != nil {
 		return Data.ApiConfig{}, err
 	}
-	user.ApiConfig = apiConfig
+	user.ApiConfig = api_config
 	// DB型からAPI型に変換する
 	return Data.ApiConfig{
 		RefreshArticleInterval:      user.ApiConfig.RefreshArticleInterval,
@@ -297,20 +297,20 @@ func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConf
 }
 
 // UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error
-func (repo DBRepoImpl) UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error {
+func (repo DBRepoImpl) UpdateAPIRequestLimit(user_unique_Id string, api_config Data.ApiConfig) error {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return err
 	}
 	// 更新する
-	apiCfg := ApiConfig{
-		RefreshArticleInterval:      apiConfig.RefreshArticleInterval,
-		FetchArticleRequestInterval: apiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit:    apiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval:   apiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit:      apiConfig.FetchTrendRequestLimit,
+	db_api_config := ApiConfig{
+		RefreshArticleInterval:      api_config.RefreshArticleInterval,
+		FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
+		FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
+		FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
+		FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
 	}
-	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&apiCfg); err != nil {
+	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&db_api_config); err != nil {
 		return err
 	}
 	return nil

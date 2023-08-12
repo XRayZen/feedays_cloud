@@ -11,37 +11,37 @@ func (s APIFunctions) Search(access_ip string, user_id string, request_argument_
 	var result = Data.SearchResult{}
 	result.ApiResponse = "" // 警告されるから一旦入れておく
 	// リクエストをjsonから変換する
-	var apiSearchRequest = Data.ApiSearchRequest{}
-	if err := json.Unmarshal([]byte(request_argument_json1), &apiSearchRequest); err != nil {
+	var api_search_request = Data.ApiSearchRequest{}
+	if err := json.Unmarshal([]byte(request_argument_json1), &api_search_request); err != nil {
 		return "", err
 	}
 	// Wordが空文字の場合はエラー
-	if apiSearchRequest.Word == "" {
+	if api_search_request.Word == "" {
 		return "", errors.New("search word is empty")
 	}
-	switch apiSearchRequest.SearchType {
+	switch api_search_request.SearchType {
 	case "URL":
 		// URL検索
 		// DBに存在しない場合は新規サイト処理
-		res, err := searchByURL(s.DBRepo, apiSearchRequest)
+		res, err := searchByURL(s.DBRepo, api_search_request)
 		if err != nil {
 			return "", err
 		}
 		result = res
 	case "Keyword":
-		res, err := searchByKeyword(s.DBRepo, apiSearchRequest)
+		res, err := searchByKeyword(s.DBRepo, api_search_request)
 		if err != nil {
 			return "", err
 		}
 		result = res
 	case "SiteName":
-		res, err := searchBySiteName(s.DBRepo, apiSearchRequest)
+		res, err := searchBySiteName(s.DBRepo, api_search_request)
 		if err != nil {
 			return "", err
 		}
 		result = res
 	case "Category":
-		res, err := searchByCategory(s.DBRepo, apiSearchRequest)
+		res, err := searchByCategory(s.DBRepo, api_search_request)
 		if err != nil {
 			return "", err
 		}
@@ -49,11 +49,11 @@ func (s APIFunctions) Search(access_ip string, user_id string, request_argument_
 	}
 	// 検索をアクテビティとして報告するが、今は実装しない
 	// resultをjsonに変換する
-	resultJson, err := json.Marshal(result)
+	result_json, err := json.Marshal(result)
 	if err != nil {
 		return "", err
 	}
-	return string(resultJson), nil
+	return string(result_json), nil
 }
 
 func searchByCategory(dBRepository Repo.DBRepository, apiSearchRequest Data.ApiSearchRequest) (result Data.SearchResult, err error) {
@@ -75,7 +75,7 @@ func searchByURL(repo Repo.DBRepository, apiSearchRequest Data.ApiSearchRequest)
 	// サイトURLをキーにDBに該当するサイトがあるか確認する
 	if repo.IsExistSite(apiSearchRequest.Word) {
 		// サイトURLをキーにDBに該当するサイトを返す
-		webSite, err := repo.SearchSiteByUrl(apiSearchRequest.Word)
+		web_site, err := repo.SearchSiteByUrl(apiSearchRequest.Word)
 		if err != nil {
 			return Data.SearchResult{}, err
 		}
@@ -86,7 +86,7 @@ func searchByURL(repo Repo.DBRepository, apiSearchRequest Data.ApiSearchRequest)
 			ResultType:      "found",
 			SearchType:      apiSearchRequest.SearchType,
 			Websites: []Data.WebSite{
-				webSite,
+				web_site,
 			},
 		}
 	} else {

@@ -85,137 +85,136 @@ type UiConfig struct {
 }
 
 // DB構造体からAPI構造体への変換
-func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
+func ConvertToApiUserConfig(db_user_config User) Data.UserConfig {
 	// UiResponsiveFontSizeをData.UiResponsiveFontSizeに変換
-	articleListFontSize := Data.UiResponsiveFontSize{
-		Mobile:  dbCfg.UiConfig.ArticleListMobileSize,
-		Tablet:  dbCfg.UiConfig.ArticleListTabletSize,
-		Default: dbCfg.UiConfig.ArticleDetailTabletSize,
+	article_list_font_size := Data.UiResponsiveFontSize{
+		Mobile:  db_user_config.UiConfig.ArticleListMobileSize,
+		Tablet:  db_user_config.UiConfig.ArticleListTabletSize,
+		Default: db_user_config.UiConfig.ArticleDetailTabletSize,
 	}
-	articleDetailFontSize := Data.UiResponsiveFontSize{
-		Mobile:  dbCfg.UiConfig.ArticleDetailMobileSize,
-		Tablet:  dbCfg.UiConfig.ArticleDetailTabletSize,
-		Default: dbCfg.UiConfig.ArticleDetailTabletSize,
+	article_detail_font_size := Data.UiResponsiveFontSize{
+		Mobile:  db_user_config.UiConfig.ArticleDetailMobileSize,
+		Tablet:  db_user_config.UiConfig.ArticleDetailTabletSize,
+		Default: db_user_config.UiConfig.ArticleDetailTabletSize,
 	}
-	uiCfg := Data.UiConfig{
-		ThemeColorValue:       dbCfg.UiConfig.ThemeColorValue,
-		ThemeMode:             dbCfg.UiConfig.ThemeMode,
-		DrawerMenuOpacity:     dbCfg.UiConfig.DrawerMenuOpacity,
-		ArticleListFontSize:   articleListFontSize,
-		ArticleDetailFontSize: articleDetailFontSize,
+	ui_config := Data.UiConfig{
+		ThemeColorValue:       db_user_config.UiConfig.ThemeColorValue,
+		ThemeMode:             db_user_config.UiConfig.ThemeMode,
+		DrawerMenuOpacity:     db_user_config.UiConfig.DrawerMenuOpacity,
+		ArticleListFontSize:   article_list_font_size,
+		ArticleDetailFontSize: article_detail_font_size,
 	}
-	apiCfg := Data.ApiConfig{
-		RefreshArticleInterval:      dbCfg.ApiConfig.RefreshArticleInterval,
-		FetchArticleRequestInterval: dbCfg.ApiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit:    dbCfg.ApiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval:   dbCfg.ApiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit:      dbCfg.ApiConfig.FetchTrendRequestLimit,
+	api_config := Data.ApiConfig{
+		RefreshArticleInterval:      db_user_config.ApiConfig.RefreshArticleInterval,
+		FetchArticleRequestInterval: db_user_config.ApiConfig.FetchArticleRequestInterval,
+		FetchArticleRequestLimit:    db_user_config.ApiConfig.FetchArticleRequestLimit,
+		FetchTrendRequestInterval:   db_user_config.ApiConfig.FetchTrendRequestInterval,
+		FetchTrendRequestLimit:      db_user_config.ApiConfig.FetchTrendRequestLimit,
 	}
 	// 検索履歴をData.SearchHistoryの配列に変換
-	var searchHistory []Data.SearchHistory
-	for _, searchHistoryDb := range dbCfg.SearchHistories {
-		searchHistory = append(searchHistory, Data.SearchHistory{
-			SearchWord: searchHistoryDb.SearchWord,
+	var search_history []Data.SearchHistory
+	for _, search_history_db := range db_user_config.SearchHistories {
+		search_history = append(search_history, Data.SearchHistory{
+			SearchWord: search_history_db.SearchWord,
 			// 検索履歴の日付をRFC3339に変換
-			SearchAt: searchHistoryDb.CreatedAt.Format(time.RFC3339),
+			SearchAt: search_history_db.CreatedAt.Format(time.RFC3339),
 		})
 	}
 	// 読んだ記事をData.ReadHistoryの配列に変換
-	var readHistory []Data.ReadHistory
-	for _, readHistoryDb := range dbCfg.ReadHistories {
-		readHistory = append(readHistory, Data.ReadHistory{
-			Link:           readHistoryDb.Link,
-			AccessAt:       readHistoryDb.AccessAt.Format(time.RFC3339),
-			AccessPlatform: readHistoryDb.AccessPlatform,
-			AccessIP:       readHistoryDb.AccessIP,
+	var read_history []Data.ReadHistory
+	for _, read_history_db := range db_user_config.ReadHistories {
+		read_history = append(read_history, Data.ReadHistory{
+			Link:           read_history_db.Link,
+			AccessAt:       read_history_db.AccessAt.Format(time.RFC3339),
+			AccessPlatform: read_history_db.AccessPlatform,
+			AccessIP:       read_history_db.AccessIP,
 		})
 	}
 	// 購読サイトをData.SubscribeWebSiteの配列に変換
-	var subscribeWebSite []Data.SubscribeWebSite
-	for _, subscribeWebSiteDb := range dbCfg.SubscriptionSites {
+	var subscribe_web_site []Data.SubscribeWebSite
+	for _, subscribe_web_site_db := range db_user_config.SubscriptionSites {
 		//これだとWebSiteを変換する為に都度クエリが走るから、ここはSiteIDだけ保持してクライアント側で必要になったらSite情報を取得するようにする
-		subscribeWebSite = append(subscribeWebSite, Data.SubscribeWebSite{
-			SiteID:      subscribeWebSiteDb.SiteID,
-			FolderIndex: subscribeWebSiteDb.FolderIndex,
-			FolderName:  subscribeWebSiteDb.FolderName,
-			SiteIndex:   subscribeWebSiteDb.SiteIndex,
+		subscribe_web_site = append(subscribe_web_site, Data.SubscribeWebSite{
+			SiteID:      subscribe_web_site_db.SiteID,
+			FolderIndex: subscribe_web_site_db.FolderIndex,
+			FolderName:  subscribe_web_site_db.FolderName,
+			SiteIndex:   subscribe_web_site_db.SiteIndex,
 		})
 	}
 	// お気に入りサイトをData.FavoriteSiteの配列に変換
-	var favoriteSite []Data.FavoriteSite
-	for _, favoriteSiteDb := range dbCfg.FavoriteSites {
-		favoriteSite = append(favoriteSite, Data.FavoriteSite{
-			SiteID:    favoriteSiteDb.SiteID,
-			CreatedAt: favoriteSiteDb.CreatedAt.Format(time.RFC3339),
+	var favorite_site []Data.FavoriteSite
+	for _, favorite_site_db := range db_user_config.FavoriteSites {
+		favorite_site = append(favorite_site, Data.FavoriteSite{
+			SiteID:    favorite_site_db.SiteID,
+			CreatedAt: favorite_site_db.CreatedAt.Format(time.RFC3339),
 		})
 	}
 	// お気に入り記事をData.FavoriteArticleの配列に変換
-	var favoriteArticle []Data.FavoriteArticle
-	for _, favoriteArticleDb := range dbCfg.FavoriteArticles {
-		favoriteArticle = append(favoriteArticle, Data.FavoriteArticle{
-			ArticleID: favoriteArticleDb.ArticleID,
-			CreatedAt: favoriteArticleDb.CreatedAt.Format(time.RFC3339),
+	var favorite_article []Data.FavoriteArticle
+	for _, favorite_article_db := range db_user_config.FavoriteArticles {
+		favorite_article = append(favorite_article, Data.FavoriteArticle{
+			ArticleID: favorite_article_db.ArticleID,
+			CreatedAt: favorite_article_db.CreatedAt.Format(time.RFC3339),
 		})
 	}
-	clientConfig := Data.ClientConfig{
-		UiConfig:  uiCfg,
-		ApiConfig: apiCfg,
-	}
 	return Data.UserConfig{
-		UserName:         dbCfg.UserName,
-		UserUniqueID:     dbCfg.UserUniqueID,
-		ClientConfig:     clientConfig,
-		AccountType:      dbCfg.AccountType,
-		SearchHistory:    searchHistory,
-		SubscribeWebSite: subscribeWebSite,
-		FavoriteSite:     favoriteSite,
-		FavoriteArticle:  favoriteArticle,
-		ReadHistory:      readHistory,
+		UserName:     db_user_config.UserName,
+		UserUniqueID: db_user_config.UserUniqueID,
+		ClientConfig: Data.ClientConfig{
+			UiConfig:  ui_config,
+			ApiConfig: api_config,
+		},
+		AccountType:      db_user_config.AccountType,
+		SearchHistory:    search_history,
+		SubscribeWebSite: subscribe_web_site,
+		FavoriteSite:     favorite_site,
+		FavoriteArticle:  favorite_article,
+		ReadHistory:      read_history,
 	}
 }
 
 // ユーザー・API設定の更新時に使用する
-func ConvertToDbApiCfgAndUiCfg(apiCfg Data.UserConfig) (dbApiCfg ApiConfig, dbUiCfg UiConfig) {
+func ConvertToDbApiCfgAndUiCfg(api_user_config Data.UserConfig) (ApiConfig, UiConfig) {
 	//フォントサイズをData.UiResponsiveFontSizeからDb.UiResponsiveFontSizeに変換
-	uiCfg := UiConfig{
-		ThemeColorValue:         apiCfg.ClientConfig.UiConfig.ThemeColorValue,
-		ThemeMode:               apiCfg.ClientConfig.UiConfig.ThemeMode,
-		DrawerMenuOpacity:       apiCfg.ClientConfig.UiConfig.DrawerMenuOpacity,
-		ArticleListMobileSize:   apiCfg.ClientConfig.UiConfig.ArticleListFontSize.Mobile,
-		ArticleListTabletSize:   apiCfg.ClientConfig.UiConfig.ArticleListFontSize.Tablet,
-		ArticleDetailMobileSize: apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Mobile,
-		ArticleDetailTabletSize: apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Tablet,
+	ui_config := UiConfig{
+		ThemeColorValue:         api_user_config.ClientConfig.UiConfig.ThemeColorValue,
+		ThemeMode:               api_user_config.ClientConfig.UiConfig.ThemeMode,
+		DrawerMenuOpacity:       api_user_config.ClientConfig.UiConfig.DrawerMenuOpacity,
+		ArticleListMobileSize:   api_user_config.ClientConfig.UiConfig.ArticleListFontSize.Mobile,
+		ArticleListTabletSize:   api_user_config.ClientConfig.UiConfig.ArticleListFontSize.Tablet,
+		ArticleDetailMobileSize: api_user_config.ClientConfig.UiConfig.ArticleDetailFontSize.Mobile,
+		ArticleDetailTabletSize: api_user_config.ClientConfig.UiConfig.ArticleDetailFontSize.Tablet,
 	}
-	apiCfgDb := ApiConfig{
-		RefreshArticleInterval:      apiCfg.ClientConfig.ApiConfig.RefreshArticleInterval,
-		FetchArticleRequestInterval: apiCfg.ClientConfig.ApiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit:    apiCfg.ClientConfig.ApiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval:   apiCfg.ClientConfig.ApiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit:      apiCfg.ClientConfig.ApiConfig.FetchTrendRequestLimit,
+	api_config := ApiConfig{
+		RefreshArticleInterval:      api_user_config.ClientConfig.ApiConfig.RefreshArticleInterval,
+		FetchArticleRequestInterval: api_user_config.ClientConfig.ApiConfig.FetchArticleRequestInterval,
+		FetchArticleRequestLimit:    api_user_config.ClientConfig.ApiConfig.FetchArticleRequestLimit,
+		FetchTrendRequestInterval:   api_user_config.ClientConfig.ApiConfig.FetchTrendRequestInterval,
+		FetchTrendRequestLimit:      api_user_config.ClientConfig.ApiConfig.FetchTrendRequestLimit,
 	}
-	return apiCfgDb, uiCfg
+	return api_config, ui_config
 }
 
 // DataのReadHistoryをDbのReadHistoryに変換
-func ConvertToDbReadHistory(readHistory Data.ReadHistory) (ReadHistory, error) {
+func ConvertToDbReadHistory(read_history Data.ReadHistory) (ReadHistory, error) {
 	// アクセス日時をRFC3339からtime.Timeに変換
-	accessAt, err := time.Parse(time.RFC3339, readHistory.AccessAt)
+	access_at, err := time.Parse(time.RFC3339, read_history.AccessAt)
 	if err != nil {
 		return ReadHistory{}, err
 	}
 	return ReadHistory{
-		Link:           readHistory.Link,
-		AccessAt:       accessAt,
-		AccessPlatform: readHistory.AccessPlatform,
-		AccessIP:       readHistory.AccessIP,
+		Link:           read_history.Link,
+		AccessAt:       access_at,
+		AccessPlatform: read_history.AccessPlatform,
+		AccessIP:       read_history.AccessIP,
 	}, nil
 }
 
-func ConvertToApiReadHistory(readHistory ReadHistory) Data.ReadHistory {
+func ConvertToApiReadHistory(read_history ReadHistory) Data.ReadHistory {
 	return Data.ReadHistory{
-		Link:           readHistory.Link,
-		AccessAt:       readHistory.AccessAt.Format(time.RFC3339),
-		AccessPlatform: readHistory.AccessPlatform,
-		AccessIP:       readHistory.AccessIP,
+		Link:           read_history.Link,
+		AccessAt:       read_history.AccessAt.Format(time.RFC3339),
+		AccessPlatform: read_history.AccessPlatform,
+		AccessIP:       read_history.AccessIP,
 	}
 }

@@ -51,28 +51,28 @@ type ExploreCategory struct {
 // Data.WebSiteとArticlesからDB型に変換する
 func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 	// サイトの最終更新日時をtimeに変換
-	var lastModified time.Time
+	var last_modified time.Time
 	res_time, err := time.Parse(time.RFC3339, site.LastModified)
 	if err != nil {
-		lastModified = time.Now().UTC()
+		last_modified = time.Now().UTC()
 	} else {
-		lastModified = res_time
+		last_modified = res_time
 	}
-	var siteArticles []Article
-	for _, siteArticle := range articles {
-		var publishedAt time.Time
-		time, err := time.Parse(time.RFC3339, siteArticle.PublishedAt)
+	var site_articles []Article
+	for _, site_article := range articles {
+		var published_at time.Time
+		time, err := time.Parse(time.RFC3339, site_article.PublishedAt)
 		if err != nil {
-			publishedAt = time.UTC()
+			published_at = time.UTC()
 		} else {
-			publishedAt = time
+			published_at = time
 		}
-		siteArticles = append(siteArticles, Article{
-			Title:       siteArticle.Title,
-			Url:         siteArticle.Link,
-			IconUrl:     siteArticle.Image.Link,
-			Description: siteArticle.Description,
-			PublishedAt: publishedAt,
+		site_articles = append(site_articles, Article{
+			Title:       site_article.Title,
+			Url:         site_article.Link,
+			IconUrl:     site_article.Image.Link,
+			Description: site_article.Description,
+			PublishedAt: published_at,
 		})
 	}
 	// タグを変換
@@ -85,26 +85,26 @@ func convertApiSiteToDb(site Data.WebSite, articles []Data.Article) Site {
 		SiteName:     site.SiteName,
 		SiteUrl:      site.SiteURL,
 		RssUrl:       site.SiteRssURL,
-		SiteArticles: siteArticles,
+		SiteArticles: site_articles,
 		IconUrl:      site.SiteImage,
 		Description:  site.SiteDescription,
 		Category:     site.SiteCategory,
-		LastModified: lastModified,
+		LastModified: last_modified,
 		Tags:         tags,
 	}
 }
 
 // DB型からAPI型に変換する
 func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
-	var siteArticles []Data.Article
-	for _, siteArticle := range site.SiteArticles {
-		siteArticles = append(siteArticles, Data.Article{
-			Title:       siteArticle.Title,
-			Description: siteArticle.Description,
-			Link:        siteArticle.Url,
-			Image:       Data.RssFeedImage{Link: siteArticle.IconUrl},
+	var site_articles []Data.Article
+	for _, site_article := range site.SiteArticles {
+		site_articles = append(site_articles, Data.Article{
+			Title:       site_article.Title,
+			Description: site_article.Description,
+			Link:        site_article.Url,
+			Image:       Data.RssFeedImage{Link: site_article.IconUrl},
 			Site:        site.SiteName,
-			PublishedAt: siteArticle.PublishedAt.Format(time.RFC3339),
+			PublishedAt: site_article.PublishedAt.Format(time.RFC3339),
 			Category:    site.Category,
 			SiteUrl:     site.SiteUrl,
 		})
@@ -117,20 +117,24 @@ func convertDbSiteToApi(site Site) (Data.WebSite, []Data.Article) {
 		SiteRssURL:      site.RssUrl,
 		LastModified:    site.LastModified.Format(time.RFC3339),
 		SiteCategory:    site.Category,
-	}, siteArticles
+	}, site_articles
 }
 
 // API型からDB型に記事を変換する
-func convertApiArticleToDb(site Site, articles []Data.Article) []Article {
-	var siteArticles []Article
-	for _, siteArticle := range site.SiteArticles {
-		siteArticles = append(siteArticles, Article{
-			Title:       siteArticle.Title,
-			Url:         siteArticle.Url,
-			IconUrl:     siteArticle.IconUrl,
-			Description: siteArticle.Description,
-			PublishedAt: siteArticle.PublishedAt,
+func convertApiArticleToDb(articles []Data.Article) []Article {
+	var site_articles []Article
+	for _, site_article := range articles {
+		published_at, err := time.Parse(time.RFC3339, site_article.PublishedAt)
+		if err != nil {
+			published_at = time.Now().UTC()
+		}
+		site_articles = append(site_articles, Article{
+			Title:       site_article.Title,
+			Url:         site_article.Link,
+			IconUrl:     site_article.Image.Link,
+			Description: site_article.Description,
+			PublishedAt: published_at,
 		})
 	}
-	return siteArticles
+	return site_articles
 }

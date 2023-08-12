@@ -50,13 +50,13 @@ func getArticleImageURLs(articles []Data.Article) ([]Data.Article, error) {
 				ch <- article
 				return
 			}
-			imageUrl, err := getArticleImageURL(doc, article.Link)
+			image_url, err := getArticleImageURL(doc, article.Link)
 			if err != nil {
 				ch <- article
 				return
 			}
 			article.Image = Data.RssFeedImage{
-				Link: imageUrl,
+				Link: image_url,
 			}
 			ch <- article
 		}(article)
@@ -76,20 +76,20 @@ func getArticleImageURL(doc *goquery.Document, articleUrl string) (string, error
 	// 記事のイメージURLを取得する
 	// 1. og:imageを取得する
 	// 3. それでもなければfavicon.icoを取得する
-	imageUrl := ""
+	image_url := ""
 	// 1. og:imageを取得する
 	doc.Find("meta").Each(func(_ int, s *goquery.Selection) {
 		property, exists := s.Attr("property")
 		if exists {
 			if property == "og:image" {
-				imageUrl = s.AttrOr("content", "")
+				image_url = s.AttrOr("content", "")
 				return
 			}
 		}
 	})
 	// 2. それでもなければfavicon.icoを取得する
-	if imageUrl == "" {
-		imageUrl = articleUrl + "/favicon.ico"
+	if image_url == "" {
+		image_url = articleUrl + "/favicon.ico"
 	}
-	return imageUrl, nil
+	return image_url, nil
 }

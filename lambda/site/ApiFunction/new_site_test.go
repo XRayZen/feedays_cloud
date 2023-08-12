@@ -110,17 +110,17 @@ func TestNewSite(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			Url := tt.args.siteUrl
+			url := tt.args.siteUrl
 			// Urlに/がある場合は、/を削除する
-			if Url[len(Url)-1:] == "/" {
-				Url = Url[:len(Url)-1]
+			if url[len(url)-1:] == "/" {
+				url = url[:len(url)-1]
 			}
-			webSite, articles, err := newSite(Url)
+			web_site, articles, err := newSite(url)
 			if err != nil {
 				t.Error(err)
 			}
-			if webSite.SiteURL != Url {
-				t.Errorf("NewSite() = %v, want %v", webSite.SiteURL, Url)
+			if web_site.SiteURL != url {
+				t.Errorf("NewSite() = %v, want %v", web_site.SiteURL, url)
 			}
 			if len(articles) == 0 {
 				t.Errorf("NewSite() = %v, want %v", len(articles), "0")

@@ -22,8 +22,15 @@ func main() {
 
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// バッチ処理なのでリクエストをパースせずコードを実行するだけ
-	dbRepo,inertVal,err := ApiFunction.InitDataBase(false)
-	result, err := ApiFunction.Batch(dbRepo, inertVal)
+	db_repo,interval,err := ApiFunction.InitDataBase(false)
+	if err != nil {
+		log.Println("BATCH ERROR! :", err)
+		return events.APIGatewayProxyResponse{
+			Body:       string("BATCH ERROR! :" + err.Error()),
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	result, err := ApiFunction.Batch(db_repo, interval)
 	if err != nil || !result {
 		log.Println("BATCH ERROR! :", err)
 		return events.APIGatewayProxyResponse{

@@ -11,12 +11,12 @@ import (
 
 // テスト用のモックデータを生成する
 func InitDataBase() DBRepository {
-	dbRepo := DBRepoImpl{}
+	db_repo := DBRepoImpl{}
 	// MockModeでRDSではなくインメモリーsqliteに接続する
-	if err := dbRepo.ConnectDB(true); err != nil {
+	if err := db_repo.ConnectDB(true); err != nil {
 		panic("failed to connect database")
 	}
-	if err := dbRepo.AutoMigrate(); err != nil {
+	if err := db_repo.AutoMigrate(); err != nil {
 		panic("failed to migrate database")
 	}
 	// カテゴリを生成する
@@ -38,7 +38,7 @@ func InitDataBase() DBRepository {
 	}
 	// Userを保存する
 	DBMS.Create(&users)
-	return dbRepo
+	return db_repo
 }
 
 // GIGAZINEのRSSを取得する
@@ -86,7 +86,7 @@ func GetGIGAZINE() (Data.WebSite, []Data.Article, error) {
 // Heavy系のテスト
 // サイトの登録・存在確認・取得
 func TestDBQuerySite(t *testing.T) {
-	dbRepo := InitDataBase()
+	db_repo := InitDataBase()
 	// サイトの登録・存在確認・取得
 	// サイト記事系の処理は
 	t.Run("Write", func(t *testing.T) {
@@ -94,68 +94,68 @@ func TestDBQuerySite(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to get GIGAZINE")
 		}
-		err = dbRepo.RegisterSite(site, articles)
+		err = db_repo.RegisterSite(site, articles)
 		if err != nil {
 			t.Errorf("failed to register site : %v", err)
 		}
-		result := dbRepo.IsExistSite(site.SiteURL)
+		result := db_repo.IsExistSite(site.SiteURL)
 		if !result {
 			t.Errorf("failed to check site")
 		}
 		// サイト購読・確認
-		err = dbRepo.SubscribeSite("0000", site.SiteURL, true)
+		err = db_repo.SubscribeSite("0000", site.SiteURL, true)
 		if err != nil {
 			t.Errorf("failed to subscribe site")
 		}
-		result = dbRepo.IsSubscribeSite("0000", site.SiteURL)
+		result = db_repo.IsSubscribeSite("0000", site.SiteURL)
 		if !result {
 			t.Errorf("failed to check subscribe site")
 		}
 		// サイトの最終更新日時が更新されているかテストする
-		lastModified, err := dbRepo.FetchSiteLastModified(site.SiteURL)
+		last_modified, err := db_repo.FetchSiteLastModified(site.SiteURL)
 		if err != nil {
 			t.Errorf("failed to fetch site last modified : %v", err)
 		}
 		// 時間が変換されていく中でローカル時間とずれるからUTCに変換して解決
-		siteLastModified, err := time.Parse(time.RFC3339, site.LastModified)
-		if err != nil || lastModified != siteLastModified {
+		site_last_modified, err := time.Parse(time.RFC3339, site.LastModified)
+		if err != nil || last_modified != site_last_modified {
 			t.Errorf("failed to fetch site last modified")
 		}
 		// サイトURLをキーにサイトを検索
-		resultSite, err := dbRepo.SearchSiteByUrl(site.SiteURL)
-		if err != nil || resultSite.SiteURL != site.SiteURL {
+		result_site, err := db_repo.SearchSiteByUrl(site.SiteURL)
+		if err != nil || result_site.SiteURL != site.SiteURL {
 			t.Errorf("failed to search site by url")
 		}
 		// サイト名をキーにサイトを検索
-		resultSites, err := dbRepo.SearchSiteByName(site.SiteName)
-		if err != nil || len(resultSites) == 0 {
+		result_sites, err := db_repo.SearchSiteByName(site.SiteName)
+		if err != nil || len(result_sites) == 0 {
 			t.Errorf("failed to search site by name")
 		}
 		// 記事系のテストを行う
 		// 記事の検索・存在確認・取得
-		resultArticles, err := dbRepo.SearchArticlesByKeyword("ニュース")
-		if err != nil && len(resultArticles) == 0 {
+		result_articles, err := db_repo.SearchArticlesByKeyword("ニュース")
+		if err != nil && len(result_articles) == 0 {
 			t.Errorf("failed to search articles by keyword")
 		}
-		resultArticles, err = dbRepo.SearchSiteLatestArticle(site.SiteURL, 100)
+		result_articles, err = db_repo.SearchSiteLatestArticle(site.SiteURL, 100)
 		// ちゃんと記事最新なのか確認する
-		if err != nil || len(resultArticles) == 0 || resultArticles[0].PublishedAt != articles[0].PublishedAt {
+		if err != nil || len(result_articles) == 0 || result_articles[0].PublishedAt != articles[0].PublishedAt {
 			t.Errorf("failed to search site latest article")
 		}
 		// 今から五時間前から最新の記事を取得
-		previousTime := time.Now().UTC().Add(-10 * time.Hour)
-		resultArticles, err = dbRepo.SearchArticlesByTimeAndOrder(site.SiteURL, previousTime, 100, true)
-		if err != nil && len(resultArticles) == 0 {
+		previous_time := time.Now().UTC().Add(-10 * time.Hour)
+		result_articles, err = db_repo.SearchArticlesByTimeAndOrder(site.SiteURL, previous_time, 100, true)
+		if err != nil && len(result_articles) == 0 {
 			t.Errorf("failed to search articles by time and order")
 		}
 		// 正解を判定する
 		// エラー条件は5時間前以上の記事があったらエラー
-		for _, article := range resultArticles {
-			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
+		for _, article := range result_articles {
+			article_time, err := time.Parse(time.RFC3339, article.PublishedAt)
 			if err != nil {
 				t.Errorf("failed to parse article time")
 			}
-			if articleTime.Before(time.Now().Add(-10 * time.Hour)) {
+			if article_time.Before(time.Now().Add(-10 * time.Hour)) {
 				t.Errorf("failed to search articles by time and order")
 			}
 		}
@@ -164,56 +164,56 @@ func TestDBQuerySite(t *testing.T) {
 
 // 記事系をテストする
 func TestDBQueryArticle(t *testing.T) {
-	dbRepo := InitDataBase()
+	db_repo := InitDataBase()
 	// 記事の登録・存在確認・取得
 	t.Run("Write", func(t *testing.T) {
 		site, articles, err := GetGIGAZINE()
 		if err != nil {
 			t.Errorf("failed to get GIGAZINE")
 		}
-		err = dbRepo.RegisterSite(site, articles)
+		err = db_repo.RegisterSite(site, articles)
 		if err != nil {
 			t.Errorf("failed to register site")
 		}
 		// 記事の検索・存在確認・取得
-		resultArticles, err := dbRepo.SearchArticlesByKeyword("ニュース")
-		if err != nil && len(resultArticles) == 0 {
+		result_articles, err := db_repo.SearchArticlesByKeyword("ニュース")
+		if err != nil && len(result_articles) == 0 {
 			t.Errorf("failed to search articles by keyword")
 		}
-		resultArticles, err = dbRepo.SearchSiteLatestArticle(site.SiteURL, 100)
-		if err != nil && len(resultArticles) == 0 {
+		result_articles, err = db_repo.SearchSiteLatestArticle(site.SiteURL, 100)
+		if err != nil && len(result_articles) == 0 {
 			t.Errorf("failed to search site latest article")
 		}
 		// 今から五時間前から最新の記事を取得
-		previousTime := time.Now().UTC().Add(-10 * time.Hour)
-		resultArticles, err = dbRepo.SearchArticlesByTimeAndOrder(site.SiteURL, previousTime, 100, true)
-		if err != nil && len(resultArticles) == 0 {
+		previous_time := time.Now().UTC().Add(-10 * time.Hour)
+		result_articles, err = db_repo.SearchArticlesByTimeAndOrder(site.SiteURL, previous_time, 100, true)
+		if err != nil && len(result_articles) == 0 {
 			t.Errorf("failed to search articles by time and order")
 		}
 		// 正解を判定する
 		// エラー条件は5時間前以上の記事があったらエラー
-		for _, article := range resultArticles {
-			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
+		for _, article := range result_articles {
+			article_time, err := time.Parse(time.RFC3339, article.PublishedAt)
 			if err != nil {
 				t.Errorf("failed to parse article time")
 			}
-			if articleTime.Before(time.Now().Add(-10 * time.Hour)) {
+			if article_time.Before(time.Now().Add(-10 * time.Hour)) {
 				t.Errorf("failed to search articles by time and order")
 			}
 		}
 		// 今から10時間前よりも古い記事を取得
-		resultArticles, err = dbRepo.SearchArticlesByTimeAndOrder(site.SiteURL, previousTime, 100, false)
-		if err != nil && len(resultArticles) == 0 {
+		result_articles, err = db_repo.SearchArticlesByTimeAndOrder(site.SiteURL, previous_time, 100, false)
+		if err != nil && len(result_articles) == 0 {
 			t.Errorf("failed to search articles by time and order")
 		}
 		// 正解を判定する
 		// エラー条件は5時間前以下の記事があったらエラー
-		for _, article := range resultArticles {
-			articleTime, err := time.Parse(time.RFC3339, article.PublishedAt)
+		for _, article := range result_articles {
+			article_time, err := time.Parse(time.RFC3339, article.PublishedAt)
 			if err != nil {
 				t.Errorf("failed to parse article time")
 			}
-			if articleTime.After(time.Now().Add(-10 * time.Hour)) {
+			if article_time.After(time.Now().Add(-10 * time.Hour)) {
 				t.Errorf("failed to search articles by time and order")
 			}
 		}

@@ -15,7 +15,7 @@ type DBRepository interface {
 	ConnectDB(isMock bool) error
 	AutoMigrate() error
 	// Readで使う
-	SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error)
+	SearchUserConfig(user_unique_Id string, is_preload_related_tables bool) (Data.UserConfig, error)
 	FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error)
 }
 
@@ -66,12 +66,12 @@ func (s DBRepoImpl) AutoMigrate() error {
 }
 
 // Readで使う
-func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
+func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, is_preload_related_tables bool) (Data.UserConfig, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
-	if isPreloadRelatedTables {
+	if is_preload_related_tables {
 		if err := DBMS.Model(&user).Association("ReadHistories").Find(&user.ReadHistories); err != nil {
 			return Data.UserConfig{}, err
 		}
@@ -93,19 +93,19 @@ func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTabl
 
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
-	var resultCategories []ExploreCategory
-	if err := DBMS.Where(&ExploreCategory{Country: country}).Find(&resultCategories).Error; err != nil {
+	var result_categories []ExploreCategory
+	if err := DBMS.Where(&ExploreCategory{Country: country}).Find(&result_categories).Error; err != nil {
 		return nil, err
 	}
 	// カテゴリーをExploreCategories型に変換する
 	var categories []Data.ExploreCategory
-	for _, expCat := range resultCategories {
+	for _, result_category := range result_categories {
 		categories = append(categories, Data.ExploreCategory{
-			CategoryName:        expCat.CategoryName,
-			CategoryDescription: expCat.Description,
-			CategoryID:          fmt.Sprint(expCat.ID),
-			CategoryImage:       expCat.image_url,
-			CategoryCountry:     expCat.Country,
+			CategoryName:        result_category.CategoryName,
+			CategoryDescription: result_category.Description,
+			CategoryID:          fmt.Sprint(result_category.ID),
+			CategoryImage:       result_category.image_url,
+			CategoryCountry:     result_category.Country,
 		})
 	}
 	return categories, nil
