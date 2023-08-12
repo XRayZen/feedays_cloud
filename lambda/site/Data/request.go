@@ -1,7 +1,7 @@
 package Data
 
 type ApiSearchRequest struct {
-	// `URL` or `Keyword` or `SiteName`
+	// `URL` or `Keyword` or `SiteName` or `Category`
 	//
 	// クライアント側でキーワードにURLが入力された場合は検索タイプをURLにしてURL検索を行う
 	SearchType  string `json:"searchType"`

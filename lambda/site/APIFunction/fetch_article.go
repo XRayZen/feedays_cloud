@@ -69,10 +69,10 @@ func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_arg
 			Error:        "",
 		}
 	}
-
-	responseJson, err := json.Marshal(response)
+	// レスポンスをjsonに変換する
+	response_json, err := json.Marshal(response)
 	if err != nil {
 		return "", err
 	}
-	return string(responseJson), nil
+	return string(response_json), nil
 }

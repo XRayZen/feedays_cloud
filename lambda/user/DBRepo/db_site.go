@@ -44,6 +44,7 @@ type ExploreCategory struct {
 	gorm.Model
 	CategoryName string
 	Description  string
+	image_url    string
 	Country      string
 }
 

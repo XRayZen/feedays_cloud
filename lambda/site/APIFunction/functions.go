@@ -4,8 +4,7 @@ import (
 	"site/Repo"
 )
 
-
-type APIFunctions struct{
+type APIFunctions struct {
 	DBRepo Repo.DBRepository
 }
 

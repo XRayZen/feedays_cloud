@@ -328,6 +328,99 @@ func TestParseHandlerByFetchArticles(t *testing.T) {
 	}
 }
 
+// ModifyExploreCategory ChangeSiteCategory DeleteSiteの統合テスト
+func TestParseHandlerByModifyExploreCategory(t *testing.T) {
+	repo := Repo.DBRepoImpl{}
+	setup(t, repo)
+	// リクエストデータを作成
+	category := Data.ExploreCategory{
+		CategoryName:    "test Category",
+		CategoryCountry: "Japan",
+	}
+	categoryJSON, _ := json.Marshal(category)
+	is_add_or_remove_by_true_json, _ := json.Marshal(true)
+	is_add_or_remove_by_false_json, _ := json.Marshal(false)
+	site_url := "https://gigazine.net/"
+	site_url_json, _ := json.Marshal(site_url)
+	category_name := "test Category"
+	category_name_json, _ := json.Marshal(category_name)
+	is_unscoped_json, _ := json.Marshal(true)
+	type args struct {
+		access_ip     string
+		user_id       string
+		request_type  string
+		request_json  string
+		request_json2 string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		// ExploreCategory追加テスト
+		{
+			name: "ExploreCategory追加テスト",
+			args: args{
+				access_ip:     "",
+				user_id:       "test",
+				request_type:  "ModifyExploreCategory",
+				request_json:  string(categoryJSON),
+				request_json2: string(is_add_or_remove_by_true_json),
+			},
+			want: "Success ModifyExploreCategory",
+		},
+		// ExploreCategory削除テスト
+		{
+			name: "ExploreCategory削除テスト",
+			args: args{
+				access_ip:     "",
+				user_id:       "test",
+				request_type:  "ModifyExploreCategory",
+				request_json:  string(categoryJSON),
+				request_json2: string(is_add_or_remove_by_false_json),
+			},
+			want: "Success ModifyExploreCategory",
+		},
+		// ChangeSiteCategory
+		{
+			name: "ChangeSiteCategory",
+			args: args{
+				access_ip:     "",
+				user_id:       "test",
+				request_type:  "ChangeSiteCategory",
+				request_json:  string(site_url_json),
+				request_json2: string(category_name_json),
+			},
+			want: "Success ChangeSiteCategory",
+		},
+		// DeleteSite
+		{
+			name: "DeleteSite",
+			args: args{
+				access_ip:     "",
+				user_id:       "test",
+				request_type:  "DeleteSite",
+				request_json:  string(site_url_json),
+				request_json2: string(is_unscoped_json),
+			},
+			want: "Success DeleteSite",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := ParseRequestType("", repo, tt.args.request_type, tt.args.user_id, tt.args.request_json, tt.args.request_json2)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseRequestType() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if result != tt.want {
+				t.Errorf("ParseRequestType() = %v, want %v", result, tt.want)
+			}
+		})
+	}
+}
+
 func setup(t *testing.T, dbRepo Repo.DBRepository) {
 	dbRepo.ConnectDB(true)
 	dbRepo.AutoMigrate()

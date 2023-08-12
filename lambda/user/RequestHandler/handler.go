@@ -32,6 +32,10 @@ func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string
 		return functions.ModifyFavoriteArticle(userId, argumentJson_1, argumentJson_2)
 	case "GetAPIRequestLimit":
 		return functions.GetAPIRequestLimit(userId)
+	case "UpdateAPIRequestLimit":
+		return functions.UpdateAPIRequestLimit(userId, argumentJson_1)
+	case "DeleteUserData":
+		return functions.DeleteUserData(userId, argumentJson_1)
 	default:
 		return "", errors.New("invalid request type")
 	}

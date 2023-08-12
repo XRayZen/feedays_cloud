@@ -15,9 +15,8 @@ type DBRepository interface {
 	ConnectDB(isMock bool) error
 	AutoMigrate() error
 	// Readで使う
-	SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error)
+	SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error)
 	FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error)
-
 }
 
 // DBRepoを実装
@@ -67,7 +66,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 }
 
 // Readで使う
-func (s DBRepoImpl) SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error) {
+func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
@@ -92,21 +91,21 @@ func (s DBRepoImpl) SearchUserConfig(user_unique_Id string,isPreloadRelatedTable
 	return ConvertToApiUserConfig(user), nil
 }
 
-
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
-	var expCats []ExploreCategory
-	result := DBMS.Where(&ExploreCategory{Country: country}).Find(&expCats)
-	if result.Error != nil {
-		return nil, result.Error
+	var resultCategories []ExploreCategory
+	if err := DBMS.Where(&ExploreCategory{Country: country}).Find(&resultCategories).Error; err != nil {
+		return nil, err
 	}
 	// カテゴリーをExploreCategories型に変換する
 	var categories []Data.ExploreCategory
-	for _, expCat := range expCats {
+	for _, expCat := range resultCategories {
 		categories = append(categories, Data.ExploreCategory{
 			CategoryName:        expCat.CategoryName,
 			CategoryDescription: expCat.Description,
 			CategoryID:          fmt.Sprint(expCat.ID),
+			CategoryImage:       expCat.image_url,
+			CategoryCountry:     expCat.Country,
 		})
 	}
 	return categories, nil

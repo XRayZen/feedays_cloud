@@ -32,7 +32,10 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// ここでDIする
 	res, err := RequestHandler.ParseRequestType(Repo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: http.StatusInternalServerError,
+		}, err
 	}
 	// ここでレスポンスを作る
 	response := api_gen_code.APIResponse{

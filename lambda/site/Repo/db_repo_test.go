@@ -133,7 +133,7 @@ func TestDBQuerySite(t *testing.T) {
 		}
 		// 記事系のテストを行う
 		// 記事の検索・存在確認・取得
-		resultArticles, err := dbRepo.SearchArticlesByKeyword("AI")
+		resultArticles, err := dbRepo.SearchArticlesByKeyword("ニュース")
 		if err != nil && len(resultArticles) == 0 {
 			t.Errorf("failed to search articles by keyword")
 		}
@@ -176,7 +176,7 @@ func TestDBQueryArticle(t *testing.T) {
 			t.Errorf("failed to register site")
 		}
 		// 記事の検索・存在確認・取得
-		resultArticles, err := dbRepo.SearchArticlesByKeyword("AI")
+		resultArticles, err := dbRepo.SearchArticlesByKeyword("ニュース")
 		if err != nil && len(resultArticles) == 0 {
 			t.Errorf("failed to search articles by keyword")
 		}

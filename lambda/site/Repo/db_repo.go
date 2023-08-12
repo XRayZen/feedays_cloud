@@ -1,10 +1,10 @@
 package Repo
 
 import (
-	"site/Data"
 	"errors"
 	"fmt"
 	"log"
+	"site/Data"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -16,7 +16,7 @@ type DBRepository interface {
 	ConnectDB(isMock bool) error
 	AutoMigrate() error
 	// Readで使う
-	SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error)
+	SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error)
 	FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error)
 	// Siteで使う
 	IsExistSite(site_url string) bool
@@ -26,9 +26,14 @@ type DBRepository interface {
 	FetchSiteLastModified(site_url string) (time.Time, error)
 	SearchSiteByUrl(site_url string) (Data.WebSite, error)
 	SearchSiteByName(siteName string) ([]Data.WebSite, error)
+	SearchSiteByCategory(category string) ([]Data.WebSite, error)
 	SearchSiteLatestArticle(site_url string, get_count int) ([]Data.Article, error)
 	SearchArticlesByTimeAndOrder(siteUrl string, lastModified time.Time, get_count int, isNew bool) ([]Data.Article, error)
 	SearchArticlesByKeyword(keyword string) ([]Data.Article, error)
+	ChangeSiteCategory(user_unique_id string, site_url string, category_name string) error
+	DeleteSite(site_url string) error
+	DeleteSiteByUnscoped(site_url string) error
+	ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
 }
 
 // DBRepoを実装
@@ -78,7 +83,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 }
 
 // Readで使う
-func (s DBRepoImpl) SearchUserConfig(user_unique_Id string,isPreloadRelatedTables bool) (Data.UserConfig, error) {
+func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, isPreloadRelatedTables bool) (Data.UserConfig, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
@@ -102,7 +107,6 @@ func (s DBRepoImpl) SearchUserConfig(user_unique_Id string,isPreloadRelatedTable
 	}
 	return ConvertToApiUserConfig(user), nil
 }
-
 
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
@@ -130,7 +134,7 @@ func (r DBRepoImpl) RegisterSite(site Data.WebSite, articles []Data.Article) err
 	// もし、サイトが存在していたら登録しない
 	if !r.IsExistSite(site.SiteURL) {
 		dbSite := convertApiSiteToDb(site, articles)
-		DBMS.Transaction(func(tx *gorm.DB) error {
+		if err := DBMS.Transaction(func(tx *gorm.DB) error {
 			result := tx.Create(&dbSite)
 			if result.Error != nil {
 				log.Println("サイト登録失敗 : " + result.Error.Error())
@@ -138,7 +142,9 @@ func (r DBRepoImpl) RegisterSite(site Data.WebSite, articles []Data.Article) err
 				return result.Error
 			}
 			return nil
-		})
+		}); err != nil {
+			return err
+		}
 	} else {
 		return errors.New("サイトが既に存在しています")
 	}
@@ -169,6 +175,19 @@ func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
 	return resultSites, nil
 }
 
+func (r DBRepoImpl) SearchSiteByCategory(category string) ([]Data.WebSite, error) {
+	var sites []Site
+	if err := DBMS.Where(&Site{Category: category}).Find(&sites).Error; err != nil {
+		return []Data.WebSite{}, err
+	}
+	var resultSites []Data.WebSite
+	for _, site := range sites {
+		resultSite, _ := convertDbSiteToApi(site)
+		resultSites = append(resultSites, resultSite)
+	}
+	return resultSites, nil
+}
+
 func (r DBRepoImpl) IsExistSite(site_url string) bool {
 	var count int64
 	result := DBMS.Model(&Site{}).Where(&Site{SiteUrl: site_url}).Count(&count)
@@ -185,15 +204,13 @@ func (r DBRepoImpl) IsExistSite(site_url string) bool {
 func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_subscribe bool) error {
 	// まずはサイトURLをキーにサイトテーブルからサイトを検索する
 	var site Site
-	result := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site)
-	if result.Error != nil {
-		return result.Error
+	if err := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site); err != nil {
+		return err.Error
 	}
 	// 次に対象のUserを検索する
 	var user User
-	result = DBMS.Where(&User{UserUniqueID: user_unique_id}).Find(&user)
-	if result.Error != nil {
-		return result.Error
+	if err := DBMS.Where(&User{UserUniqueID: user_unique_id}).Find(&user); err != nil {
+		return err.Error
 	}
 	// サブスクリブされていなかったらサブスクリプションサイトに追加する
 	if !r.IsSubscribeSite(user_unique_id, site_url) && is_subscribe {
@@ -202,28 +219,30 @@ func (r DBRepoImpl) SubscribeSite(user_unique_id string, site_url string, is_sub
 			SiteID: site.ID,
 		}
 		// トランザクション内で処理する
-		DBMS.Transaction(func(tx *gorm.DB) error {
-			result = tx.Create(&subscriptionSite)
-			if result.Error != nil {
-				log.Println("サブスクリプションサイト登録失敗 : " + result.Error.Error())
+		if err := DBMS.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&subscriptionSite).Error; err != nil {
+				log.Println("サブスクリプションサイト登録失敗 : " + err.Error())
 				// エラーが発生したらロールバックする
 				tx.Rollback()
-				return result.Error
+				return err
 			}
 			return nil
-		})
+		}); err != nil {
+			return err
+		}
 	} else if r.IsSubscribeSite(user_unique_id, site_url) && !is_subscribe {
 		// サブスクリブされていたらサブスクリプションサイトから削除する
-		DBMS.Transaction(func(tx *gorm.DB) error {
-			result = tx.Where(&SubscriptionSite{UserID: user.ID, SiteID: site.ID}).Delete(&SubscriptionSite{})
-			if result.Error != nil {
-				log.Println("サブスクリプションサイト削除失敗 : " + result.Error.Error())
+		if err := DBMS.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Where(&SubscriptionSite{UserID: user.ID, SiteID: site.ID}).Delete(&SubscriptionSite{}).Error; err != nil {
+				log.Println("サブスクリプションサイト削除失敗 : " + err.Error())
 				// エラーが発生したらロールバックする
 				tx.Rollback()
-				return result.Error
+				return err
 			}
 			return nil
-		})
+		}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -309,4 +328,114 @@ func (r DBRepoImpl) SearchArticlesByTimeAndOrder(siteUrl string, lastModified ti
 	site.SiteArticles = articles
 	_, resultArticles := convertDbSiteToApi(site)
 	return resultArticles, nil
+}
+
+// サイトのカテゴリを変更する
+func (r DBRepoImpl) ChangeSiteCategory(user_unique_id string, site_url string, category_name string) error {
+	// サイトURLをキーにサイトを取得する
+	var site Site
+	if err := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site).Error; err != nil {
+		return err
+	}
+	// サイトのカテゴリを変更する
+	if err := DBMS.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&site).Update("category", category_name).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// サイトを削除する
+// DeleteSite(user_unique_id string, site_url string) error
+func (r DBRepoImpl) DeleteSite(site_url string) error {
+	// サイトURLをキーにサイトを取得する
+	var site Site
+	if err := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site).Error; err != nil {
+		return err
+	}
+	// サイトを削除する
+	if err := DBMS.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&site).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		// SiteArticlesを削除する
+		if err := tx.Where(&Article{SiteID: site.ID}).Delete(&Article{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		// Tagを削除する
+		if err := tx.Where(&Tag{SiteID: site.ID}).Delete(&Tag{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteSiteByUnscoped(site_url string) error
+func (r DBRepoImpl) DeleteSiteByUnscoped(site_url string) error {
+	// サイトURLをキーにサイトを取得する
+	var site Site
+	if err := DBMS.Where(&Site{SiteUrl: site_url}).Find(&site).Error; err != nil {
+		return err
+	}
+	// サイトを削除する
+	if err := DBMS.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Unscoped().Delete(&site).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		// SiteArticlesを削除する
+		if err := tx.Where(&Article{SiteID: site.ID}).Unscoped().Delete(&Article{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		// Tagを削除する
+		if err := tx.Where(&Tag{SiteID: site.ID}).Unscoped().Delete(&Tag{}).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
+func (r DBRepoImpl) ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error {
+	if err := DBMS.Transaction(func(tx *gorm.DB) error {
+		exploreCategory := ExploreCategory{
+			CategoryName: category.CategoryName,
+			Description:  category.CategoryDescription,
+			Country:      category.CategoryCountry,
+			image_url:    category.CategoryImage,
+		}
+		if is_add_or_remove {
+			// カテゴリを追加する
+			if err := tx.Create(&exploreCategory).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		} else {
+			// カテゴリを削除する
+			if err := tx.Where(&exploreCategory).Delete(&exploreCategory).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
 }

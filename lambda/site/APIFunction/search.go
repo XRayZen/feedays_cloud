@@ -40,14 +40,34 @@ func (s APIFunctions) Search(access_ip string, user_id string, request_argument_
 			return "", err
 		}
 		result = res
+	case "Category":
+		res, err := searchByCategory(s.DBRepo, apiSearchRequest)
+		if err != nil {
+			return "", err
+		}
+		result = res
 	}
 	// 検索をアクテビティとして報告するが、今は実装しない
-	// webSiteをjsonに変換する
+	// resultをjsonに変換する
 	resultJson, err := json.Marshal(result)
 	if err != nil {
 		return "", err
 	}
 	return string(resultJson), nil
+}
+
+func searchByCategory(dBRepository Repo.DBRepository, apiSearchRequest Data.ApiSearchRequest) (result Data.SearchResult, err error) {
+	db_result, err := dBRepository.SearchSiteByCategory(apiSearchRequest.Word)
+	if err != nil {
+		return Data.SearchResult{}, err
+	}
+	return Data.SearchResult{
+		ApiResponse:     "accept",
+		ResponseMessage: "success",
+		ResultType:      "found",
+		SearchType:      apiSearchRequest.SearchType,
+		Websites:        db_result,
+	}, nil
 }
 
 // URL検索

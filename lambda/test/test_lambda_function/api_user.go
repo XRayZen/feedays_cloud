@@ -3,13 +3,14 @@ package test_lambda_function
 import (
 	"encoding/json"
 	"log"
+
 	// "os/user"
 	"test/Data"
 	"test/api_gen_code"
 	"time"
 )
 
-func TestApiUser() (bool, Data.UserConfig, error) {
+func TestApiUserPart1() (bool, Data.UserConfig, error) {
 	reqType := "GenUserID"
 	requestResponse, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
 		RequestType: &reqType,
@@ -27,8 +28,8 @@ func TestApiUser() (bool, Data.UserConfig, error) {
 		return false, Data.UserConfig{}, err
 	}
 	// ConfigSync
-	result, err = testConfigSync(userId)
-	if err != nil || !result {
+	resultConfigSync, err := testConfigSync(userId)
+	if err != nil || !resultConfigSync {
 		log.Println("Failed to config sync")
 		return false, Data.UserConfig{}, err
 	}
@@ -39,7 +40,7 @@ func TestApiUser() (bool, Data.UserConfig, error) {
 		return false, Data.UserConfig{}, err
 	}
 	// UpdateConfig
-	result, err = testUpdateConfig(userId)
+	result, userCfg, err := testUpdateConfig(userId)
 	if err != nil || !result {
 		log.Println("Failed to update config")
 		return false, Data.UserConfig{}, err
@@ -50,7 +51,57 @@ func TestApiUser() (bool, Data.UserConfig, error) {
 		log.Println("Failed to modify search history")
 		return false, Data.UserConfig{}, err
 	}
+	return true, userCfg, nil
+}
 
+// Userテストパート2
+func TestApiUserPart2(userId string, site Data.WebSite, article Data.Article) (bool, error) {
+	result, err := testModifyFavoriteSite(userId, site)
+	if err != nil || !result {
+		log.Println("Failed to modify favorite site")
+		return false, err
+	}
+	result, err = testModifyFavoriteArticle(userId, article)
+	if err != nil || !result {
+		log.Println("Failed to modify favorite article")
+		return false, err
+	}
+	result, err = testGetAPIRequestLimit(userId)
+	if err != nil || !result {
+		log.Println("Failed to get api request limit")
+		return false, err
+	}
+	// UpdateAPIRequestLimit
+	result, err = testUpdateAPIRequestLimit(userId)
+	if err != nil || !result {
+		log.Println("Failed to update api request limit")
+		return false, err
+	}
+	return true, nil
+}
+
+func testUpdateAPIRequestLimit(userId string)(bool, error) {
+	reqType := "UpdateAPIRequestLimit"
+	apiCfg := Data.ApiConfig{
+		RefreshArticleInterval: 10,
+	}
+	apiCfgJson, err := json.Marshal(apiCfg)
+	if err != nil {
+		log.Println("Failed to marshal api config")
+		return false, err
+	}
+	apiCfgStr := string(apiCfgJson)
+	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
+		RequestType:          &reqType,
+		UserId:               &userId,
+		RequestArgumentJson1: &apiCfgStr,
+	})
+	if err != nil || result != "Success UpdateAPIRequestLimit" {
+		log.Println("Failed to update api request limit")
+		return false, err
+	}
+	log.Println("Success to update api request limit")
+	return true, nil
 }
 
 func genTestUserConfig() Data.UserConfig {
@@ -152,14 +203,14 @@ func testReportReadActivity(userId string) (bool, error) {
 }
 
 // UpdateConfig
-func testUpdateConfig(userId string) (bool, error) {
+func testUpdateConfig(userId string) (bool, Data.UserConfig, error) {
 	reqType := "UpdateConfig"
 	cfg := genTestUserConfig()
 	cfg.AccountType = "premium"
 	cfgJson, err := json.Marshal(cfg)
 	if err != nil {
 		log.Println("Failed to marshal user config")
-		return false, err
+		return false, Data.UserConfig{}, err
 	}
 	cfgStr := string(cfgJson)
 	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
@@ -169,7 +220,7 @@ func testUpdateConfig(userId string) (bool, error) {
 	})
 	if err != nil || result != "Success UpdateConfig" {
 		log.Println("Failed to update config")
-		return false, err
+		return false, Data.UserConfig{}, err
 	}
 	// ユーザー設定を取得して、更新されているか確認する
 	reqType = "ConfigSync"
@@ -182,10 +233,10 @@ func testUpdateConfig(userId string) (bool, error) {
 	err = json.Unmarshal([]byte(result), &ConfigSyncResponse)
 	if err != nil || ConfigSyncResponse.UserConfig.AccountType != "premium" {
 		log.Println("Failed to update config")
-		return false, err
+		return false, Data.UserConfig{}, err
 	}
 	log.Println("Success to update config")
-	return true, nil
+	return false, ConfigSyncResponse.UserConfig, err
 }
 
 // ModifySearchHistory
@@ -216,8 +267,89 @@ func testModifySearchHistory(userId string) (bool, error) {
 }
 
 // ModifyFavoriteSite
+func testModifyFavoriteSite(userId string, favSite Data.WebSite) (bool, error) {
+	reqType := "ModifyFavoriteSite"
+	favSiteJson, err := json.Marshal(favSite)
+	if err != nil {
+		log.Println("Failed to marshal favorite site")
+		return false, err
+	}
+	favSiteJsonStr := string(favSiteJson)
+	isSubscribe := true
+	isSubscribeJson, err := json.Marshal(isSubscribe)
+	if err != nil {
+		log.Println("Failed to marshal is subscribe")
+		return false, err
+	}
+	isSubscribeJsonStr := string(isSubscribeJson)
+	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
+		RequestType:          &reqType,
+		UserId:               &userId,
+		RequestArgumentJson1: &favSiteJsonStr,
+		RequestArgumentJson2: &isSubscribeJsonStr,
+	})
+	if err != nil || result != "Success ModifyFavoriteSite" {
+		log.Println("Failed to modify favorite site")
+		return false, err
+	}
+	log.Println("Success to modify favorite site")
+	return true, nil
+}
 
+// ModifyFavoriteArticle
+func testModifyFavoriteArticle(userId string, article Data.Article) (bool, error) {
+	reqType := "ModifyFavoriteArticle"
+	articleJson, err := json.Marshal(article)
+	if err != nil {
+		log.Println("Failed to marshal article")
+		return false, err
+	}
+	articleJsonStr := string(articleJson)
+	isAddOrRemove := true
+	isAddOrRemoveJson, err := json.Marshal(isAddOrRemove)
+	if err != nil {
+		log.Println("Failed to marshal is add or remove")
+		return false, err
+	}
+	isAddOrRemoveJsonStr := string(isAddOrRemoveJson)
+	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
+		RequestType:          &reqType,
+		UserId:               &userId,
+		RequestArgumentJson1: &articleJsonStr,
+		RequestArgumentJson2: &isAddOrRemoveJsonStr,
+	})
+	if err != nil || result != "Success ModifyFavoriteArticle" {
+		log.Println("Failed to modify favorite article")
+		return false, err
+	}
+	log.Println("Success to modify favorite article")
+	return true, nil
+}
 
+// GetAPIRequestLimit
+func testGetAPIRequestLimit(userId string) (bool, error) {
+	reqType := "GetAPIRequestLimit"
+	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
+		RequestType: &reqType,
+		UserId:      &userId,
+	})
+	if err != nil {
+		log.Println("Failed to get api request limit")
+		return false, err
+	}
+	expected := Data.ApiConfig{
+		RefreshArticleInterval: 10,
+	}
+	// apiConfigをパースする
+	var apiConfig = Data.ApiConfig{}
+	err = json.Unmarshal([]byte(result), &apiConfig)
+	if err != nil || apiConfig.RefreshArticleInterval != expected.RefreshArticleInterval {
+		log.Println("Failed to get api request limit")
+		return false, err
+	}
+	log.Println("Success to get api request limit")
+	return true, nil
+}
 
 func SendUserRequest(request api_gen_code.PostUserJSONRequestBody) (string, error) {
 	//  リクエストをjsonに変換
@@ -236,5 +368,5 @@ func SendUserRequest(request api_gen_code.PostUserJSONRequestBody) (string, erro
 	if err != nil {
 		return "", err
 	}
-	return res.Message, nil
+	return res.Value, nil
 }

@@ -16,7 +16,7 @@ type SearchResult struct {
 
 type APIResponse struct {
 	ResponseType string `json:"responseType"`
-	Message      string `json:"message"`
+	Value        string `json:"value"`
 	Error        string `json:"error"`
 }
 

@@ -17,6 +17,7 @@ func TestNormalRequestHandler(t *testing.T) {
 	if err := dbRepo.AutoMigrate(); err != nil {
 		t.Fatal(err)
 	}
+
 	// テスト用にDBにデータを入れておく
 	site := Data.WebSite{
 		SiteName:   "test",
@@ -40,6 +41,7 @@ func TestNormalRequestHandler(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+
 	// テスト用オブジェクトを用意する
 	test_user_id := "test"
 	now := time.Now()
@@ -61,7 +63,8 @@ func TestNormalRequestHandler(t *testing.T) {
 	userConfigJson, _ := json.Marshal(userCfg)
 	testWebSiteJson, _ := json.Marshal(site)
 	testArticleJson, _ := json.Marshal(article)
-	// 正解を用意する
+
+	// 正解データを用意する
 	configSyncResJson, _ := json.Marshal(Data.ConfigSyncResponse{
 		ResponseType: "accept",
 		UserConfig: Data.UserConfig{
@@ -75,18 +78,26 @@ func TestNormalRequestHandler(t *testing.T) {
 		},
 		Error: "",
 	})
-	configSyncExpected, _ := GenAPIResponse("accept", string(configSyncResJson), "")
-	apiResRegisterUser, _ := GenAPIResponse("accept", "Success RegisterUser", "")
-	apiResReportReadActivity, _ := GenAPIResponse("accept", "Success ReportReadActivity", "")
-	apiResUpdateConfig, _ := GenAPIResponse("accept", "Success UpdateConfig", "")
-	apiResModifyFavoriteSite, _ := GenAPIResponse("accept", "Success ModifyFavoriteSite", "")
-	apiResModifyFavoriteArticle, _ := GenAPIResponse("accept", "Success ModifyFavoriteArticle", "")
+	ExpectedConfigSync := string(configSyncResJson)
+	ExpectedRegisterUser := "Success RegisterUser"
+	ExpectedReportReadActivity := "Success ReportReadActivity"
+	ExpectedUpdateConfig := "Success UpdateConfig"
+	ExpectedModifyFavoriteSite := "Success ModifyFavoriteSite"
+	ExpectedModifyFavoriteArticle := "Success ModifyFavoriteArticle"
 	apiRequestLimitCfgJson, _ := json.Marshal(Data.ApiConfig{
 		RefreshArticleInterval: 10,
 	})
-	apiRequestLimitCfgExpected, _ := GenAPIResponse("accept", string(apiRequestLimitCfgJson), "")
+	ExpectedApiRequestLimitCfg := string(apiRequestLimitCfgJson)
 	searchHistoryJson, _ := json.Marshal([]string{"test"})
-	searchHistoryJsonExpected, _ := GenAPIResponse("accept", string(searchHistoryJson), "")
+	ExpectedSearchHistoryJson := string(searchHistoryJson)
+	UpdateApiConfig := Data.ApiConfig{
+		RefreshArticleInterval: 20,
+	}
+	updateApiConfigJson, _ := json.Marshal(UpdateApiConfig)
+	ExpectedUpdateApiConfigJson := "Success UpdateAPIRequestLimit"
+	DeletedUserDataIsScoped, _ := json.Marshal(true)
+	ExpectedDeleteUserData := "Success DeleteUserData"
+
 	// テスト引数
 	type fields struct {
 		repo DBRepo.DBRepo
@@ -118,7 +129,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(userConfigJson),
 				argumentJson_2: "",
 			},
-			want:    string(apiResRegisterUser),
+			want:    string(ExpectedRegisterUser),
 			wantErr: false,
 		},
 		// GenUserIDは単純なのでテストしない
@@ -134,7 +145,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    configSyncExpected,
+			want:    ExpectedConfigSync,
 			wantErr: false,
 		},
 		{
@@ -149,7 +160,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(readActJson),
 				argumentJson_2: "",
 			},
-			want:    string(apiResReportReadActivity),
+			want:    string(ExpectedReportReadActivity),
 			wantErr: false,
 		},
 		{
@@ -164,7 +175,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(userConfigJson),
 				argumentJson_2: "",
 			},
-			want:    string(apiResUpdateConfig),
+			want:    string(ExpectedUpdateConfig),
 			wantErr: false,
 		},
 		{
@@ -179,7 +190,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "test",
 				argumentJson_2: "true",
 			},
-			want:    searchHistoryJsonExpected,
+			want:    ExpectedSearchHistoryJson,
 			wantErr: false,
 		},
 		{
@@ -194,7 +205,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(testWebSiteJson),
 				argumentJson_2: "true",
 			},
-			want:    string(apiResModifyFavoriteSite),
+			want:    string(ExpectedModifyFavoriteSite),
 			wantErr: false,
 		},
 		{
@@ -209,7 +220,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(testArticleJson),
 				argumentJson_2: "true",
 			},
-			want:    string(apiResModifyFavoriteArticle),
+			want:    string(ExpectedModifyFavoriteArticle),
 			wantErr: false,
 		},
 		{
@@ -224,7 +235,39 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    apiRequestLimitCfgExpected,
+			want:    ExpectedApiRequestLimitCfg,
+			wantErr: false,
+		},
+		// UpdateApiRequestLimit
+		{
+			name: "UpdateApiRequestLimit",
+			fields: fields{
+				repo: dbRepo,
+				ip:   "",
+			},
+			args: args{
+				requestType:    "UpdateAPIRequestLimit",
+				userId:         test_user_id,
+				argumentJson_1: string(updateApiConfigJson),
+				argumentJson_2: "",
+			},
+			want:    ExpectedUpdateApiConfigJson,
+			wantErr: false,
+		},
+		// DeleteUserData
+		{
+			name: "DeleteUserData",
+			fields: fields{
+				repo: dbRepo,
+				ip:   "",
+			},
+			args: args{
+				requestType:    "DeleteUserData",
+				userId:         test_user_id,
+				argumentJson_1: string(DeletedUserDataIsScoped),
+				argumentJson_2: "",
+			},
+			want:    ExpectedDeleteUserData,
 			wantErr: false,
 		},
 	}
@@ -236,10 +279,21 @@ func TestNormalRequestHandler(t *testing.T) {
 				t.Errorf("RequestHandler.HandleRequest() errorType: %v error = %v, wantErr %v", tt.args.requestType, err, tt.wantErr)
 				return
 			}
+			// 念の為にユーザーデータ削除の場合で、削除後のデータが空であることを確認する必要がある
+			if tt.args.requestType == "DeleteUserData" {
+				_, err = ParseRequestType(tt.fields.ip, tt.fields.repo,
+					"ConfigSync", tt.args.userId, "", "")
+				// エラーならテスト成功
+				if err.Error() == "record not found" {
+					return
+				} else {
+					t.Errorf("DeleteUserData failed")
+					return
+				}
+			}
 			if got != tt.want {
 				t.Errorf("RequestHandler.HandleRequest() = %v, want %v", got, tt.want)
 			}
 		})
 	}
-
 }

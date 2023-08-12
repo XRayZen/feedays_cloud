@@ -10,20 +10,19 @@ import (
 )
 
 // 新規サイトを登録して登録できたかどうかを確かめる
-func TestApiSiteSearch(userId string) (bool, []Data.WebSite, error) {
-	// ギガジンをURL検索してちゃんと登録に成功したかどうかを確かめる
+func TestApiSitePart1(userId string) (bool, []Data.WebSite, error) {
+	// URL検索してちゃんと登録に成功したかどうかを確かめる
 	request := Data.ApiSearchRequest{
 		SearchType: "URL",
 		Word:       "https://gigazine.net/",
 	}
 	result, err := SendSearchRequest(request, userId)
-	// サイト名がギガジンであることを確かめる
 	if err != nil || result.Websites[0].SiteName != "GIGAZINE" {
 		log.Println("TestApiSiteUrlSearch: Failed")
 		return false, nil, err
 	}
-	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteNewSiteSearch: Success")
+	// キーワードで検索してちゃんと登録に成功したかどうかを確かめる
 	request = Data.ApiSearchRequest{
 		SearchType: "Keyword",
 		Word:       "AI",
@@ -34,24 +33,93 @@ func TestApiSiteSearch(userId string) (bool, []Data.WebSite, error) {
 		log.Println("TestApiSiteKeywordSearch: Failed")
 		return false, nil, err
 	}
-	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteKeywordSearch: Success")
+	// サイト名で検索してちゃんと登録に成功したかどうかを確かめる
 	request = Data.ApiSearchRequest{
 		SearchType: "SiteName",
 		Word:       "GIGAZINE",
 	}
 	result, err = SendSearchRequest(request, userId)
-	// サイト名がギガジンであることを確かめる
 	if err != nil || result.Websites[0].SiteName != "GIGAZINE" {
 		return false, nil, err
 	}
-	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteSiteNameSearch: Success")
 	return true, result.Websites, nil
 }
 
+// ExploreCategoriesを追加してサイトにカテゴリー追加してカテゴリー検索できるかどうかを確かめる
+func TestApiSitePart2(site Data.WebSite, userID string) (bool, error) {
+	req_type := "ModifyExploreCategory"
+	explore_category := Data.ExploreCategory{
+		CategoryName:        "IT",
+		CategoryDescription: "IT",
+		CategoryCountry:     "Japan",
+	}
+	explore_category_json, _ := json.Marshal(explore_category)
+	explore_category_json_str := string(explore_category_json)
+	is_add_or_remove_json, _ := json.Marshal(true)
+	is_add_or_remove_json_str := string(is_add_or_remove_json)
+	request := api_gen_code.PostSiteJSONRequestBody{
+		RequestType:          &req_type,
+		UserId:               &userID,
+		RequestArgumentJson1: &explore_category_json_str,
+		RequestArgumentJson2: &is_add_or_remove_json_str,
+	}
+	// リクエストをjsonに変換する
+	request_post_json, _ := json.Marshal(request)
+	// リクエストを作ったら、APIエンドポイントにリクエストを送る
+	response, err := SendApiRequest(string(request_post_json), "site")
+	if err != nil {
+		return false, err
+	}
+	if *response.ResponseValue != "Success ModifyExploreCategory" {
+		return false, err
+	}
+	log.Println("TestApiSiteModifyExploreCategory: Success")
+	// サイトにカテゴリーを追加する
+	req_type = "ChangeSiteCategory"
+	site.SiteCategory = "IT"
+	site_url_json, _ := json.Marshal(site.SiteURL)
+	site_url_json_str := string(site_url_json)
+	category_name := "IT"
+	category_name_json, _ := json.Marshal(category_name)
+	category_name_json_str := string(category_name_json)
+	request = api_gen_code.PostSiteJSONRequestBody{
+		RequestType:          &req_type,
+		UserId:               &userID,
+		RequestArgumentJson1: &site_url_json_str,
+		RequestArgumentJson2: &category_name_json_str,
+	}
+	// リクエストをjsonに変換する
+	request_post_json, _ = json.Marshal(request)
+	// リクエストを作ったら、APIエンドポイントにリクエストを送る
+	response, err = SendApiRequest(string(request_post_json), "site")
+	if err != nil {
+		return false, err
+	}
+	if *response.ResponseValue != "Success ChangeSiteCategory" {
+		return false, err
+	}
+	log.Println("TestApiSiteChangeSiteCategory: Success")
+	// カテゴリー検索をする
+	requestSearchByCategory := Data.ApiSearchRequest{
+		SearchType: "Category",
+		Word:       "IT",
+		UserID:     userID,
+	}
+	result, err := SendSearchRequest(requestSearchByCategory, userID)
+	if err != nil {
+		return false, err
+	}
+	if len(result.Websites) == 0 {
+		return false, err
+	}
+	log.Println("TestApiSiteSearchByCategory: Success")
+	return true, nil
+}
+
 // 返ってきたサイトを購読して購読できたかどうかを確かめる
-func TestApiSiteSubscribe(site Data.WebSite, userID string) (bool, error) {
+func TestApiSitePart3(site Data.WebSite, userID string) (bool, error) {
 	res, err := SendSubscribeSiteRequest(site, true, userID)
 	if err != nil {
 		return false, err
@@ -72,7 +140,7 @@ func TestApiSiteSubscribe(site Data.WebSite, userID string) (bool, error) {
 }
 
 // サイトの記事を取得する
-func TestApiSiteFetchArticles(site Data.WebSite, userID string) (bool, error) {
+func TestApiSitePart4(site Data.WebSite, userID string) (bool, Data.Article, error) {
 	// サイトの最新記事を取得する
 	requestFetchArticleByLatest := Data.FetchArticlesRequest{
 		SiteUrl:     site.SiteURL,
@@ -81,16 +149,13 @@ func TestApiSiteFetchArticles(site Data.WebSite, userID string) (bool, error) {
 	}
 	res, err := SendFetchArticleRequest(requestFetchArticleByLatest, userID)
 	if err != nil {
-		return false, err
+		return false, Data.Article{}, err
 	}
-	var result Data.FetchArticleResponse
-	err = json.Unmarshal([]byte(res), &result)
-	if err != nil {
-		return false, err
-	}
-	// 評価する
-	if len(result.Articles) == 0 {
-		return false, err
+	var resultFetchArticleByLatest Data.FetchArticleResponse
+	err = json.Unmarshal([]byte(res), &resultFetchArticleByLatest)
+	if err != nil || len(resultFetchArticleByLatest.Articles) == 0 {
+		log.Println("TestApiSiteFetchArticlesByLatest: Failed")
+		return false, Data.Article{}, err
 	}
 	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteFetchArticlesByLatest: Success")
@@ -107,20 +172,17 @@ func TestApiSiteFetchArticles(site Data.WebSite, userID string) (bool, error) {
 	}
 	res, err = SendFetchArticleRequest(requestOlder, userID)
 	if err != nil {
-		return false, err
+		return false, Data.Article{}, err
 	}
+	var result Data.FetchArticleResponse
 	err = json.Unmarshal([]byte(res), &result)
-	if err != nil {
-		return false, err
-	}
-	// 評価する
-	if len(result.Articles) == 0 {
-		return false, err
+	if err != nil || len(result.Articles) == 0 {
+		return false, Data.Article{}, err
 	}
 	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteFetchArticlesByOlder: Success")
 	// 更新をテストだが、ここから更新はテスト出来ない 該当関数内で十分テストされている
-	return true, nil
+	return true, resultFetchArticleByLatest.Articles[0], nil
 }
 
 func SendSearchRequest(request Data.ApiSearchRequest, userID string) (Data.SearchResult, error) {

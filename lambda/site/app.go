@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	// "write/DBRepo"
-	// "write/RequestHandler"
-	// "write/api_gen_code"
+	"site/Data"
+	"site/Repo"
 	"site/RequestHandler"
 	"site/api_gen_code"
-	"site/Repo"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -25,6 +23,7 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		WeaklyTypedInput: true,
 		Result:           &api_req,
 	}
+	// mapstructureではなくBodyをデコードした方がいいのではないか
 	decoder, err := mapstructure.NewDecoder(decoderConfig)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
@@ -38,20 +37,26 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	res, err := RequestHandler.ParseRequestType(access_ip, Repo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,
 		*api_req.RequestArgumentJson1, *api_req.RequestArgumentJson2)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, err
 	}
-	// ここでレスポンスを作る
+	// レスポンスを返す
 	response := api_gen_code.APIResponse{
 		RequestType:   api_req.RequestType,
 		UserId:        api_req.UserId,
 		ResponseValue: &res,
 	}
-	body, err := json.Marshal(response)
+	res_json, err := json.Marshal(response)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, err
 	}
 	return events.APIGatewayProxyResponse{
-		Body:       string(body),
+		Body:       string(res_json),
 		StatusCode: http.StatusOK,
 	}, nil
 }
@@ -59,3 +64,17 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 func main() {
 	lambda.Start(HandleRequest)
 }
+
+func GenAPIResponse(responseType string, value string, errorMsg string) (string, error) {
+	res := Data.APIResponse{
+		ResponseType: responseType,
+		Value:        value,
+		Error:        errorMsg,
+	}
+	res_str, err := json.Marshal(res)
+	if err != nil {
+		return "", err
+	}
+	return string(res_str), nil
+}
+

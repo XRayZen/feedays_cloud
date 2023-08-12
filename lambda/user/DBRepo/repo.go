@@ -2,9 +2,9 @@ package DBRepo
 
 import (
 	"log"
-	"user/Data"
 	"sort"
 	"time"
+	"user/Data"
 
 	// "time"
 
@@ -29,6 +29,9 @@ type DBRepo interface {
 	ModifyFavoriteSite(user_unique_Id string, siteUrl string, isAddOrRemove bool) error
 	ModifyFavoriteArticle(user_unique_Id string, articleUrl string, isAddOrRemove bool) error
 	FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)
+	UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error
+	DeleteUserData(user_unique_Id string) error
+	DeletesUnscopedUserData(user_unique_Id string) error
 }
 
 type DBRepoImpl struct {
@@ -285,10 +288,96 @@ func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConf
 	user.ApiConfig = apiConfig
 	// DB型からAPI型に変換する
 	return Data.ApiConfig{
-		RefreshArticleInterval: user.ApiConfig.RefreshArticleInterval,
+		RefreshArticleInterval:      user.ApiConfig.RefreshArticleInterval,
 		FetchArticleRequestInterval: user.ApiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit: user.ApiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval: user.ApiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit: user.ApiConfig.FetchTrendRequestLimit,
+		FetchArticleRequestLimit:    user.ApiConfig.FetchArticleRequestLimit,
+		FetchTrendRequestInterval:   user.ApiConfig.FetchTrendRequestInterval,
+		FetchTrendRequestLimit:      user.ApiConfig.FetchTrendRequestLimit,
 	}, nil
+}
+
+// UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error
+func (repo DBRepoImpl) UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
+		return err
+	}
+	// 更新する
+	apiCfg := ApiConfig{
+		RefreshArticleInterval:      apiConfig.RefreshArticleInterval,
+		FetchArticleRequestInterval: apiConfig.FetchArticleRequestInterval,
+		FetchArticleRequestLimit:    apiConfig.FetchArticleRequestLimit,
+		FetchTrendRequestInterval:   apiConfig.FetchTrendRequestInterval,
+		FetchTrendRequestLimit:      apiConfig.FetchTrendRequestLimit,
+	}
+	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&apiCfg); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteUserData(user_unique_Id string) error
+func (repo DBRepoImpl) DeleteUserData(user_unique_Id string) error {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
+		return err
+	}
+	// Userテーブルから削除
+	if err := DBMS.Delete(&user).Error; err != nil {
+		return err
+	}
+	// FavoriteSitesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Delete(&FavoriteSite{}).Error; err != nil {
+		return err
+	}
+	// FavoriteArticlesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Delete(&FavoriteArticle{}).Error; err != nil {
+		return err
+	}
+	// SearchHistoriesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Delete(&SearchHistory{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeletesUnscopedUserData(user_unique_Id string) error
+func (repo DBRepoImpl) DeletesUnscopedUserData(user_unique_Id string) error {
+	var user User
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
+		return err
+	}
+	// ApiConfigテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&ApiConfig{}).Error; err != nil {
+		return err
+	}
+	// UiConfigテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&UiConfig{}).Error; err != nil {
+		return err
+	}
+	// Userテーブルから削除
+	if err := DBMS.Unscoped().Delete(&user).Error; err != nil {
+		return err
+	}
+	// FavoriteSitesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&FavoriteSite{}).Error; err != nil {
+		return err
+	}
+	// FavoriteArticlesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&FavoriteArticle{}).Error; err != nil {
+		return err
+	}
+	// SearchHistoriesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&SearchHistory{}).Error; err != nil {
+		return err
+	}
+	// ReadHistoriesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&ReadHistory{}).Error; err != nil {
+		return err
+	}
+	// SubscriptionSitesテーブルから削除
+	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&SubscriptionSite{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
