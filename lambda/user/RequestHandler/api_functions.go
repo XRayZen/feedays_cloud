@@ -7,8 +7,8 @@ import (
 )
 
 type APIFunctions struct {
-	repo DBRepo.DBRepo
-	ip   string
+	db_repo DBRepo.DBRepo
+	ip      string
 }
 
 func (s APIFunctions) RegisterUser(user_id string, user_config_json string) (string, error) {
@@ -17,7 +17,7 @@ func (s APIFunctions) RegisterUser(user_id string, user_config_json string) (str
 	if err := json.Unmarshal([]byte(user_config_json), &user_config); err != nil {
 		return "", err
 	}
-	if err := s.repo.RegisterUser(user_config); err != nil {
+	if err := s.db_repo.RegisterUser(user_config); err != nil {
 		return "", err
 	}
 	return "Success RegisterUser", nil
@@ -26,7 +26,7 @@ func (s APIFunctions) RegisterUser(user_id string, user_config_json string) (str
 // 設定を同期する為にユーザー設定を取得する
 func (s APIFunctions) ConfigSync(userId string) (string, error) {
 	// ユーザー設定を取得する
-	user_config, err := s.repo.SearchUserConfig(userId)
+	user_config, err := s.db_repo.SearchUserConfig(userId)
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +48,7 @@ func (s APIFunctions) ReportReadActivity(userId string, readActivityJson string)
 	if err := json.Unmarshal([]byte(readActivityJson), &read_history); err != nil {
 		return "", err
 	}
-	if err := s.repo.AddReadHistory(userId, read_history); err != nil {
+	if err := s.db_repo.AddReadHistory(userId, read_history); err != nil {
 		return "", err
 	}
 	// この機能ではAPIアクテビティに記録はしない
@@ -61,7 +61,7 @@ func (s APIFunctions) UpdateConfig(userId string, userCfgJson string) (string, e
 	if err := json.Unmarshal([]byte(userCfgJson), &user_config); err != nil {
 		return "", err
 	}
-	if err := s.repo.UpdateUser(userId, user_config); err != nil {
+	if err := s.db_repo.UpdateUser(userId, user_config); err != nil {
 		return "", err
 	}
 	return "Success UpdateConfig", nil
@@ -75,7 +75,7 @@ func (s APIFunctions) ModifySearchHistory(userId string, text string, is_add_or_
 	} else {
 		is_add_or_remove = false
 	}
-	response, err := s.repo.ModifySearchHistory(userId, text, is_add_or_remove)
+	response, err := s.db_repo.ModifySearchHistory(userId, text, is_add_or_remove)
 	if err != nil {
 		return "", err
 	}
@@ -98,7 +98,7 @@ func (s APIFunctions) ModifyFavoriteSite(userId string, web_site_json string, is
 	if err := json.Unmarshal([]byte(web_site_json), &web_site); err != nil {
 		return "", err
 	}
-	if err := s.repo.ModifyFavoriteSite(userId, web_site.SiteURL, is_add_or_remove); err != nil {
+	if err := s.db_repo.ModifyFavoriteSite(userId, web_site.SiteURL, is_add_or_remove); err != nil {
 		return "", err
 	}
 	return "Success ModifyFavoriteSite", nil
@@ -114,7 +114,7 @@ func (s APIFunctions) ModifyFavoriteArticle(user_Id string, article_json string,
 	if err := json.Unmarshal([]byte(article_json), &article); err != nil {
 		return "", err
 	}
-	if err := s.repo.ModifyFavoriteArticle(user_Id, article.Link, is_add_or_remove); err != nil {
+	if err := s.db_repo.ModifyFavoriteArticle(user_Id, article.Link, is_add_or_remove); err != nil {
 		return "", err
 	}
 	return "Success ModifyFavoriteArticle", nil
@@ -123,7 +123,7 @@ func (s APIFunctions) ModifyFavoriteArticle(user_Id string, article_json string,
 // APIリクエスト制限を取得して返す 起動時に呼び出される
 func (s APIFunctions) GetAPIRequestLimit(user_id string) (string, error) {
 	// APIリクエスト制限を取得する
-	api_config, err := s.repo.FetchAPIRequestLimit(user_id)
+	api_config, err := s.db_repo.FetchAPIRequestLimit(user_id)
 	if err != nil {
 		return "", err
 	}
@@ -135,29 +135,29 @@ func (s APIFunctions) GetAPIRequestLimit(user_id string) (string, error) {
 	return string(api_request_limit_json), nil
 }
 
-// APIリクエスト制限を更新する
-func (s APIFunctions) UpdateAPIRequestLimit(user_id string, api_request_limit_json string) (string, error) {
+// APIリクエスト制限を変更する
+func (functions APIFunctions) ModifyAPIRequestLimit(modify_type string, api_request_limit_json string) (string, error) {
 	// APIリクエスト制限をjsonから変換する
 	var api_config Data.ApiConfig
 	if err := json.Unmarshal([]byte(api_request_limit_json), &api_config); err != nil {
 		return "", err
 	}
-	// APIリクエスト制限を更新する
-	if err := s.repo.UpdateAPIRequestLimit(user_id, api_config); err != nil {
+	// APIリクエスト制限を変更する
+	if err := functions.db_repo.ModifyApiRequestLimit(modify_type, api_config); err != nil {
 		return "", err
 	}
-	return "Success UpdateAPIRequestLimit", nil
+	return "Success ModifyAPIRequestLimit", nil
 }
 
 // Userと紐付けられている全てのデータを削除する
 func (s APIFunctions) DeleteUserData(user_id string, is_unscope string) (string, error) {
 	if is_unscope == "true" {
 		// ユーザーの全てのデータを削除する
-		if err := s.repo.DeletesUnscopedUserData(user_id); err != nil {
+		if err := s.db_repo.DeletesUnscopedUserData(user_id); err != nil {
 			return "", err
 		}
 	} else {
-		if err := s.repo.DeleteUserData(user_id); err != nil {
+		if err := s.db_repo.DeleteUserData(user_id); err != nil {
 			return "", err
 		}
 	}

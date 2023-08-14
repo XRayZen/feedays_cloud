@@ -30,7 +30,11 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// 変換されたらリクエストタイプに応じて処理を分岐する
 	// 別のパッケージに移して処理を書く
 	// ここでDIする
-	res, err := RequestHandler.ParseRequestType(Repo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,)
+	db_repo := Repo.DBRepoImpl{}
+	if err := db_repo.ConnectDB(false); err != nil {
+		return events.APIGatewayProxyResponse{}, err
+	}
+	res, err := RequestHandler.ParseRequestType(db_repo, *api_req.RequestType, *api_req.UserId)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),

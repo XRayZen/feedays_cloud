@@ -65,22 +65,26 @@ func TestApiUserPart2(userId string, site Data.WebSite, article Data.Article) (b
 		log.Println("Failed to modify favorite article")
 		return false, err
 	}
+	result, err = testModifyAPIRequestLimit(userId,"Add")
+	if err != nil || !result {
+		log.Println("Failed to add api request limit")
+		return false, err
+	}
 	result, err = testGetAPIRequestLimit(userId)
 	if err != nil || !result {
 		log.Println("Failed to get api request limit")
 		return false, err
 	}
-	// UpdateAPIRequestLimit
-	result, err = testUpdateAPIRequestLimit(userId)
+	result, err = testModifyAPIRequestLimit(userId,"UnscopedDelete")
 	if err != nil || !result {
-		log.Println("Failed to update api request limit")
+		log.Println("Failed to unscoped delete api request limit")
 		return false, err
 	}
 	return true, nil
 }
 
-func testUpdateAPIRequestLimit(userId string)(bool, error) {
-	request_type := "UpdateAPIRequestLimit"
+func testModifyAPIRequestLimit(userId string,modify_type string) (bool, error) {
+	request_type := "ModifyAPIRequestLimit"
 	api_config := Data.ApiConfig{
 		RefreshArticleInterval: 10,
 	}
@@ -89,13 +93,13 @@ func testUpdateAPIRequestLimit(userId string)(bool, error) {
 	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
 		RequestType:          &request_type,
 		UserId:               &userId,
-		RequestArgumentJson1: &api_config_str,
+		RequestArgumentJson1: &modify_type,
+		RequestArgumentJson2: &api_config_str,
 	})
-	if err != nil || result != "Success UpdateAPIRequestLimit" {
-		log.Println("Failed to update api request limit")
+	if err != nil || result != "Success ModifyAPIRequestLimit" {
 		return false, err
 	}
-	log.Println("Success to update api request limit")
+	log.Println("Success ModifyAPIRequestLimit")
 	return true, nil
 }
 
@@ -104,9 +108,6 @@ func genTestUserConfig() Data.UserConfig {
 		UserName:     "test",
 		UserUniqueID: "test-unique-id",
 		ClientConfig: Data.ClientConfig{
-			ApiConfig: Data.ApiConfig{
-				RefreshArticleInterval: 10,
-			},
 			UiConfig: Data.UiConfig{
 				ThemeColorValue:   677,
 				DrawerMenuOpacity: 0.5,
@@ -158,7 +159,7 @@ func testConfigSync(userId string) (bool, error) {
 	// ApiConfigをパースする
 	var config_sync_response = Data.ConfigSyncResponse{}
 	err = json.Unmarshal([]byte(result), &config_sync_response)
-	if err != nil || config_sync_response.UserConfig.ClientConfig.ApiConfig.RefreshArticleInterval != 10 {
+	if err != nil || config_sync_response.UserConfig.ClientConfig.UiConfig.ThemeColorValue != 677 {
 		log.Println("Failed to config sync")
 		return false, err
 	}

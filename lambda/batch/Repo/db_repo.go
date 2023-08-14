@@ -27,7 +27,7 @@ type DBRepository interface {
 	// 記事はサイトの更新日時より新しい記事があればDBにインサートする
 	UpdateSiteAndArticle(site Data.WebSite, articles []Data.Article) error
 	// 時間（From・To）を指定してリードアクテビティを検索する
-	SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error)
+	SearchReadActivityByTime(user_unique_id string,from time.Time, to time.Time) ([]Data.ReadHistory, error)
 
 	// テスト用
 	// サイトURLをキーにサイトの最新記事を取得する
@@ -68,7 +68,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 		DBMS.AutoMigrate(&SubscriptionSite{})
 		DBMS.AutoMigrate(&SearchHistory{})
 		DBMS.AutoMigrate(&ReadHistory{})
-		DBMS.AutoMigrate(&ApiConfig{})
+		DBMS.AutoMigrate(&ApiLimitConfig{})
 		DBMS.AutoMigrate(&UiConfig{})
 
 		DBMS.AutoMigrate(&Site{})
@@ -83,7 +83,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 // Readで使う
 func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, is_preload_related_tables bool) (Data.UserConfig, error) {
 	var user User
-	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
 	if is_preload_related_tables {
@@ -203,7 +203,7 @@ func (r DBRepoImpl) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Arti
 }
 
 // 時間（From・To）を指定してリードアクテビティを検索する
-func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error) {
+func (r DBRepoImpl) SearchReadActivityByTime(user_unique_id string,from time.Time, to time.Time) ([]Data.ReadHistory, error) {
 	var histories []ReadHistory
 	result := DBMS.Where("access_at BETWEEN ? AND ?", from, to).Find(&histories)
 	if result.Error != nil {
@@ -211,7 +211,7 @@ func (r DBRepoImpl) SearchReadActivityByTime(from time.Time, to time.Time) ([]Da
 	}
 	var api_histories []Data.ReadHistory
 	for _, history := range histories {
-		api_history := ConvertToApiReadHistory(history)
+		api_history := ConvertToApiReadHistory(history,user_unique_id)
 		api_histories = append(api_histories, api_history)
 	}
 	return api_histories, nil

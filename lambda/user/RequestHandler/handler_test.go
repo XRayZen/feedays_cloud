@@ -11,6 +11,7 @@ import (
 // 正常系のテスト
 func TestNormalRequestHandler(t *testing.T) {
 	db_repo := DBRepo.DBRepoImpl{}
+	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
 	if err := db_repo.ConnectDB(true); err != nil {
 		t.Fatal(err)
 	}
@@ -51,50 +52,66 @@ func TestNormalRequestHandler(t *testing.T) {
 		Link:     "test",
 		AccessAt: now_str,
 	})
-	user_config := Data.UserConfig{
+	input_user_config := Data.UserConfig{
 		UserName:     "test",
 		UserUniqueID: test_user_id,
+		AccountType: "Free",
 		ClientConfig: Data.ClientConfig{
-			ApiConfig: Data.ApiConfig{
-				RefreshArticleInterval: 10,
+			UiConfig: Data.UiConfig{
+				ThemeMode: "light",
 			},
 		},
 	}
-	user_config_json, _ := json.Marshal(user_config)
+	input_user_config_json, _ := json.Marshal(input_user_config)
 	test_web_site_json, _ := json.Marshal(site)
 	test_article_json, _ := json.Marshal(article)
 
-	// 正解データを用意する
-	config_sync_response_json, _ := json.Marshal(Data.ConfigSyncResponse{
+	// 期待する出力データを定義
+	expected_config_sync_response_json, _ := json.Marshal(Data.ConfigSyncResponse{
 		ResponseType: "accept",
 		UserConfig: Data.UserConfig{
 			UserName:     "test",
 			UserUniqueID: test_user_id,
+			AccountType: "Free",
 			ClientConfig: Data.ClientConfig{
-				ApiConfig: Data.ApiConfig{
-					RefreshArticleInterval: 10,
+				UiConfig: Data.UiConfig{
+					ThemeMode: "light",
 				},
 			},
 		},
 		Error: "",
 	})
-	expected_config_sync := string(config_sync_response_json)
+	expected_config_sync := string(expected_config_sync_response_json)
 	expected_register_user := "Success RegisterUser"
 	expected_report_read_activity := "Success ReportReadActivity"
 	expected_update_config := "Success UpdateConfig"
 	expected_modify_favorite_site := "Success ModifyFavoriteSite"
 	expected_modify_favorite_article := "Success ModifyFavoriteArticle"
-	api_request_limit_config_json, _ := json.Marshal(Data.ApiConfig{
+
+	// 入力と期待する出力
+	input_search_history_json, _ := json.Marshal([]string{"test"})
+	expected_search_history_json := string(input_search_history_json)
+	// APIリクエスト制限のテストデータ
+	input_add_api_config_json, _ := json.Marshal(Data.ApiConfig{
+		AccountType: 		 "Free",
 		RefreshArticleInterval: 10,
 	})
-	expected_api_request_limit_config := string(api_request_limit_config_json)
-	search_history_json, _ := json.Marshal([]string{"test"})
-	expected_search_history_json := string(search_history_json)
-	update_api_config := Data.ApiConfig{
+	expected_add_api_config := "Success ModifyAPIRequestLimit"
+	fetch_api_request_limit_config_json, _ := json.Marshal(Data.ApiConfig{
+		AccountType: 		 "Free",
+		RefreshArticleInterval: 10,
+	})
+	expected_fetch_api_request_limit_config := string(fetch_api_request_limit_config_json)
+	input_update_api_config_json, _ := json.Marshal(Data.ApiConfig{
+		AccountType: 		 "Free",
 		RefreshArticleInterval: 20,
-	}
-	update_api_config_json, _ := json.Marshal(update_api_config)
-	expected_update_api_config_json := "Success UpdateAPIRequestLimit"
+	})
+	expected_update_api_config := "Success ModifyAPIRequestLimit"
+	input_delete_api_config_json, _ := json.Marshal(Data.ApiConfig{
+		AccountType: 		 "Free",
+	})
+	expected_delete_api_config := "Success ModifyAPIRequestLimit"
+
 	deleted_user_data_is_scoped, _ := json.Marshal(true)
 	expected_delete_user_data := "Success DeleteUserData"
 
@@ -126,7 +143,7 @@ func TestNormalRequestHandler(t *testing.T) {
 			args: args{
 				requestType:    "RegisterUser",
 				userId:         test_user_id,
-				argumentJson_1: string(user_config_json),
+				argumentJson_1: string(input_user_config_json),
 				argumentJson_2: "",
 			},
 			want:    string(expected_register_user),
@@ -172,7 +189,7 @@ func TestNormalRequestHandler(t *testing.T) {
 			args: args{
 				requestType:    "UpdateConfig",
 				userId:         test_user_id,
-				argumentJson_1: string(user_config_json),
+				argumentJson_1: string(input_user_config_json),
 				argumentJson_2: "",
 			},
 			want:    string(expected_update_config),
@@ -223,6 +240,23 @@ func TestNormalRequestHandler(t *testing.T) {
 			want:    string(expected_modify_favorite_article),
 			wantErr: false,
 		},
+		// AddApiRequestLimit
+		{
+			name: "AddApiRequestLimit",
+			fields: fields{
+				repo: db_repo,
+				ip:   "",
+			},
+			args: args{
+				requestType:    "ModifyAPIRequestLimit",
+				userId:         test_user_id,
+				argumentJson_1: "Add",
+				argumentJson_2: string(input_add_api_config_json),
+			},
+			want:    expected_add_api_config,
+			wantErr: false,
+		},
+		// GetApiRequestLimit
 		{
 			name: "GetApiRequestLimit",
 			fields: fields{
@@ -235,7 +269,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    expected_api_request_limit_config,
+			want:    expected_fetch_api_request_limit_config,
 			wantErr: false,
 		},
 		// UpdateApiRequestLimit
@@ -246,12 +280,28 @@ func TestNormalRequestHandler(t *testing.T) {
 				ip:   "",
 			},
 			args: args{
-				requestType:    "UpdateAPIRequestLimit",
+				requestType:   "ModifyAPIRequestLimit",
 				userId:         test_user_id,
-				argumentJson_1: string(update_api_config_json),
-				argumentJson_2: "",
+				argumentJson_1: "Update",
+				argumentJson_2: string(input_update_api_config_json),
 			},
-			want:    expected_update_api_config_json,
+			want:    expected_update_api_config,
+			wantErr: false,
+		},
+		// DeleteApiRequestLimit
+		{
+			name: "DeleteApiRequestLimit",
+			fields: fields{
+				repo: db_repo,
+				ip:   "",
+			},
+			args: args{
+				requestType:    "ModifyAPIRequestLimit",
+				userId:         test_user_id,
+				argumentJson_1: "UnscopedDelete",
+				argumentJson_2: string(input_delete_api_config_json),
+			},
+			want:    expected_delete_api_config,
 			wantErr: false,
 		},
 		// DeleteUserData

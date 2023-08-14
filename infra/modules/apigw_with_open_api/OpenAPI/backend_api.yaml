@@ -63,6 +63,19 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
+        # OpenAPIでAPI Gatewayの統合設定を定義しておく
+        # https://docs.aws.amazon.com/ja_jp/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
+        x-amazon-apigateway-integration:
+          httpMethod: "POST"
+          passthroughBehavior: "when_no_match"
+          responses:
+            default:
+              statusCode: "200"
+          # aws_proxy (AWS Lambda 関数との統合の場合)
+          type: "aws_proxy"
+          uri: "${read_lambda_arn}"
+          credentials: "${apigateway_role_arn}"
+
   "/user":
     post:
       # メタデータ
@@ -116,6 +129,13 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
+        x-amazon-apigateway-integration:
+          httpMethod: "POST"
+          passthroughBehavior: "when_no_match"
+          # aws_proxy (AWS Lambda 関数との統合の場合)
+          type: "aws_proxy"
+          uri: "${user_lambda_arn}"
+          credentials: "${apigateway_role_arn}"
 
   "/site":
     post:
@@ -170,6 +190,13 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
+        x-amazon-apigateway-integration:
+          httpMethod: "POST"
+          passthroughBehavior: "when_no_match"
+          # aws_proxy (AWS Lambda 関数との統合の場合)
+          type: "aws_proxy"
+          uri: "${site_lambda_arn}"
+          credentials: "${apigateway_role_arn}"
 
 components:
   schemas:

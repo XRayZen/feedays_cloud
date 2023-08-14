@@ -53,7 +53,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 		DBMS.AutoMigrate(&SubscriptionSite{})
 		DBMS.AutoMigrate(&SearchHistory{})
 		DBMS.AutoMigrate(&ReadHistory{})
-		DBMS.AutoMigrate(&ApiConfig{})
+		DBMS.AutoMigrate(&ApiLimitConfig{})
 		DBMS.AutoMigrate(&UiConfig{})
 
 		DBMS.AutoMigrate(&Site{})
@@ -68,7 +68,7 @@ func (s DBRepoImpl) AutoMigrate() error {
 // Readで使う
 func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, is_preload_related_tables bool) (Data.UserConfig, error) {
 	var user User
-	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
 	if is_preload_related_tables {

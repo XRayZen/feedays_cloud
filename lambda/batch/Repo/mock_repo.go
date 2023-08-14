@@ -89,7 +89,7 @@ func (s MockDBRepo) UpdateSiteAndArticle(site Data.WebSite, articles []Data.Arti
 	return nil
 }
 
-func (s MockDBRepo) SearchReadActivityByTime(from time.Time, to time.Time) ([]Data.ReadHistory, error) {
+func (s MockDBRepo) SearchReadActivityByTime(user_unique_id string,from time.Time, to time.Time) ([]Data.ReadHistory, error) {
 	return nil, nil
 }
 

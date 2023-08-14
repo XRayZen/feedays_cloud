@@ -12,29 +12,29 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/mitchellh/mapstructure"
+	// "github.com/mitchellh/mapstructure"
 )
 
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// アクセスしてきたIPアドレスを取得する
 	access_ip := request.RequestContext.Identity.SourceIP
-	var api_req api_gen_code.PostSiteJSONBody
-	decoder_config := &mapstructure.DecoderConfig{
-		WeaklyTypedInput: true,
-		Result:           &api_req,
-	}
-	// mapstructureではなくBodyをデコードした方がいいのではないか
-	decoder, err := mapstructure.NewDecoder(decoder_config)
+	api_req,err := decodeApiRequest(request)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
-	}
-	err = decoder.Decode(request.QueryStringParameters)
-	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, err
 	}
 	// 変換されたらリクエストタイプに応じて処理を分岐する
-	// ここでDIする
-	res, err := RequestHandler.ParseRequestType(access_ip, Repo.DBRepoImpl{}, *api_req.RequestType, *api_req.UserId,
+	// ここでDBに接続する
+	db_repo := Repo.DBRepoImpl{}
+	if err := db_repo.ConnectDB(false); err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       err.Error(),
+		}, err
+	}
+	res, err := RequestHandler.ParseRequestType(access_ip, db_repo, *api_req.RequestType, *api_req.UserId,
 		*api_req.RequestArgumentJson1, *api_req.RequestArgumentJson2)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
@@ -56,6 +56,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		}, err
 	}
 	return events.APIGatewayProxyResponse{
+		Headers: map[string]string{
+			"application/json": "charset=utf-8",
+		},
 		Body:       string(res_json),
 		StatusCode: http.StatusOK,
 	}, nil
@@ -78,3 +81,10 @@ func GenAPIResponse(responseType string, value string, errorMsg string) (string,
 	return string(res_str), nil
 }
 
+func decodeApiRequest(request events.APIGatewayProxyRequest) (api_gen_code.PostSiteJSONRequestBody, error) {
+	var api_req api_gen_code.PostSiteJSONRequestBody
+	if err := json.Unmarshal([]byte(request.Body), &api_req); err != nil {
+		return api_gen_code.PostSiteJSONRequestBody{}, err
+	}
+	return api_req, nil
+}

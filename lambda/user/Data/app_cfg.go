@@ -1,16 +1,16 @@
 package Data
 
 type ClientConfig struct {
-	ApiConfig ApiConfig `json:"apiConfig"`
 	UiConfig  UiConfig  `json:"UiConfig"`
 }
 
 type ApiConfig struct {
-	RefreshArticleInterval      int `json:"refreshArticleInterval"`
-	FetchArticleRequestInterval int `json:"fetchArticleRequestInterval"`
-	FetchArticleRequestLimit    int `json:"fetchArticleRequestLimit"`
-	FetchTrendRequestInterval   int `json:"trendRequestInterval"`
-	FetchTrendRequestLimit      int `json:"trendRequestLimit"`
+	AccountType                 string `json:"accountType"`
+	RefreshArticleInterval      int    `json:"refreshArticleInterval"`
+	FetchArticleRequestInterval int    `json:"fetchArticleRequestInterval"`
+	FetchArticleRequestLimit    int    `json:"fetchArticleRequestLimit"`
+	FetchTrendRequestInterval   int    `json:"trendRequestInterval"`
+	FetchTrendRequestLimit      int    `json:"trendRequestLimit"`
 }
 
 type UiConfig struct {

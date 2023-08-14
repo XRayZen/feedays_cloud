@@ -29,7 +29,7 @@ type DBRepo interface {
 	ModifyFavoriteSite(user_unique_Id string, siteUrl string, is_add_or_remove bool) error
 	ModifyFavoriteArticle(user_unique_Id string, articleUrl string, is_add_or_remove bool) error
 	FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)
-	UpdateAPIRequestLimit(user_unique_Id string, api_config Data.ApiConfig) error
+	ModifyApiRequestLimit(modify_type string, api_config Data.ApiConfig) error
 	DeleteUserData(user_unique_Id string) error
 	DeletesUnscopedUserData(user_unique_Id string) error
 }
@@ -66,7 +66,7 @@ func (repo DBRepoImpl) AutoMigrate() error {
 		DBMS.AutoMigrate(&SubscriptionSite{})
 		DBMS.AutoMigrate(&SearchHistory{})
 		DBMS.AutoMigrate(&ReadHistory{})
-		DBMS.AutoMigrate(&ApiConfig{})
+		DBMS.AutoMigrate(&ApiLimitConfig{})
 		DBMS.AutoMigrate(&UiConfig{})
 
 		DBMS.AutoMigrate(&Site{})
@@ -79,13 +79,12 @@ func (repo DBRepoImpl) AutoMigrate() error {
 
 func (repo DBRepoImpl) RegisterUser(userInfo Data.UserConfig) error {
 	// API構造体からDB構造体に変換する
-	db_api_config, db_ui_config := ConvertToDbApiCfgAndUiCfg(userInfo)
+	db_ui_config := ConvertToDbUiCfg(userInfo)
 	user := User{
 		UserName:      userInfo.UserName,
 		UserUniqueID:  userInfo.UserUniqueID,
 		AccountType:   userInfo.AccountType,
 		Country:       userInfo.Country,
-		ApiConfig:     db_api_config,
 		UiConfig:      db_ui_config,
 		ReadHistories: []ReadHistory{},
 	}
@@ -98,7 +97,7 @@ func (repo DBRepoImpl) RegisterUser(userInfo Data.UserConfig) error {
 
 func (repo DBRepoImpl) SearchUserConfig(user_unique_Id string) (Data.UserConfig, error) {
 	var user User
-	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("UiConfig").First(&user).Error; err != nil {
 		return Data.UserConfig{}, err
 	}
 	// AssociationでReadHistoryなどの配列を取得する
@@ -130,15 +129,11 @@ func (repo DBRepoImpl) DeleteUser(user_unique_Id string) error {
 
 func (repo DBRepoImpl) UpdateUser(user_unique_Id string, dataUserCfg Data.UserConfig) error {
 	var user User
-	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("ApiConfig").Preload("UiConfig").First(&user).Error; err != nil {
+	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("UiConfig").First(&user).Error; err != nil {
 		return err
 	}
 	// クライアント設定を更新する為だからそこら辺だけ更新する
-	db_api_config, db_ui_config := ConvertToDbApiCfgAndUiCfg(dataUserCfg)
-	// Associationでリプレースする
-	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&db_api_config); err != nil {
-		return err
-	}
+	db_ui_config := ConvertToDbUiCfg(dataUserCfg)
 	if err := DBMS.Model(&user).Association("UiConfig").Replace(&db_ui_config); err != nil {
 		return err
 	}
@@ -281,37 +276,60 @@ func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConf
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return Data.ApiConfig{}, err
 	}
-	var api_config ApiConfig
-	if err := DBMS.Model(&user).Association("ApiConfig").Find(&api_config); err != nil {
+	// APIリクエスト制限はアカウントタイプごとに設定されてテーブルに保存されている
+	var api_config ApiLimitConfig
+	if err := DBMS.Where(&ApiLimitConfig{AccountType: user.AccountType}).First(&api_config).Error; err != nil {
 		return Data.ApiConfig{}, err
 	}
-	user.ApiConfig = api_config
 	// DB型からAPI型に変換する
 	return Data.ApiConfig{
-		RefreshArticleInterval:      user.ApiConfig.RefreshArticleInterval,
-		FetchArticleRequestInterval: user.ApiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit:    user.ApiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval:   user.ApiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit:      user.ApiConfig.FetchTrendRequestLimit,
-	}, nil
-}
-
-// UpdateAPIRequestLimit(user_unique_Id string, apiConfig Data.ApiConfig) error
-func (repo DBRepoImpl) UpdateAPIRequestLimit(user_unique_Id string, api_config Data.ApiConfig) error {
-	var user User
-	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
-		return err
-	}
-	// 更新する
-	db_api_config := ApiConfig{
+		AccountType:                 api_config.AccountType,
 		RefreshArticleInterval:      api_config.RefreshArticleInterval,
 		FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
 		FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
 		FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
 		FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
-	}
-	if err := DBMS.Model(&user).Association("ApiConfig").Replace(&db_api_config); err != nil {
-		return err
+	}, nil
+}
+
+func (repo DBRepoImpl) ModifyApiRequestLimit(modify_type string, api_config Data.ApiConfig) error {
+	switch modify_type {
+	case "Add":
+		// 追加
+		db_api_config := ApiLimitConfig{
+			AccountType:                 api_config.AccountType,
+			RefreshArticleInterval:      api_config.RefreshArticleInterval,
+			FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
+			FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
+			FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
+			FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
+		}
+		if err := DBMS.Create(&db_api_config).Error; err != nil {
+			return err
+		}
+	case "Update":
+		// 更新する
+		db_api_config := ApiLimitConfig{
+			AccountType:                 api_config.AccountType,
+			RefreshArticleInterval:      api_config.RefreshArticleInterval,
+			FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
+			FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
+			FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
+			FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
+		}
+		if err := DBMS.Model(&ApiLimitConfig{}).Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Updates(&db_api_config).Error; err != nil {
+			return err
+		}
+	case "Delete":
+		// 削除する
+		if err := DBMS.Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Delete(&ApiLimitConfig{}).Error; err != nil {
+			return err
+		}
+	case "UnscopedDelete":
+		// 物理的に削除する
+		if err := DBMS.Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Unscoped().Delete(&ApiLimitConfig{}).Error; err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -345,10 +363,6 @@ func (repo DBRepoImpl) DeleteUserData(user_unique_Id string) error {
 func (repo DBRepoImpl) DeletesUnscopedUserData(user_unique_Id string) error {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
-		return err
-	}
-	// ApiConfigテーブルから削除
-	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&ApiConfig{}).Error; err != nil {
 		return err
 	}
 	// UiConfigテーブルから削除

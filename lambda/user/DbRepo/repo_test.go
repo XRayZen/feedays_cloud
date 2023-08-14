@@ -2,9 +2,9 @@ package DBRepo
 
 import (
 	"errors"
-	"user/Data"
 	"testing"
 	"time"
+	"user/Data"
 
 	"github.com/mmcdole/gofeed"
 )
@@ -16,9 +16,20 @@ func InitDataBase() DBRepo {
 	if err := dbRepo.ConnectDB(true); err != nil {
 		panic("failed to connect database")
 	}
-	if err := dbRepo.AutoMigrate(); err != nil {
-		panic("failed to migrate database")
-	}
+	DBMS.AutoMigrate(&User{})
+	DBMS.AutoMigrate(&FavoriteSite{})
+	DBMS.AutoMigrate(&FavoriteArticle{})
+	DBMS.AutoMigrate(&SubscriptionSite{})
+	DBMS.AutoMigrate(&SearchHistory{})
+	DBMS.AutoMigrate(&ReadHistory{})
+	DBMS.AutoMigrate(&ApiLimitConfig{})
+	DBMS.AutoMigrate(&UiConfig{})
+
+	DBMS.AutoMigrate(&Site{})
+	DBMS.AutoMigrate(&Article{})
+	DBMS.AutoMigrate(&Tag{})
+	DBMS.AutoMigrate(&ExploreCategory{})
+
 	// カテゴリを生成する
 	var categories = []ExploreCategory{
 		{
@@ -98,8 +109,8 @@ func TestDbRepoTest(t *testing.T) {
 	}
 	// Userを取得する
 	t.Run("GetUser", func(t *testing.T) {
-		user.ClientConfig.ApiConfig.FetchArticleRequestInterval = 1000
-		user.ClientConfig.ApiConfig.FetchTrendRequestInterval = 2000
+		user.ClientConfig.UiConfig.DrawerMenuOpacity = 0.5
+		user.ClientConfig.UiConfig.ThemeMode = "Dark"
 		// Userを登録する
 		if err := dbRepo.RegisterUser(user); err != nil {
 			t.Errorf("failed to create user: %v", err)
@@ -107,18 +118,18 @@ func TestDbRepoTest(t *testing.T) {
 		// Userを取得する
 		user, err := dbRepo.SearchUserConfig(user.UserUniqueID)
 		// 取得出来たのがMockUserか確認する
-		if err != nil || user.UserName != "MockUser" || user.ClientConfig.ApiConfig.FetchArticleRequestInterval != 1000 || user.ClientConfig.ApiConfig.FetchTrendRequestInterval != 2000 {
+		if err != nil || user.UserName != "MockUser" || user.ClientConfig.UiConfig.DrawerMenuOpacity != 0.5 || user.ClientConfig.UiConfig.ThemeMode != "Dark" {
 			t.Errorf("failed to get user: %v", err)
 		}
-		user.ClientConfig.ApiConfig.RefreshArticleInterval = 4000
 		// Userを更新する
+		user.ClientConfig.UiConfig.DrawerMenuOpacity = 0.6
 		if err := dbRepo.UpdateUser(user.UserUniqueID, user); err != nil {
 			t.Errorf("failed to update user: %v", err)
 		}
 		// Userが更新されているか確認する
 		user, err = dbRepo.SearchUserConfig(user.UserUniqueID)
 		// 数字が反映されていない場合はエラー
-		if err != nil || user.ClientConfig.ApiConfig.RefreshArticleInterval != 4000 {
+		if err != nil || user.ClientConfig.UiConfig.DrawerMenuOpacity != 0.6 {
 			// 検証に失敗した場合はエラー
 			t.Errorf("failed to update validation: %v", err)
 		}
@@ -172,6 +183,14 @@ func TestDbRepoTest(t *testing.T) {
 		// お気に入り記事を削除する
 		if err := dbRepo.ModifyFavoriteArticle(user.UserUniqueID, articles[0].Link, false); err != nil {
 			t.Errorf("failed to delete favorite article: %v", err)
+		}
+		// API設定を追加する
+		if err := dbRepo.ModifyApiRequestLimit("Add", Data.ApiConfig{
+			AccountType:                 "Free",
+			FetchArticleRequestInterval: 1000,
+			FetchTrendRequestInterval:   2000,
+		}); err != nil {
+			t.Errorf("failed to add api config: %v", err)
 		}
 		// API設定を取得する
 		apiConfig, err := dbRepo.FetchAPIRequestLimit(user.UserUniqueID)

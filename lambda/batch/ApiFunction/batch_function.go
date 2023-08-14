@@ -24,7 +24,6 @@ func InitDataBase(is_test_mode bool) (Repo.DBRepository, int, error) {
 		refresh_interval = get_env_refresh_interval
 		// DB初期化処理
 		db_repo.ConnectDB(false)
-		db_repo.AutoMigrate()
 	}
 	return db_repo, refresh_interval, nil
 }

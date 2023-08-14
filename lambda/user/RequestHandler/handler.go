@@ -9,8 +9,8 @@ import (
 func ParseRequestType(access_ip string, db_repo DBRepo.DBRepo, request_type string, user_id string,
 	argument_json_1 string, argument_json_2 string) (string, error) {
 	functions := APIFunctions{
-		repo: db_repo,
-		ip:   access_ip,
+		db_repo: db_repo,
+		ip:      access_ip,
 	}
 	// リクエストタイプに応じて処理を分岐
 	switch request_type {
@@ -32,8 +32,8 @@ func ParseRequestType(access_ip string, db_repo DBRepo.DBRepo, request_type stri
 		return functions.ModifyFavoriteArticle(user_id, argument_json_1, argument_json_2)
 	case "GetAPIRequestLimit":
 		return functions.GetAPIRequestLimit(user_id)
-	case "UpdateAPIRequestLimit":
-		return functions.UpdateAPIRequestLimit(user_id, argument_json_1)
+	case "ModifyAPIRequestLimit":
+		return functions.ModifyAPIRequestLimit(argument_json_1, argument_json_2)
 	case "DeleteUserData":
 		return functions.DeleteUserData(user_id, argument_json_1)
 	default:

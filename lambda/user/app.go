@@ -17,11 +17,11 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	access_ip := request.RequestContext.Identity.SourceIP
 	// リクエストを変換する為にPostUserJSONBodyを使う
 	var api_req api_gen_code.PostUserJSONBody
-	decoderConfig := &mapstructure.DecoderConfig{
+	decoder_config := &mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           &api_req,
 	}
-	decoder, err := mapstructure.NewDecoder(decoderConfig)
+	decoder, err := mapstructure.NewDecoder(decoder_config)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
@@ -32,14 +32,11 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	// 変換されたらリクエストタイプに応じて処理を分岐する
 	// 別のパッケージに移して処理を書く
 	// ここでDIする
-	dbRepo := DBRepo.DBRepoImpl{}
-	if err := dbRepo.ConnectDB(false); err != nil {
+	db_repo := DBRepo.DBRepoImpl{}
+	if err := db_repo.ConnectDB(false); err != nil {
 		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
 	}
-	if err := dbRepo.AutoMigrate(); err != nil {
-		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
-	}
-	res, err := RequestHandler.ParseRequestType(access_ip, dbRepo, *api_req.RequestType, *api_req.UserId,
+	res, err := RequestHandler.ParseRequestType(access_ip, db_repo, *api_req.RequestType, *api_req.UserId,
 		*api_req.RequestArgumentJson1, *api_req.RequestArgumentJson2)
 	if err != nil {
 		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
@@ -66,9 +63,9 @@ func main() {
 
 // エラーレスポンスを返す
 func errorResponse(er error, RequestType string, userId string) (events.APIGatewayProxyResponse, error) {
-	errorMessage := er.Error()
+	error_message := er.Error()
 	response := api_gen_code.APIResponse{
-		ResponseValue: &errorMessage,
+		ResponseValue: &error_message,
 		RequestType:   &RequestType,
 		UserId:        &userId,
 	}
