@@ -219,3 +219,106 @@ func TestDBQueryArticle(t *testing.T) {
 		}
 	})
 }
+
+// カテゴリ系をテストする
+func TestDBQueryCategory(t *testing.T) {
+	db_repo := InitDataBase()
+	db_repo.ConnectDB(true)
+	db_repo.AutoMigrate()
+	type args struct {
+		country     string
+		modify_type string
+		category    Data.ExploreCategory
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantErr       bool
+		want_txt      string
+		want_category Data.ExploreCategory
+	}{
+		// カテゴリの登録・更新・取得・削除・異常系として存在しないカテゴリを削除する
+		{
+			name: "Add Category",
+			args: args{
+				country:     "JP",
+				modify_type: "Add",
+				category: Data.ExploreCategory{
+					CategoryName:    "CategoryName",
+					CategoryCountry: "JP",
+				},
+			},
+			wantErr:  false,
+			want_txt: "",
+		},
+		// Read Category
+		{
+			name: "Read Category",
+			args: args{
+				country:     "JP",
+				modify_type: "",
+				category: Data.ExploreCategory{
+					CategoryName:    "CategoryName",
+					CategoryCountry: "JP",
+				},
+			},
+			wantErr:  false,
+			want_txt: "",
+			want_category: Data.ExploreCategory{
+				CategoryName:    "CategoryName",
+				CategoryCountry: "JP",
+			},
+		},
+		// Delete Category
+		{
+			name: "Delete Category",
+			args: args{
+				country:     "JP",
+				modify_type: "Delete",
+				category: Data.ExploreCategory{
+					CategoryName:    "CategoryName",
+					CategoryCountry: "JP",
+				},
+			},
+			wantErr:  false,
+			want_txt: "",
+		},
+		// 異常系テスト
+		// すでに削除しているのに読み込もうとする
+		{
+			name: "Failed Category",
+			args: args{
+				country:     "JP",
+				modify_type: "",
+				category: Data.ExploreCategory{
+					CategoryName:    "CategoryName",
+					CategoryCountry: "JP",
+				},
+			},
+			wantErr:  true,
+			want_txt: "record not found",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "Read Category" || tt.name == "Failed Category" {
+				// カテゴリを読み込む
+				category, err := db_repo.FetchExploreCategories(tt.args.country)
+				if err != nil && tt.wantErr {
+					if err.Error() != tt.want_txt {
+						t.Errorf("failed to fetch explore categories")
+					}
+					return
+				}
+				if category[0].CategoryName != tt.want_category.CategoryName {
+					t.Errorf("failed to fetch explore categories")
+				}
+			} else {
+				// カテゴリを変更する
+				if err := db_repo.ModifyExploreCategory(tt.args.modify_type, tt.args.category); (err != nil) != tt.wantErr {
+					t.Errorf("failed to modify explore category")
+				}
+			}
+		})
+	}
+}

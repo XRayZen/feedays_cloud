@@ -1,7 +1,7 @@
 package DBRepo
 
 import (
-	"log"
+	"errors"
 	"sort"
 	"time"
 	"user/Data"
@@ -17,6 +17,8 @@ type DBRepo interface {
 	// 全てのDBRepoに共通する処理であるDB接続を行う
 	ConnectDB(is_mock bool) error
 	AutoMigrate() error
+	DropTable() error
+
 	SearchUserConfig(user_unique_Id string) (Data.UserConfig, error)
 	RegisterUser(user_info Data.UserConfig) error
 	DeleteUser(user_unique_Id string) error
@@ -32,6 +34,7 @@ type DBRepo interface {
 	ModifyApiRequestLimit(modify_type string, api_config Data.ApiConfig) error
 	DeleteUserData(user_unique_Id string) error
 	DeletesUnscopedUserData(user_unique_Id string) error
+	ModifyExploreCategory(modify_type string, category Data.ExploreCategory) error
 }
 
 type DBRepoImpl struct {
@@ -73,6 +76,25 @@ func (repo DBRepoImpl) AutoMigrate() error {
 		DBMS.AutoMigrate(&Article{})
 		DBMS.AutoMigrate(&Tag{})
 		DBMS.AutoMigrate(&ExploreCategory{})
+	}
+	return nil
+}
+
+func (repo DBRepoImpl) DropTable() error {
+	if DBMS != nil {
+		DBMS.Migrator().DropTable(&User{})
+		DBMS.Migrator().DropTable(&FavoriteSite{})
+		DBMS.Migrator().DropTable(&FavoriteArticle{})
+		DBMS.Migrator().DropTable(&SubscriptionSite{})
+		DBMS.Migrator().DropTable(&SearchHistory{})
+		DBMS.Migrator().DropTable(&ReadHistory{})
+		DBMS.Migrator().DropTable(&ApiLimitConfig{})
+		DBMS.Migrator().DropTable(&UiConfig{})
+
+		DBMS.Migrator().DropTable(&Site{})
+		DBMS.Migrator().DropTable(&Article{})
+		DBMS.Migrator().DropTable(&Tag{})
+		DBMS.Migrator().DropTable(&ExploreCategory{})
 	}
 	return nil
 }
@@ -151,9 +173,7 @@ func (repo DBRepoImpl) AddReadHistory(user_unique_Id string, readHst Data.ReadHi
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return err
 	}
-	err = DBMS.Model(&user).Association("ReadHistories").Append(&db_read_History)
-	if err != nil {
-		log.Println(err)
+	if err = DBMS.Model(&user).Association("ReadHistories").Append(&db_read_History); err != nil {
 		return err
 	}
 	return nil
@@ -293,43 +313,55 @@ func (repo DBRepoImpl) FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConf
 }
 
 func (repo DBRepoImpl) ModifyApiRequestLimit(modify_type string, api_config Data.ApiConfig) error {
-	switch modify_type {
-	case "Add":
-		// 追加
-		db_api_config := ApiLimitConfig{
-			AccountType:                 api_config.AccountType,
-			RefreshArticleInterval:      api_config.RefreshArticleInterval,
-			FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
-			FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
-			FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
-			FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
+	if err := DBMS.Transaction(func(tx *gorm.DB) error {
+		switch modify_type {
+		case "Add":
+			// 追加
+			db_api_config := ApiLimitConfig{
+				AccountType:                 api_config.AccountType,
+				RefreshArticleInterval:      api_config.RefreshArticleInterval,
+				FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
+				FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
+				FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
+				FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
+			}
+			if err := tx.Create(&db_api_config).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case "Update":
+			// 更新する
+			db_api_config := ApiLimitConfig{
+				AccountType:                 api_config.AccountType,
+				RefreshArticleInterval:      api_config.RefreshArticleInterval,
+				FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
+				FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
+				FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
+				FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
+			}
+			if err := tx.Model(&ApiLimitConfig{}).Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Updates(&db_api_config).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case "Delete":
+			// 削除する
+			if err := tx.Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Delete(&ApiLimitConfig{}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case "UnscopedDelete":
+			// 物理的に削除する
+			if err := tx.Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Unscoped().Delete(&ApiLimitConfig{}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		default:
+			// エラーを返す
+			return errors.New("invalid modify_type")
 		}
-		if err := DBMS.Create(&db_api_config).Error; err != nil {
-			return err
-		}
-	case "Update":
-		// 更新する
-		db_api_config := ApiLimitConfig{
-			AccountType:                 api_config.AccountType,
-			RefreshArticleInterval:      api_config.RefreshArticleInterval,
-			FetchArticleRequestInterval: api_config.FetchArticleRequestInterval,
-			FetchArticleRequestLimit:    api_config.FetchArticleRequestLimit,
-			FetchTrendRequestInterval:   api_config.FetchTrendRequestInterval,
-			FetchTrendRequestLimit:      api_config.FetchTrendRequestLimit,
-		}
-		if err := DBMS.Model(&ApiLimitConfig{}).Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Updates(&db_api_config).Error; err != nil {
-			return err
-		}
-	case "Delete":
-		// 削除する
-		if err := DBMS.Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Delete(&ApiLimitConfig{}).Error; err != nil {
-			return err
-		}
-	case "UnscopedDelete":
-		// 物理的に削除する
-		if err := DBMS.Where(&ApiLimitConfig{AccountType: api_config.AccountType}).Unscoped().Delete(&ApiLimitConfig{}).Error; err != nil {
-			return err
-		}
+		return nil
+	}); err != nil {
+		return err
 	}
 	return nil
 }
@@ -391,6 +423,47 @@ func (repo DBRepoImpl) DeletesUnscopedUserData(user_unique_Id string) error {
 	}
 	// SubscriptionSitesテーブルから削除
 	if err := DBMS.Where("user_id = ?", user.ID).Unscoped().Delete(&SubscriptionSite{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r DBRepoImpl) ModifyExploreCategory(modify_type string, category Data.ExploreCategory) error {
+	if err := DBMS.Transaction(func(tx *gorm.DB) error {
+		explore_category := ExploreCategory{
+			CategoryName: category.CategoryName,
+			Description:  category.CategoryDescription,
+			Country:      category.CategoryCountry,
+			image_url:    category.CategoryImage,
+		}
+		switch modify_type {
+		case "Add":
+			// カテゴリを追加する
+			if err := tx.Create(&explore_category).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case "Update":
+			// カテゴリを更新する
+			if err := tx.Model(&explore_category).Where("category_name = ?", &explore_category.CategoryName).Updates(&explore_category).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case "Delete":
+			// カテゴリを削除する
+			if err := tx.Where("category_name = ?", &explore_category.CategoryName).Delete(&explore_category).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		case "UnscopedDelete":
+			// カテゴリを物理的に削除する
+			if err := tx.Where("category_name = ?", &explore_category.CategoryName).Unscoped().Delete(&explore_category).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 	return nil

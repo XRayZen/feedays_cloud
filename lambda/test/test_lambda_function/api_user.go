@@ -86,6 +86,7 @@ func TestApiUserPart2(userId string, site Data.WebSite, article Data.Article) (b
 func testModifyAPIRequestLimit(userId string,modify_type string) (bool, error) {
 	request_type := "ModifyAPIRequestLimit"
 	api_config := Data.ApiConfig{
+		AccountType: 		 "Free",
 		RefreshArticleInterval: 10,
 	}
 	api_config_json, _ := json.Marshal(api_config)

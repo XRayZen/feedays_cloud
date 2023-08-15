@@ -217,6 +217,6 @@ func (s MockDBRepo) DeleteSiteByUnscoped(site_url string) error {
 }
 
 // ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
-func (s MockDBRepo) ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error {
+func (s MockDBRepo) ModifyExploreCategory(modify_type string, category Data.ExploreCategory) error{
 	return nil
 }

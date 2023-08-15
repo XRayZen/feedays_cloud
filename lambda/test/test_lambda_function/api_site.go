@@ -57,13 +57,12 @@ func TestApiSitePart2(site Data.WebSite, userID string) (bool, error) {
 	}
 	explore_category_json, _ := json.Marshal(explore_category)
 	explore_category_json_str := string(explore_category_json)
-	is_add_or_remove_json, _ := json.Marshal(true)
-	is_add_or_remove_json_str := string(is_add_or_remove_json)
+	modify_type := "Add"
 	request := api_gen_code.PostSiteJSONRequestBody{
 		RequestType:          &req_type,
 		UserId:               &userID,
 		RequestArgumentJson1: &explore_category_json_str,
-		RequestArgumentJson2: &is_add_or_remove_json_str,
+		RequestArgumentJson2: &modify_type,
 	}
 	// リクエストをjsonに変換する
 	request_post_json, _ := json.Marshal(request)

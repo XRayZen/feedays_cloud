@@ -14,8 +14,12 @@ func ParseRequestType(access_ip string, db_repo DBRepo.DBRepo, request_type stri
 	}
 	// リクエストタイプに応じて処理を分岐
 	switch request_type {
+	case "ServiceInitialize":
+		return functions.ServiceInitialize()
+	case "ServiceFinalize":
+		return functions.ServiceFinalize()
 	case "GenUserID":
-		return GenRandomUserID(db_repo, access_ip)
+		return GenRandomUserID()
 	case "RegisterUser":
 		return functions.RegisterUser(user_id, argument_json_1)
 	case "ConfigSync":

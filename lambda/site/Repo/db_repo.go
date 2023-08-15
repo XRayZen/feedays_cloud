@@ -33,7 +33,7 @@ type DBRepository interface {
 	ChangeSiteCategory(user_unique_id string, site_url string, category_name string) error
 	DeleteSite(site_url string) error
 	DeleteSiteByUnscoped(site_url string) error
-	ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
+	ModifyExploreCategory(modify_type string, category Data.ExploreCategory) error
 }
 
 // DBRepoを実装
@@ -111,9 +111,12 @@ func (s DBRepoImpl) SearchUserConfig(user_unique_Id string, is_preload_related_t
 func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCategory, err error) {
 	// ExploreCategoriesテーブルから国をキーにカテゴリーを全件取得する
 	var explore_categories []ExploreCategory
-	result := DBMS.Where(&ExploreCategory{Country: country}).Find(&explore_categories)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := DBMS.Where(&ExploreCategory{Country: country}).Find(&explore_categories).Error; err != nil {
+		return nil, err
+	}
+	// もし、カテゴリーが存在しなかったらエラーを返す
+	if len(explore_categories) == 0 {
+		return nil, errors.New("record not found")
 	}
 	// カテゴリーをExploreCategories型に変換する
 	var categories []Data.ExploreCategory
@@ -121,6 +124,8 @@ func (s DBRepoImpl) FetchExploreCategories(country string) (res []Data.ExploreCa
 		categories = append(categories, Data.ExploreCategory{
 			CategoryName:        category.CategoryName,
 			CategoryDescription: category.Description,
+			CategoryCountry:     category.Country,
+			CategoryImage:       category.image_url,
 			CategoryID:          fmt.Sprint(category.ID),
 		})
 	}
@@ -411,8 +416,7 @@ func (r DBRepoImpl) DeleteSiteByUnscoped(site_url string) error {
 	return nil
 }
 
-// ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
-func (r DBRepoImpl) ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error {
+func (r DBRepoImpl) ModifyExploreCategory(modify_type string, category Data.ExploreCategory) error {
 	if err := DBMS.Transaction(func(tx *gorm.DB) error {
 		explore_category := ExploreCategory{
 			CategoryName: category.CategoryName,
@@ -420,20 +424,38 @@ func (r DBRepoImpl) ModifyExploreCategory(category Data.ExploreCategory, is_add_
 			Country:      category.CategoryCountry,
 			image_url:    category.CategoryImage,
 		}
-		if is_add_or_remove {
+		switch modify_type {
+		case "Add":
 			// カテゴリを追加する
 			if err := tx.Create(&explore_category).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
-		} else {
-			// カテゴリを削除する
-			if err := tx.Where(&explore_category).Delete(&explore_category).Error; err != nil {
+			return nil
+		case "Update":
+			// カテゴリを更新する
+			if err := tx.Model(&explore_category).Where("category_name = ?", &explore_category.CategoryName).Updates(&explore_category).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
+			return nil
+		case "Delete":
+			// カテゴリを削除する
+			if err := tx.Where("category_name = ?", &explore_category.CategoryName).Delete(&ExploreCategory{}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+			return nil
+		case "UnscopedDelete":
+			// カテゴリを物理的に削除する
+			if err := tx.Where("category_name = ?", &explore_category.CategoryName).Unscoped().Delete(&ExploreCategory{}).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+			return nil
+		default:
+			return errors.New("invalid modify_type")
 		}
-		return nil
 	}); err != nil {
 		return err
 	}

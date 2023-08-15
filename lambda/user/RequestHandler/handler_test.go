@@ -8,16 +8,12 @@ import (
 	"user/Data"
 )
 
-// 正常系のテスト
+// リクエストタイプの正常系・異常系テスト
 func TestNormalRequestHandler(t *testing.T) {
 	db_repo := DBRepo.DBRepoImpl{}
 	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
-	if err := db_repo.ConnectDB(true); err != nil {
-		t.Fatal(err)
-	}
-	if err := db_repo.AutoMigrate(); err != nil {
-		t.Fatal(err)
-	}
+	db_repo.ConnectDB(true)
+	db_repo.AutoMigrate()
 
 	// テスト用にDBにデータを入れておく
 	site := Data.WebSite{
@@ -36,12 +32,10 @@ func TestNormalRequestHandler(t *testing.T) {
 		Link:  "testArticleLink",
 		Site:  site.SiteName,
 	}
-	if err := DBRepo.DBMS.Model(&db_site).Association("SiteArticles").Append(&DBRepo.Article{
+	DBRepo.DBMS.Model(&db_site).Association("SiteArticles").Append(&DBRepo.Article{
 		Title: article.Title,
 		Url:   article.Link,
-	}); err != nil {
-		t.Fatal(err)
-	}
+	})
 
 	// テスト用オブジェクトを用意する
 	test_user_id := "test"
@@ -55,7 +49,7 @@ func TestNormalRequestHandler(t *testing.T) {
 	input_user_config := Data.UserConfig{
 		UserName:     "test",
 		UserUniqueID: test_user_id,
-		AccountType: "Free",
+		AccountType:  "Free",
 		ClientConfig: Data.ClientConfig{
 			UiConfig: Data.UiConfig{
 				ThemeMode: "light",
@@ -72,7 +66,7 @@ func TestNormalRequestHandler(t *testing.T) {
 		UserConfig: Data.UserConfig{
 			UserName:     "test",
 			UserUniqueID: test_user_id,
-			AccountType: "Free",
+			AccountType:  "Free",
 			ClientConfig: Data.ClientConfig{
 				UiConfig: Data.UiConfig{
 					ThemeMode: "light",
@@ -82,38 +76,10 @@ func TestNormalRequestHandler(t *testing.T) {
 		Error: "",
 	})
 	expected_config_sync := string(expected_config_sync_response_json)
-	expected_register_user := "Success RegisterUser"
-	expected_report_read_activity := "Success ReportReadActivity"
-	expected_update_config := "Success UpdateConfig"
-	expected_modify_favorite_site := "Success ModifyFavoriteSite"
-	expected_modify_favorite_article := "Success ModifyFavoriteArticle"
-
 	// 入力と期待する出力
 	input_search_history_json, _ := json.Marshal([]string{"test"})
 	expected_search_history_json := string(input_search_history_json)
-	// APIリクエスト制限のテストデータ
-	input_add_api_config_json, _ := json.Marshal(Data.ApiConfig{
-		AccountType: 		 "Free",
-		RefreshArticleInterval: 10,
-	})
-	expected_add_api_config := "Success ModifyAPIRequestLimit"
-	fetch_api_request_limit_config_json, _ := json.Marshal(Data.ApiConfig{
-		AccountType: 		 "Free",
-		RefreshArticleInterval: 10,
-	})
-	expected_fetch_api_request_limit_config := string(fetch_api_request_limit_config_json)
-	input_update_api_config_json, _ := json.Marshal(Data.ApiConfig{
-		AccountType: 		 "Free",
-		RefreshArticleInterval: 20,
-	})
-	expected_update_api_config := "Success ModifyAPIRequestLimit"
-	input_delete_api_config_json, _ := json.Marshal(Data.ApiConfig{
-		AccountType: 		 "Free",
-	})
-	expected_delete_api_config := "Success ModifyAPIRequestLimit"
-
 	deleted_user_data_is_scoped, _ := json.Marshal(true)
-	expected_delete_user_data := "Success DeleteUserData"
 
 	// テスト引数
 	type fields struct {
@@ -132,8 +98,8 @@ func TestNormalRequestHandler(t *testing.T) {
 		args     args
 		response string
 		want     string
-		wantErr  bool // エラーが発生するかどうか
 	}{
+		// RegisterUser
 		{
 			name: "RegisterUser",
 			fields: fields{
@@ -146,10 +112,10 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(input_user_config_json),
 				argumentJson_2: "",
 			},
-			want:    string(expected_register_user),
-			wantErr: false,
+			want: "Success RegisterUser",
 		},
 		// GenUserIDは単純なのでテストしない
+		// ConfigSync
 		{
 			name: "ConfigSync",
 			fields: fields{
@@ -162,9 +128,9 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "",
 				argumentJson_2: "",
 			},
-			want:    expected_config_sync,
-			wantErr: false,
+			want: expected_config_sync,
 		},
+		// ReportReadActivity
 		{
 			name: "ReportReadActivity",
 			fields: fields{
@@ -177,9 +143,9 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(read_act_json),
 				argumentJson_2: "",
 			},
-			want:    string(expected_report_read_activity),
-			wantErr: false,
+			want: "Success ReportReadActivity",
 		},
+		// UpdateConfig
 		{
 			name: "UpdateConfig",
 			fields: fields{
@@ -192,9 +158,9 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(input_user_config_json),
 				argumentJson_2: "",
 			},
-			want:    string(expected_update_config),
-			wantErr: false,
+			want: "Success UpdateConfig",
 		},
+		// ModifySearchHistory
 		{
 			name: "ModifySearchHistory",
 			fields: fields{
@@ -207,9 +173,9 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: "test",
 				argumentJson_2: "true",
 			},
-			want:    expected_search_history_json,
-			wantErr: false,
+			want: expected_search_history_json,
 		},
+		// ModifyFavoriteSite
 		{
 			name: "ModifyFavoriteSite",
 			fields: fields{
@@ -222,9 +188,9 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(test_web_site_json),
 				argumentJson_2: "true",
 			},
-			want:    string(expected_modify_favorite_site),
-			wantErr: false,
+			want: "Success ModifyFavoriteSite",
 		},
+		// ModifyFavoriteArticle
 		{
 			name: "ModifyFavoriteArticle",
 			fields: fields{
@@ -237,72 +203,7 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(test_article_json),
 				argumentJson_2: "true",
 			},
-			want:    string(expected_modify_favorite_article),
-			wantErr: false,
-		},
-		// AddApiRequestLimit
-		{
-			name: "AddApiRequestLimit",
-			fields: fields{
-				repo: db_repo,
-				ip:   "",
-			},
-			args: args{
-				requestType:    "ModifyAPIRequestLimit",
-				userId:         test_user_id,
-				argumentJson_1: "Add",
-				argumentJson_2: string(input_add_api_config_json),
-			},
-			want:    expected_add_api_config,
-			wantErr: false,
-		},
-		// GetApiRequestLimit
-		{
-			name: "GetApiRequestLimit",
-			fields: fields{
-				repo: db_repo,
-				ip:   "",
-			},
-			args: args{
-				requestType:    "GetAPIRequestLimit",
-				userId:         test_user_id,
-				argumentJson_1: "",
-				argumentJson_2: "",
-			},
-			want:    expected_fetch_api_request_limit_config,
-			wantErr: false,
-		},
-		// UpdateApiRequestLimit
-		{
-			name: "UpdateApiRequestLimit",
-			fields: fields{
-				repo: db_repo,
-				ip:   "",
-			},
-			args: args{
-				requestType:   "ModifyAPIRequestLimit",
-				userId:         test_user_id,
-				argumentJson_1: "Update",
-				argumentJson_2: string(input_update_api_config_json),
-			},
-			want:    expected_update_api_config,
-			wantErr: false,
-		},
-		// DeleteApiRequestLimit
-		{
-			name: "DeleteApiRequestLimit",
-			fields: fields{
-				repo: db_repo,
-				ip:   "",
-			},
-			args: args{
-				requestType:    "ModifyAPIRequestLimit",
-				userId:         test_user_id,
-				argumentJson_1: "UnscopedDelete",
-				argumentJson_2: string(input_delete_api_config_json),
-			},
-			want:    expected_delete_api_config,
-			wantErr: false,
+			want: "Success ModifyFavoriteArticle",
 		},
 		// DeleteUserData
 		{
@@ -317,16 +218,15 @@ func TestNormalRequestHandler(t *testing.T) {
 				argumentJson_1: string(deleted_user_data_is_scoped),
 				argumentJson_2: "",
 			},
-			want:    expected_delete_user_data,
-			wantErr: false,
+			want: "Success DeleteUserData",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseRequestType(tt.fields.ip, tt.fields.repo,
 				tt.args.requestType, tt.args.userId, tt.args.argumentJson_1, tt.args.argumentJson_2)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("RequestHandler.HandleRequest() errorType: %v error = %v, wantErr %v", tt.args.requestType, err, tt.wantErr)
+			if err != nil {
+				t.Errorf("RequestHandler.HandleRequest() errorType: %v error = %v", tt.args.requestType, err)
 				return
 			}
 			// 念の為にユーザーデータ削除の場合で、削除後のデータが空であることを確認する必要がある
@@ -340,6 +240,168 @@ func TestNormalRequestHandler(t *testing.T) {
 					t.Errorf("DeleteUserData failed")
 					return
 				}
+			}
+			if got != tt.want {
+				t.Errorf("RequestHandler.HandleRequest() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// APIリクエスト制限の正常系・異常系テスト
+func TestApiRequestLimit(t *testing.T) {
+	// 最初にユーザーを登録する
+	db_repo := DBRepo.DBRepoImpl{}
+	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
+	db_repo.ConnectDB(true)
+	db_repo.AutoMigrate()
+	db_repo.RegisterUser(Data.UserConfig{
+		UserName:     "test",
+		UserUniqueID: "test",
+		AccountType:  "Free",
+		Country:      "JP",
+	})
+	// テスト用オブジェクトを用意する
+	input_add_api_config_json, _ := json.Marshal(Data.ApiConfig{
+		AccountType:            "Free",
+		RefreshArticleInterval: 10,
+	})
+	input_update_api_config_json, _ := json.Marshal(Data.ApiConfig{
+		AccountType:            "Free",
+		RefreshArticleInterval: 20,
+	})
+	// テストケース
+	type args struct {
+		requestType    string
+		userId         string
+		argumentJson_1 string
+		argumentJson_2 string
+	}
+	tests := []struct {
+		name        string
+		args        args
+		want        string
+		is_want_err bool // エラーが発生するかどうか
+	}{
+		// AddApiRequestLimit
+		{
+			name: "AddApiRequestLimit",
+			args: args{
+				requestType:    "ModifyAPIRequestLimit",
+				userId:         "test",
+				argumentJson_1: "Add",
+				argumentJson_2: string(input_add_api_config_json),
+			},
+			want:        "Success ModifyAPIRequestLimit",
+			is_want_err: false,
+		},
+		// GetApiRequestLimit
+		{
+			name: "GetApiRequestLimit",
+			args: args{
+				requestType:    "GetAPIRequestLimit",
+				userId:         "test",
+				argumentJson_1: "",
+				argumentJson_2: "",
+			},
+			want:        string(input_add_api_config_json),
+			is_want_err: false,
+		},
+		// UpdateApiRequestLimit
+		{
+			name: "UpdateApiRequestLimit",
+			args: args{
+				requestType:    "ModifyAPIRequestLimit",
+				userId:         "test",
+				argumentJson_1: "Update",
+				argumentJson_2: string(input_update_api_config_json),
+			},
+			want:        "Success ModifyAPIRequestLimit",
+			is_want_err: false,
+		},
+		// DeleteApiRequestLimit
+		{
+			name: "DeleteApiRequestLimit",
+			args: args{
+				requestType:    "ModifyAPIRequestLimit",
+				userId:         "test",
+				argumentJson_1: "UnscopedDelete",
+				argumentJson_2: string(input_add_api_config_json),
+			},
+			want:        "Success ModifyAPIRequestLimit",
+			is_want_err: false,
+		},
+		// 異常系テスト
+		// 削除されているのに読み込もうとする
+		{
+			name: "Failed GetApiRequestLimit",
+			args: args{
+				requestType:    "GetAPIRequestLimit",
+				userId:         "test",
+				argumentJson_1: "",
+				argumentJson_2: "",
+			},
+			want:        "record not found",
+			is_want_err: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseRequestType("", db_repo,
+				tt.args.requestType, tt.args.userId, tt.args.argumentJson_1, tt.args.argumentJson_2)
+			if err != nil && tt.is_want_err {
+				if err.Error() == tt.want {
+					return // 期待したエラーが発生しているのでテスト成功
+				}
+				// 期待したエラーが発生していないのでテスト失敗
+				t.Errorf("RequestHandler.HandleRequest() errorType: %v error = %v, wantErr %v", tt.args.requestType, err, tt.is_want_err)
+			} else if err != nil && !tt.is_want_err {
+				t.Errorf("RequestHandler.HandleRequest() errorType: %v error = %v, wantErr %v", tt.args.requestType, err, tt.is_want_err)
+			}
+			if got != tt.want {
+				t.Errorf(err.Error())
+				t.Errorf("RequestHandler.HandleRequest() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// サービスの初期化と終了のテスト
+func TestServiceInitAndClose(t *testing.T) {
+	db_repo := DBRepo.DBRepoImpl{}
+	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
+	db_repo.ConnectDB(true)
+	// テストケース
+	tests := []struct {
+		name          string
+		request_type  string // テストするリクエストタイプ
+		want          string
+		is_expect_err bool   // エラーが発生するかどうか
+		expect_err    string // 期待するエラー内容
+	}{
+		// ServiceInitialize
+		{
+			name:          "ServiceInitialize",
+			request_type:  "ServiceInitialize",
+			want:          "Success ServiceInitialize",
+			is_expect_err: false,
+			expect_err:    "",
+		},
+		// ServiceFinalize
+		{
+			name:          "ServiceFinalize",
+			request_type:  "ServiceFinalize",
+			want:          "Success ServiceFinalize",
+			is_expect_err: false,
+			expect_err:    "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseRequestType("", db_repo,
+				tt.request_type, "", "", "")
+			if err != nil && !tt.is_expect_err {
+				t.Errorf("RequestHandler.HandleRequest() errorType: %v error = %v, wantErr %v", tt.request_type, err, tt.is_expect_err)
 			}
 			if got != tt.want {
 				t.Errorf("RequestHandler.HandleRequest() = %v, want %v", got, tt.want)

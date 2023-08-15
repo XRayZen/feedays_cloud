@@ -134,13 +134,12 @@ func TestDbRepoTest(t *testing.T) {
 			t.Errorf("failed to update validation: %v", err)
 		}
 		// 閲覧履歴を追加する
-		readActivity := Data.ReadHistory{
+		if err := dbRepo.AddReadHistory(user.UserUniqueID, Data.ReadHistory{
 			Link:           "link",
 			AccessAt:       time.Now().Format(time.RFC3339),
 			AccessPlatform: "PC",
 			AccessIP:       "10.9.9.9",
-		}
-		if err := dbRepo.AddReadHistory(user.UserUniqueID, readActivity); err != nil {
+		}); err != nil {
 			t.Errorf("failed to add read history: %v", err)
 		}
 		//閲覧履歴を取得して検証する

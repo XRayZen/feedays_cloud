@@ -336,8 +336,6 @@ func TestParseHandlerByModifyExploreCategory(t *testing.T) {
 		CategoryCountry: "Japan",
 	}
 	categoryJSON, _ := json.Marshal(category)
-	is_add_or_remove_by_true_json, _ := json.Marshal(true)
-	is_add_or_remove_by_false_json, _ := json.Marshal(false)
 	site_url := "https://gigazine.net/"
 	site_url_json, _ := json.Marshal(site_url)
 	category_name := "test Category"
@@ -364,7 +362,7 @@ func TestParseHandlerByModifyExploreCategory(t *testing.T) {
 				user_id:       "test",
 				request_type:  "ModifyExploreCategory",
 				request_json:  string(categoryJSON),
-				request_json2: string(is_add_or_remove_by_true_json),
+				request_json2: "Add",
 			},
 			want: "Success ModifyExploreCategory",
 		},
@@ -376,7 +374,7 @@ func TestParseHandlerByModifyExploreCategory(t *testing.T) {
 				user_id:       "test",
 				request_type:  "ModifyExploreCategory",
 				request_json:  string(categoryJSON),
-				request_json2: string(is_add_or_remove_by_false_json),
+				request_json2: "UnscopedDelete",
 			},
 			want: "Success ModifyExploreCategory",
 		},

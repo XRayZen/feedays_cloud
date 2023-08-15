@@ -125,7 +125,7 @@ func (s APIFunctions) GetAPIRequestLimit(user_id string) (string, error) {
 	// APIリクエスト制限を取得する
 	api_config, err := s.db_repo.FetchAPIRequestLimit(user_id)
 	if err != nil {
-		return "", err
+		return "Error GetAPIRequestLimit", err
 	}
 	// APIリクエスト制限をjsonに変換する
 	api_request_limit_json, err := json.Marshal(api_config)
@@ -140,11 +140,11 @@ func (functions APIFunctions) ModifyAPIRequestLimit(modify_type string, api_requ
 	// APIリクエスト制限をjsonから変換する
 	var api_config Data.ApiConfig
 	if err := json.Unmarshal([]byte(api_request_limit_json), &api_config); err != nil {
-		return "", err
+		return "Error ModifyAPIRequestLimit", err
 	}
 	// APIリクエスト制限を変更する
 	if err := functions.db_repo.ModifyApiRequestLimit(modify_type, api_config); err != nil {
-		return "", err
+		return "Error ModifyAPIRequestLimit", err
 	}
 	return "Success ModifyAPIRequestLimit", nil
 }
