@@ -37,6 +37,16 @@ variable "limit_period" {
 
 # APIリクエストバースト制限
 # burst_limit = 100
+variable "burst_limit" {
+  type        = number
+  description = "Burst Limit"
+  default     = 100
+}
 # APIリクエストのレート制限
 # rate_limit = 50
+variable "rate_limit" {
+  type        = number
+  description = "Rate Limit"
+  default     = 50
+}
 

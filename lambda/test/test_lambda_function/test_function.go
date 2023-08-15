@@ -16,6 +16,8 @@ import (
 // "github.com/aws/aws-lambda-go/lambda"
 
 func LambdaApiTest() (bool, error) {
+	// テストを実行する為にサービスを初期化する
+	
 	// Userのテスト
 	// ユーザーID生成・ユーザー登録・ ConfigSync ReportReadActivity UpdateConfig ModifySearchHistory
 	result, user_cfg, err := TestApiUserPart1()

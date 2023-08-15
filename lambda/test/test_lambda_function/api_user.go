@@ -9,6 +9,20 @@ import (
 	"time"
 )
 
+// サービス初期化
+func ServiceInit() (bool, error) {
+	request_type := "ServiceInitialize"
+	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
+		RequestType: &request_type,
+	})
+	if err != nil || result != "Success ServiceInitialize" {
+		log.Println("Failed to service initialize")
+		return false, err
+	}
+	log.Println("Success to service initialize")
+	return true, nil
+}
+
 func TestApiUserPart1() (bool, Data.UserConfig, error) {
 	request_type := "GenUserID"
 	request_response, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
@@ -65,7 +79,7 @@ func TestApiUserPart2(userId string, site Data.WebSite, article Data.Article) (b
 		log.Println("Failed to modify favorite article")
 		return false, err
 	}
-	result, err = testModifyAPIRequestLimit(userId,"Add")
+	result, err = testModifyAPIRequestLimit(userId, "Add")
 	if err != nil || !result {
 		log.Println("Failed to add api request limit")
 		return false, err
@@ -75,7 +89,7 @@ func TestApiUserPart2(userId string, site Data.WebSite, article Data.Article) (b
 		log.Println("Failed to get api request limit")
 		return false, err
 	}
-	result, err = testModifyAPIRequestLimit(userId,"UnscopedDelete")
+	result, err = testModifyAPIRequestLimit(userId, "UnscopedDelete")
 	if err != nil || !result {
 		log.Println("Failed to unscoped delete api request limit")
 		return false, err
@@ -83,10 +97,10 @@ func TestApiUserPart2(userId string, site Data.WebSite, article Data.Article) (b
 	return true, nil
 }
 
-func testModifyAPIRequestLimit(userId string,modify_type string) (bool, error) {
+func testModifyAPIRequestLimit(userId string, modify_type string) (bool, error) {
 	request_type := "ModifyAPIRequestLimit"
 	api_config := Data.ApiConfig{
-		AccountType: 		 "Free",
+		AccountType:            "Free",
 		RefreshArticleInterval: 10,
 	}
 	api_config_json, _ := json.Marshal(api_config)

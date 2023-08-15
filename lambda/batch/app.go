@@ -1,19 +1,14 @@
 package main
 
 import (
-	// "batch/ApiFunction"
 	"batch/ApiFunction"
 	"context"
 	"log"
 
-	// "os"
-
-	// "encoding/json"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	// "github.com/mitchellh/mapstructure"
 )
 
 func main() {

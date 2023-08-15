@@ -59,8 +59,8 @@ resource "aws_api_gateway_usage_plan" "api_usage_plan" {
   }
   throttle_settings {
     # APIリクエストバースト制限
-    burst_limit = 100
+    burst_limit = var.burst_limit
     # APIリクエストのレート制限
-    rate_limit = 50
+    rate_limit = var.rate_limit
   }
 }

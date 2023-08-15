@@ -44,7 +44,7 @@ func (s DBRepoImpl) ConnectDB(isMock bool) error {
 	return nil
 }
 
-// DBアートマイグレーション
+// DBマイグレーション
 func (s DBRepoImpl) AutoMigrate() error {
 	// DB接続
 	if DBMS != nil {
