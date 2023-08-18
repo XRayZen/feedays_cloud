@@ -11,7 +11,23 @@ env:
   REPO_ECR_NAME: feedays_cloud_repo
 
 jobs:
-    lambda_ci_cd:
+    lambda_ci:
+      runs-on: ubuntu-latest
+      permissions:
+        id-token: write
+        contents: read
+      steps:
+          - name: Checkout code
+            uses: actions/checkout@v2
+            # Lambda関数コードのsiteとuserの統合テストをする
+          - name: Go Test For site /RequestHandler
+          # working-directory: ./lambda/site
+            run: go test ./lambda/site/RequestHandler
+          - name: Go Test For user /RequestHandler
+          # working-directory: ./lambda/user
+            run: go test ./lambda/user/RequestHandler
+
+    lambda_cd:
         # コミットメッセージにlambdaが含まれている場合は実行
         runs-on: ubuntu-latest
         if: ${{ contains(github.event.head_commit.message, 'lambda') }}
@@ -29,13 +45,6 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
-            # Lambda関数コードのsiteとuserの統合テストをする
-            - name: Go Test For site /RequestHandler
-              # working-directory: ./lambda/site
-              run: go test ./lambda/site/RequestHandler
-            - name: Go Test For user /RequestHandler
-              # working-directory: ./lambda/user
-              run: go test ./lambda/user/RequestHandler
             # Dockerビルド
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v1
