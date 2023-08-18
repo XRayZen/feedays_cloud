@@ -2,13 +2,13 @@ package RequestHandler
 
 import (
 	"fmt"
-	"site/APIFunction"
+	"site/ApiFunction"
 	"site/Repo"
 )
 
 // リクエストタイプはSearch, SubscribeSite, FetchArticleの3種類
 func ParseRequestType(access_ip string, db_repo Repo.DBRepository, request_type string, user_id string, request_argument_json1 string, request_argument_json2 string) (string, error) {
-	functions := APIFunction.APIFunctions{
+	functions := ApiFunction.APIFunctions{
 		DBRepo: db_repo,
 	}
 	switch request_type {

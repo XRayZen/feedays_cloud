@@ -1,4 +1,4 @@
-package APIFunction
+package ApiFunction
 
 import (
 	"encoding/json"
