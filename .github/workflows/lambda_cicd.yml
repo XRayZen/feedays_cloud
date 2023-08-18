@@ -67,6 +67,7 @@ jobs:
               run: |
                   docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./lambda/${{ matrix.function }}
                   docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
             # 各Lambda関数を更新
             # - name: Update Lambda function
             #   run: |
