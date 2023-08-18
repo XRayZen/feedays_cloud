@@ -9,19 +9,18 @@ import (
 	"test/api_gen_code"
 )
 
-// "encoding/json"
-// "test/Data"
-
-// "github.com/aws/aws-lambda-go/events"
-// "github.com/aws/aws-lambda-go/lambda"
-
 func LambdaApiTest() (bool, error) {
 	// テストを実行する為にサービスを初期化する
-	
+	result, err := ServiceInit()
+	if err != nil || !result {
+		log.Println("ServiceInit: Failed")
+		return false, err
+	}
 	// Userのテスト
 	// ユーザーID生成・ユーザー登録・ ConfigSync ReportReadActivity UpdateConfig ModifySearchHistory
 	result, user_cfg, err := TestApiUserPart1()
 	if err != nil || !result {
+		log.Println("TestApiUserPart1: Failed")
 		return false, err
 	}
 	// Siteのテスト

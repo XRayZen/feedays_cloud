@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "feedays cloud OIDC IAM Role for GHA"
+
+Parameters:
+  GitHubAccountName:
+    Type: String
+    Default: XRayZen
+  RepositoryName:
+    Type: String
+    Default: feedays_cloud
+  OIDCProviderArn:
+    Description: Arn for the GitHub OIDC Provider.
+    Default: ""
+    Type: String
+
+Conditions:
+  CreateOIDCProvider: !Equals
+    - !Ref OIDCProviderArn
+    - ""
+
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !If
+                - CreateOIDCProvider
+                - !Ref GithubOidc
+                - !Ref OIDCProviderArn
+            Condition:
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubAccountName}/${RepositoryName}:*
+                # token.actions.githubusercontent.com:sub: !Sub repo:${RepositoryName}:*
+
+  Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: feedays-cloud-gha
+      Roles:
+        - !Ref Role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              # 使うAWSサービスに必要な権限を追加
+              - "iam:*"
+              - "lambda:*"
+              - "apigateway:*"
+              - "dynamodb:*"
+              - "vpc:*"
+              - "s3:*"
+              - "budgets:*"
+              - "ecr:*"
+              - "ec2:*"
+              - "waf:*"
+              - "waf-regional:*"
+              - "wafv2:*"
+              - "cloudformation:*"
+              - "cloudwatch:*"
+              - "cloudtrail:*"
+              - "cloudfront:*"
+              - "logs:*"
+            Resource: "*"
+
+  GithubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      # https://kakakakakku.hatenablog.com/entry/2023/07/14/095049
+      # 適当な文字列「40文字（0-9 or A-F）」を指定すれば良い
+      ThumbprintList:
+        - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+Outputs:
+  Role:
+    Value: !GetAtt Role.Arn

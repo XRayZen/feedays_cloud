@@ -9,6 +9,11 @@ variable "api_gw_name" {
   description = "API Gateway Name"
 }
 
+variable "api_gw_description" {
+  type        = string
+  description = "API Gateway Description"
+}
+
 variable "endpoint_configuration_types" {
   type        = list(string)
   description = "Endpoint Configuration Types"
@@ -48,5 +53,21 @@ variable "rate_limit" {
   type        = number
   description = "Rate Limit"
   default     = 50
+}
+
+# Lambda関数のARN
+variable "lambda_read_arn" {
+  type        = string
+  description = "Lambda ARN"
+}
+
+variable "lambda_user_arn" {
+  type        = string
+  description = "Lambda ARN"
+}
+
+variable "lambda_site_arn" {
+  type        = string
+  description = "Lambda ARN"
 }
 

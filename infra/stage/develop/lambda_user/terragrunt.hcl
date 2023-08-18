@@ -40,10 +40,10 @@ dependency "rds" {
 }
 
 inputs={
-    lambda_function_name = "feedays-cloud-heavy"
-    lambda_function_description = "feedays-cloud-heavy-lambda-function"
+    lambda_function_name = "feedays-cloud-user"
+    lambda_function_description = "feedays-cloud-user-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "heavy"
+    image_tag= "user"
     memory_size = 200
     timeout = 10
     lambda_function_architecture = "arm64"
@@ -69,9 +69,9 @@ inputs={
     }
 
     managed_policy_arns = [
-    # Lambda関数がCloudWatch Logsにログを書き込むための最低限の権限を提供します。
+    # Lambda関数がCloudWatch Logsにログを書き込むための最低限の権限を付与
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-    # Lambda関数がVPC内のリソースにアクセスしながら実行するための最低限の権限（ネットワークインターフェースの作成、記述、削除、CloudWatch Logsへの書き込み権限）を提供します。
+    # Lambda関数がVPC内のリソースにアクセスしながら実行するための最低限の権限（ネットワークインターフェースの作成、記述、削除、CloudWatch Logsへの書き込み権限）を付与
     "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
     # Amazon ECR に対する読み取り専用アクセスを付与
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",

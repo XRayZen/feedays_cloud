@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/mitchellh/mapstructure"
 
 	"user/DBRepo"
 	"user/RequestHandler"
@@ -38,24 +37,6 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	}
 	// ここでレスポンスを作る
 	return genApiResponse(*api_req.RequestType, *api_req.UserId, res), nil
-}
-
-// リクエストをヘッダーからパース
-func parseHeaderRequest(request events.APIGatewayProxyRequest) (api_gen_code.PostUserJSONBody, error) {
-	var api_req api_gen_code.PostUserJSONBody
-	decoder_config := &mapstructure.DecoderConfig{
-		WeaklyTypedInput: true,
-		Result:           &api_req,
-	}
-	decoder, err := mapstructure.NewDecoder(decoder_config)
-	if err != nil {
-		return api_gen_code.PostUserJSONBody{}, err
-	}
-	err = decoder.Decode(request.QueryStringParameters)
-	if err != nil {
-		return api_gen_code.PostUserJSONBody{}, err
-	}
-	return api_req, nil
 }
 
 // リクエストをボディからパース

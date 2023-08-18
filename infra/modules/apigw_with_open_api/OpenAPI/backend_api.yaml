@@ -73,7 +73,7 @@ paths:
               statusCode: "200"
           # aws_proxy (AWS Lambda 関数との統合の場合)
           type: "aws_proxy"
-          uri: "${read_lambda_arn}"
+          uri: "${lambda_read_arn}"
           credentials: "${apigateway_role_arn}"
 
   "/user":
@@ -134,7 +134,7 @@ paths:
           passthroughBehavior: "when_no_match"
           # aws_proxy (AWS Lambda 関数との統合の場合)
           type: "aws_proxy"
-          uri: "${user_lambda_arn}"
+          uri: "${lambda_user_arn}"
           credentials: "${apigateway_role_arn}"
 
   "/site":
@@ -195,7 +195,7 @@ paths:
           passthroughBehavior: "when_no_match"
           # aws_proxy (AWS Lambda 関数との統合の場合)
           type: "aws_proxy"
-          uri: "${site_lambda_arn}"
+          uri: "${lambda_site_arn}"
           credentials: "${apigateway_role_arn}"
 
 components:
