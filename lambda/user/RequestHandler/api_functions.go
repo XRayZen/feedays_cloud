@@ -2,12 +2,12 @@ package RequestHandler
 
 import (
 	"encoding/json"
-	"user/DBRepo"
 	"user/Data"
+	"user/DbRepo"
 )
 
 type APIFunctions struct {
-	db_repo DBRepo.DBRepo
+	db_repo DbRepo.DBRepo
 	ip      string
 }
 

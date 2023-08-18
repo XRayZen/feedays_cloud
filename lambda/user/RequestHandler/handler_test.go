@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
-	"user/DBRepo"
+	"user/DbRepo"
 	"user/Data"
 )
 
 // リクエストタイプの正常系・異常系テスト
 func TestNormalRequestHandler(t *testing.T) {
-	db_repo := DBRepo.DBRepoImpl{}
+	db_repo := DbRepo.DBRepoImpl{}
 	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
 	db_repo.ConnectDB(true)
 	db_repo.AutoMigrate()
@@ -21,18 +21,18 @@ func TestNormalRequestHandler(t *testing.T) {
 		SiteURL:    "testSiteURL",
 		SiteRssURL: "testRssURL",
 	}
-	db_site := DBRepo.Site{
+	db_site := DbRepo.Site{
 		SiteName: site.SiteName,
 		SiteUrl:  site.SiteURL,
 		RssUrl:   site.SiteRssURL,
 	}
-	DBRepo.DBMS.Create(&db_site)
+	DbRepo.DBMS.Create(&db_site)
 	article := Data.Article{
 		Title: "test",
 		Link:  "testArticleLink",
 		Site:  site.SiteName,
 	}
-	DBRepo.DBMS.Model(&db_site).Association("SiteArticles").Append(&DBRepo.Article{
+	DbRepo.DBMS.Model(&db_site).Association("SiteArticles").Append(&DbRepo.Article{
 		Title: article.Title,
 		Url:   article.Link,
 	})
@@ -83,7 +83,7 @@ func TestNormalRequestHandler(t *testing.T) {
 
 	// テスト引数
 	type fields struct {
-		repo DBRepo.DBRepo
+		repo DbRepo.DBRepo
 		ip   string
 	}
 	type args struct {
@@ -251,7 +251,7 @@ func TestNormalRequestHandler(t *testing.T) {
 // APIリクエスト制限の正常系・異常系テスト
 func TestApiRequestLimit(t *testing.T) {
 	// 最初にユーザーを登録する
-	db_repo := DBRepo.DBRepoImpl{}
+	db_repo := DbRepo.DBRepoImpl{}
 	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
 	db_repo.ConnectDB(true)
 	db_repo.AutoMigrate()
@@ -368,7 +368,7 @@ func TestApiRequestLimit(t *testing.T) {
 
 // サービスの初期化と終了のテスト
 func TestServiceInitAndClose(t *testing.T) {
-	db_repo := DBRepo.DBRepoImpl{}
+	db_repo := DbRepo.DBRepoImpl{}
 	// DBにモックモードで接続する（SQLite：メモリ上にDBを作成する）
 	db_repo.ConnectDB(true)
 	// テストケース

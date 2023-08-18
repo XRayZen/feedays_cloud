@@ -19,12 +19,10 @@ jobs:
       steps:
           - name: Checkout code
             uses: actions/checkout@v2
-            # Lambda関数コードのsiteとuserの統合テストをする
+          # Lambda関数コードのsiteとuserの統合テストをする
           - name: Go Test For site /RequestHandler
-          # working-directory: ./lambda/site
             run: go test ./lambda/site/RequestHandler
           - name: Go Test For user /RequestHandler
-          # working-directory: ./lambda/user
             run: go test ./lambda/user/RequestHandler
 
     lambda_cd:

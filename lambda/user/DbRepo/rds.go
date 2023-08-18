@@ -1,12 +1,8 @@
-package DBRepo
+package DbRepo
 
 import (
 	"os"
 
-	// "github.com/aws/aws-sdk-go/aws"
-	// "github.com/aws/aws-sdk-go/aws/awserr"
-	// "github.com/aws/aws-sdk-go/aws/session"
-	// "github.com/aws/aws-sdk-go/service/secretsmanager"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

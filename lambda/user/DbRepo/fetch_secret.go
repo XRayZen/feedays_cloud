@@ -1,4 +1,4 @@
-package DBRepo
+package DbRepo
 
 import (
 	// "github.com/aws/aws-sdk-go/aws"

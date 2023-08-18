@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
-	"user/DBRepo"
+	"user/DbRepo"
 	"user/RequestHandler"
 	"user/api_gen_code"
 )
@@ -26,7 +26,7 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
 	}
 	// 変換されたらリクエストタイプに応じて処理を分岐する
-	db_repo := DBRepo.DBRepoImpl{}
+	db_repo := DbRepo.DBRepoImpl{}
 	if err := db_repo.ConnectDB(false); err != nil {
 		return errorResponse(err, *api_req.RequestType, *api_req.UserId)
 	}

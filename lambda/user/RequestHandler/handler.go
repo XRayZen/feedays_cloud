@@ -2,11 +2,11 @@ package RequestHandler
 
 import (
 	"errors"
-	"user/DBRepo"
+	"user/DbRepo"
 )
 
 // ParseRequestType はリクエストタイプに応じて処理を分岐する
-func ParseRequestType(access_ip string, db_repo DBRepo.DBRepo, request_type string, user_id string,
+func ParseRequestType(access_ip string, db_repo DbRepo.DBRepo, request_type string, user_id string,
 	argument_json_1 string, argument_json_2 string) (string, error) {
 	functions := APIFunctions{
 		db_repo: db_repo,
