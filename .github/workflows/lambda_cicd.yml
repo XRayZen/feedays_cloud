@@ -31,11 +31,11 @@ jobs:
               uses: actions/checkout@v2
             # Lambda関数コードのsiteとuserの統合テストをする
             - name: Go Test For site /RequestHandler
-              working-directory: ./lambda/site
-              run: go test ./RequestHandler
+              # working-directory: ./lambda/site
+              run: go test ./lambda/site/RequestHandler
             - name: Go Test For user /RequestHandler
-              working-directory: ./lambda/user
-              run: go test ./RequestHandler
+              # working-directory: ./lambda/user
+              run: go test ./lambda/user/RequestHandler
             # Dockerビルド
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v1
