@@ -6,7 +6,7 @@ import (
 	"net/http"
 	// "os"
 	"strings"
-	"test/api_gen_code"
+	"user/api_gen_code"
 )
 
 func LambdaApiTest() (bool, error) {

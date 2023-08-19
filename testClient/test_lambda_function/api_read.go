@@ -3,8 +3,8 @@ package test_lambda_function
 import (
 	"encoding/json"
 	"log"
-	"test/Data"
-	"test/api_gen_code"
+	"user/Data"
+	"user/api_gen_code"
 )
 
 func TestApiRead(userId string) (bool, Data.UserConfig, error) {

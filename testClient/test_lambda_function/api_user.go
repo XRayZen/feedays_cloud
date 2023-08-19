@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"test/Data"
-	"test/api_gen_code"
+	"user/Data"
+	"user/api_gen_code"
 	"time"
 )
 
@@ -254,10 +254,13 @@ func testModifySearchHistory(userId string) (bool, error) {
 	}
 	search_history_json, _ := json.Marshal(search_history)
 	search_history_json_str := string(search_history_json)
+	is_add_or_remove_json, _ := json.Marshal(true)
+	is_add_or_remove_json_str := string(is_add_or_remove_json)
 	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
 		RequestType:          &req_type,
 		UserId:               &userId,
 		RequestArgumentJson1: &search_history_json_str,
+		RequestArgumentJson2: &is_add_or_remove_json_str,
 	})
 	expected_search_history_json, _ := json.Marshal([]string{"test"})
 	if err != nil || result != string(expected_search_history_json) {

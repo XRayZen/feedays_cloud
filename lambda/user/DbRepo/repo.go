@@ -229,7 +229,6 @@ func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, i
 	if err := DBMS.Model(&user).Association("SearchHistories").Find(&db_search_history); err != nil {
 		return []string{}, err
 	}
-	log.Println("db_search_history: ", db_search_history)
 	// SearchAtでdescソートしてdbSearchHistに入れる
 	sort.Slice(db_search_history, func(i, j int) bool {
 		return db_search_history[i].searchAt.After(db_search_history[j].searchAt)
@@ -238,6 +237,7 @@ func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, i
 	for _, db_search_history := range db_search_history {
 		api_search_histories = append(api_search_histories, db_search_history.SearchWord)
 	}
+	log.Println("api_search_histories: ", api_search_histories)
 	return api_search_histories, nil
 }
 

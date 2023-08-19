@@ -3,7 +3,7 @@ package test_lambda_function
 import (
 	"encoding/json"
 	"log"
-	"test/api_gen_code"
+	"user/api_gen_code"
 )
 
 // サービス終了処理で作ったテストデータをテーブルごと削除する
