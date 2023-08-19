@@ -81,7 +81,7 @@ func (s APIFunctions) ModifySearchHistory(userId string, text string, is_add_or_
 	if err := json.Unmarshal([]byte(text), &history); err != nil {
 		return "", err
 	}
-	response, err := s.db_repo.ModifySearchHistory(userId, history.SearchWord, is_add_or_remove)
+	response, err := s.db_repo.ModifySearchHistory(userId, history, is_add_or_remove)
 	if err != nil {
 		return "", err
 	}

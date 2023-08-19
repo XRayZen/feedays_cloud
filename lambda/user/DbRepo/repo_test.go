@@ -148,12 +148,16 @@ func TestDbRepoTest(t *testing.T) {
 			t.Errorf("failed to get read history: %v", err)
 		}
 		// 検索履歴を追加する
-		words, err := dbRepo.ModifySearchHistory(user.UserUniqueID, "SearchWord", true)
+		words, err := dbRepo.ModifySearchHistory(user.UserUniqueID, Data.SearchHistory{
+			SearchWord: "SearchWord",
+		}, true)
 		if err != nil || len(words) == 0 {
 			t.Errorf("failed to add search history: %v", err)
 		}
 		// 検索履歴を削除する
-		words, err = dbRepo.ModifySearchHistory(user.UserUniqueID, "SearchWord", false)
+		words, err = dbRepo.ModifySearchHistory(user.UserUniqueID,Data.SearchHistory{
+			SearchWord: "SearchWord",
+		}, false)
 		if err != nil || len(words) != 0 {
 			t.Errorf("failed to delete search history: %v", err)
 		}

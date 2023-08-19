@@ -78,8 +78,11 @@ func TestNormalRequestHandler(t *testing.T) {
 	})
 	expected_config_sync := string(expected_config_sync_response_json)
 	// 入力と期待する出力
-	input_search_history_json, _ := json.Marshal([]string{"test"})
-	expected_search_history_json := string(input_search_history_json)
+	search_history_json, _ := json.Marshal(Data.SearchHistory{
+		SearchWord: "test",
+		SearchAt:   now_str,
+	})
+	expected_search_history_json,_ := json.Marshal([]string{"test"})
 	deleted_user_data_is_scoped, _ := json.Marshal(true)
 
 	// テスト引数
@@ -171,10 +174,10 @@ func TestNormalRequestHandler(t *testing.T) {
 			args: args{
 				requestType:    "ModifySearchHistory",
 				userId:         test_user_id,
-				argumentJson_1: "test",
+				argumentJson_1: string(search_history_json),
 				argumentJson_2: "true",
 			},
-			want: expected_search_history_json,
+			want: string(expected_search_history_json),
 		},
 		// ModifyFavoriteSite
 		{

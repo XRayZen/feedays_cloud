@@ -28,7 +28,7 @@ type DBRepo interface {
 	AddReadHistory(user_unique_Id string, activity_info Data.ReadHistory) error
 	SearchReadHistory(user_unique_Id string, limit int) ([]Data.ReadHistory, error)
 	// 検索履歴を変更したら履歴を返す
-	ModifySearchHistory(user_unique_Id string, word string, is_add_or_remove bool) ([]string, error)
+	ModifySearchHistory(user_unique_Id string, searchHist Data.SearchHistory, is_add_or_remove bool) ([]string, error)
 	ModifyFavoriteSite(user_unique_Id string, siteUrl string, is_add_or_remove bool) error
 	ModifyFavoriteArticle(user_unique_Id string, articleUrl string, is_add_or_remove bool) error
 	FetchAPIRequestLimit(user_unique_Id string) (Data.ApiConfig, error)

@@ -38,7 +38,7 @@ func (repo MockDBRepo) SearchReadHistory(userId string, limit int) ([]Data.ReadH
 	return []Data.ReadHistory{}, nil
 }
 
-func (repo MockDBRepo) ModifySearchHistory(userId string, text string, isAddOrRemove bool) ([]string, error) {
+func (repo MockDBRepo) ModifySearchHistory(user_unique_Id string, searchHist Data.SearchHistory, is_add_or_remove bool) ([]string, error) {
 	return []string{}, nil
 }
 
