@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
+	// "os"
 	"strings"
 	"test/api_gen_code"
 )
@@ -76,7 +76,7 @@ func LambdaApiTest() (bool, error) {
 // リクエストを送信
 func SendApiRequest(request_post_json string, path string) (api_gen_code.APIResponse, error) {
 	// APIエンドポイントにリクエストを送る
-	end_point := os.Getenv("API_ENDPOINT")
+	end_point := "https://bkq8lpslz8.execute-api.us-east-1.amazonaws.com/develop"
 	// そこに/siteなどをつける
 	end_point = end_point + "/" + path
 	// HTTPポストリクエストを送る

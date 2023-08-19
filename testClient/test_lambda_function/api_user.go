@@ -236,12 +236,13 @@ func testUpdateUiConfig(userId string) (bool, Data.UserConfig, error) {
 	// UserConfigをパースする
 	var config_sync_response = Data.ConfigSyncResponse{}
 	err = json.Unmarshal([]byte(result), &config_sync_response)
+	log.Println("config_sync_response.UserConfig:",config_sync_response.UserConfig.ClientConfig.UiConfig.ThemeMode)
 	if err != nil || config_sync_response.UserConfig.ClientConfig.UiConfig.ThemeMode != "dark"{
-		log.Println("Failed to update ui config")
+		log.Println("Failed to update ui config :",err)
 		return false, Data.UserConfig{}, err
 	}
 	log.Println("Success to update ui config")
-	return false, config_sync_response.UserConfig, err
+	return true, config_sync_response.UserConfig, err
 }
 
 // ModifySearchHistory

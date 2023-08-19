@@ -2,6 +2,7 @@ package DbRepo
 
 import (
 	"errors"
+	"log"
 	"sort"
 	"time"
 	"user/Data"
@@ -228,6 +229,7 @@ func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, i
 	if err := DBMS.Model(&user).Association("SearchHistories").Find(&db_search_history); err != nil {
 		return []string{}, err
 	}
+	log.Println("db_search_history: ", db_search_history)
 	// SearchAtでdescソートしてdbSearchHistに入れる
 	sort.Slice(db_search_history, func(i, j int) bool {
 		return db_search_history[i].searchAt.After(db_search_history[j].searchAt)
