@@ -196,30 +196,35 @@ func (repo DBRepoImpl) SearchReadHistory(user_unique_Id string, limit int) ([]Da
 	return api_histories, nil
 }
 
-func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, text string, is_add_or_remove bool) ([]string, error) {
+func (repo DBRepoImpl) ModifySearchHistory(user_unique_Id string, searchHist Data.SearchHistory, is_add_or_remove bool) ([]string, error) {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).First(&user).Error; err != nil {
 		return []string{}, err
 	}
+	// SearchHistoryのSearchAtのRFC3339をtime型に変換する
+	searchAt, err := time.Parse(time.RFC3339, searchHist.SearchAt)
+	if err != nil {
+		log.Fatalln("time.Parse error: ", err)
+		return []string{}, err
+	}
 	if is_add_or_remove {
 		// 追加
-		db_search_history := SearchHistory{
-			SearchWord: text,
-			searchAt:   time.Now(),
-		}
-		err := DBMS.Model(&user).Association("SearchHistories").Append(&db_search_history)
+		err := DBMS.Model(&user).Association("SearchHistories").Append(&SearchHistory{
+			SearchWord: searchHist.SearchWord,
+			searchAt:   searchAt,
+		})
 		if err != nil {
 			return []string{}, err
 		}
 	} else {
 		// 今のUserテーブルとの参照を削除
 		// 参照先のテーブルからは削除されない
-		err := DBMS.Model(&user).Association("SearchHistories").Delete(&SearchHistory{SearchWord: text})
+		err := DBMS.Model(&user).Association("SearchHistories").Delete(&SearchHistory{SearchWord: searchHist.SearchWord})
 		if err != nil {
 			return []string{}, err
 		}
 		// ReadHistoriesテーブルからも削除する
-		err = DBMS.Where("search_word = ?", text).Delete(&SearchHistory{}).Error
+		err = DBMS.Where("search_word = ?", searchHist.SearchWord).Delete(&SearchHistory{}).Error
 		if err != nil {
 			return []string{}, err
 		}

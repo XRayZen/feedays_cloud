@@ -76,7 +76,12 @@ func (s APIFunctions) ModifySearchHistory(userId string, text string, is_add_or_
 	} else {
 		is_add_or_remove = false
 	}
-	response, err := s.db_repo.ModifySearchHistory(userId, text, is_add_or_remove)
+	// Data.SearchHistoryに変換する
+	var history Data.SearchHistory
+	if err := json.Unmarshal([]byte(text), &history); err != nil {
+		return "", err
+	}
+	response, err := s.db_repo.ModifySearchHistory(userId, history.SearchWord, is_add_or_remove)
 	if err != nil {
 		return "", err
 	}
