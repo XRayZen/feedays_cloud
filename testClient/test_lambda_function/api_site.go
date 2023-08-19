@@ -119,19 +119,11 @@ func TestApiSitePart2(site Data.WebSite, userID string) (bool, error) {
 
 // 返ってきたサイトを購読して購読できたかどうかを確かめる
 func TestApiSitePart3(site Data.WebSite, userID string) (bool, error) {
-	res, err := SendSubscribeSiteRequest(site, true, userID)
-	if err != nil {
-		return false, err
-	}
-	if res != "Success Subscribe Site" {
+	if res, err := SendSubscribeSiteRequest(site, true, userID); err != nil || res != "Success Subscribe Site" {
 		return false, err
 	}
 	log.Println("TestApiSiteSubscribe: Success")
-	res, err = SendSubscribeSiteRequest(site, false, userID)
-	if err != nil {
-		return false, err
-	}
-	if res != "Success UnSubscribe Site" {
+	if res, err := SendSubscribeSiteRequest(site, false, userID); err != nil || res != "Success Unsubscribe Site" {
 		return false, err
 	}
 	log.Println("TestApiSiteUnSubscribe: Success")
@@ -158,18 +150,19 @@ func TestApiSitePart4(site Data.WebSite, userID string) (bool, Data.Article, err
 	}
 	// テストが成功したことをログに出力する
 	log.Println("TestApiSiteFetchArticlesByLatest: Success")
+
 	// 指定された時間より古い記事を100件取得する
-	// 1日前の時間を取得する
+	// 昨日の0時を取得
 	now := time.Now()
-	one_day_ago := now.AddDate(0, 0, -1)
-	// 1日前の時間をRFC3339文字列に変換する
-	one_day_ago_str := one_day_ago.Format(time.RFC3339)
-	request_older := Data.FetchArticlesRequest{
-		SiteUrl:        site.SiteURL,
-		RequestType:    "Older",
-		OldestModified: one_day_ago_str,
+	yesterday := now.AddDate(0, 0, -1)
+	yesterday_rfc3339_str := yesterday.Format(time.RFC3339)
+	articles_request_by_oldest := Data.FetchArticlesRequest{
+		RequestType:    "Old",
+		SiteUrl:        "https://gigazine.net/",
+		ReadCount:      10,
+		OldestModified: yesterday_rfc3339_str,
 	}
-	res, err = SendFetchArticleRequest(request_older, userID)
+	res, err = SendFetchArticleRequest(articles_request_by_oldest, userID)
 	if err != nil {
 		return false, Data.Article{}, err
 	}

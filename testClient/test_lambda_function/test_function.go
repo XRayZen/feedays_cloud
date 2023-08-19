@@ -58,7 +58,7 @@ func LambdaApiTest() (bool, error) {
 		return false, err
 	}
 	// 次はReadのテスト
-	result,user_cfg, err = TestApiRead(user_cfg.UserUniqueID)
+	result,err = TestApiRead(user_cfg.UserUniqueID)
 	if err != nil || !result {
 		log.Println("TestApiRead: Failed")
 		return false, err

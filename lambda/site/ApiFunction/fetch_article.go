@@ -2,6 +2,7 @@ package ApiFunction
 
 import (
 	"encoding/json"
+	"log"
 
 	// "log"
 	"site/Data"
@@ -41,6 +42,7 @@ func (s APIFunctions) FetchArticle(access_ip string, user_id string, request_arg
 		// 指定された時間より古い記事を100件取得する
 		articles, err := s.DBRepo.SearchArticlesByTimeAndOrder(request.SiteUrl, oldest_modified, 100, false)
 		if err != nil {
+			log.Println("SearchArticlesByTimeAndOrder: Failed : ", err)
 			return "", err
 		}
 		response = Data.FetchArticleResponse{

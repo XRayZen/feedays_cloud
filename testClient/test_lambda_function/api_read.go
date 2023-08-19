@@ -7,13 +7,13 @@ import (
 	"user/api_gen_code"
 )
 
-func TestApiRead(userId string) (bool, Data.UserConfig, error) {
-	result , err := testApiReadExploreCategories(userId)
-	if err != nil || !result {
+func TestApiRead(userId string) (bool, error) {
+	if result, err := testApiReadExploreCategories(userId); err != nil || !result {
 		log.Println("TestApiReadExploreCategories: Failed")
-		return false, Data.UserConfig{}, err
+		return false, err
 	}
-	return true, Data.UserConfig{}, nil
+	log.Println("TestApiReadExploreCategories: Success")
+	return true, nil
 }
 
 // ExploreCategories
