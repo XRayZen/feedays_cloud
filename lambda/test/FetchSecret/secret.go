@@ -1,7 +1,6 @@
 package FetchSecret
 
 import (
-	// "os"
 	"encoding/json"
 	"fmt"
 	"os"

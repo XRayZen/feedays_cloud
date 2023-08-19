@@ -2,7 +2,6 @@ package Internet
 
 import (
 	"errors"
-
 	"github.com/mmcdole/gofeed"
 )
 
