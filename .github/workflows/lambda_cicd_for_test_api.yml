@@ -39,6 +39,7 @@ jobs:
                 - test
                 - site
                 - user
+                - read
 
         steps:
             - name: Checkout code

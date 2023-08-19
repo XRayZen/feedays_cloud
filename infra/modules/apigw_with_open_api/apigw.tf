@@ -11,7 +11,7 @@ resource "aws_api_gateway_rest_api" "api_gw" {
   description = var.api_gw_description
 
   endpoint_configuration {
-    types = var.endpoint_configuration
+    types = var.endpoint_configuration_types
   }
   # policy属性が変更された場合に、リソースを再作成しないように指定
   lifecycle {

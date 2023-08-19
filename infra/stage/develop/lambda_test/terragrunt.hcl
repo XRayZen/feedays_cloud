@@ -44,7 +44,7 @@ dependency "apigw"{
     config_path = "../apigw"
 
     mock_outputs = {
-        api_endpoint = "ffff"
+        api_gw_endpoint = "ffff"
     }
 }
 
@@ -76,7 +76,7 @@ inputs={
         db_name : local.env.locals.db_name,
         # パスワードはシークレットマネージャーから取得するので、使わない
         secret_stage : local.env.locals.secret_stage,
-        API_ENDPOINT : dependency.apigw.api_endpoint,
+        API_ENDPOINT : dependency.apigw.outputs.api_gw_endpoint,
     }
 
     managed_policy_arns = [
