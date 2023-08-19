@@ -26,3 +26,4 @@ func DeleteTestData(user_id string, site_url string) (bool, error) {
 	log.Println("Success Delete TestData")
 	return true, nil
 }
+

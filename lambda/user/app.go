@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -20,6 +21,8 @@ func main() {
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// アクセスしてきたIPアドレスを取得する
 	access_ip := request.RequestContext.Identity.SourceIP
+	log.Println("Access IP: ", access_ip)
+	log.Println("Request Body: ", request.Body)
 	// リクエストを変換する為にPostUserJSONBodyを使う
 	api_req, err := parseBodyRequest(request)
 	if err != nil {

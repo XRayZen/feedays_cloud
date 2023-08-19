@@ -44,6 +44,20 @@ paths:
                   type: string
                   description: "API Read RequestType (ExploreCategories, Ranking)"
                   example: "Search"
+      # OpenAPIでAPI Gatewayの統合設定を定義しておく
+      # https://docs.aws.amazon.com/ja_jp/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        responses:
+          default:
+            statusCode: "200"
+        # aws_proxy (AWS Lambda 関数との統合の場合)
+        type: "aws_proxy"
+        uri: "${lambda_read_arn}"
+        credentials: "${apigateway_role_arn}"
+        payloadFormatVersion: "1.0"
+        timeoutInMillis: 300
 
       responses:
         "200":
@@ -63,18 +77,6 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
-        # OpenAPIでAPI Gatewayの統合設定を定義しておく
-        # https://docs.aws.amazon.com/ja_jp/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
-        x-amazon-apigateway-integration:
-          httpMethod: "POST"
-          passthroughBehavior: "when_no_match"
-          responses:
-            default:
-              statusCode: "200"
-          # aws_proxy (AWS Lambda 関数との統合の場合)
-          type: "aws_proxy"
-          uri: "${lambda_read_arn}"
-          credentials: "${apigateway_role_arn}"
 
   "/user":
     post:
@@ -111,6 +113,16 @@ paths:
                   description: "API User Request Argument 2 Value"
                   example: "Json 2 arg"
 
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        # aws_proxy (AWS Lambda 関数との統合の場合)
+        type: "aws_proxy"
+        uri: "${lambda_user_arn}"
+        credentials: "${apigateway_role_arn}"
+        payloadFormatVersion: "1.0"
+        timeoutInMillis: 300
+
       responses:
         "200":
           description: "OK"
@@ -129,13 +141,6 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
-        x-amazon-apigateway-integration:
-          httpMethod: "POST"
-          passthroughBehavior: "when_no_match"
-          # aws_proxy (AWS Lambda 関数との統合の場合)
-          type: "aws_proxy"
-          uri: "${lambda_user_arn}"
-          credentials: "${apigateway_role_arn}"
 
   "/site":
     post:
@@ -172,6 +177,16 @@ paths:
                   description: "API Site Request Argument 2 Value"
                   example: "Json 2 arg"
 
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        # aws_proxy (AWS Lambda 関数との統合の場合)
+        type: "aws_proxy"
+        uri: "${lambda_site_arn}"
+        credentials: "${apigateway_role_arn}"
+        payloadFormatVersion: "1.0"
+        timeoutInMillis: 3000
+
       responses:
         "200":
           description: "OK"
@@ -190,13 +205,6 @@ paths:
                     type: string
                     description: "エラーメッセージ"
                     example: "Bad Request"
-        x-amazon-apigateway-integration:
-          httpMethod: "POST"
-          passthroughBehavior: "when_no_match"
-          # aws_proxy (AWS Lambda 関数との統合の場合)
-          type: "aws_proxy"
-          uri: "${lambda_site_arn}"
-          credentials: "${apigateway_role_arn}"
 
 components:
   schemas:

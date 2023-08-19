@@ -3,7 +3,8 @@
 resource "aws_lambda_permission" "apigw_read_permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = var.lambda_read_arn
+  function_name = var.lambda_read_name
+  # var.lambda_read_arn
   # 許可を与えるAWSサービス
   principal = "apigateway.amazonaws.com"
 
@@ -17,7 +18,8 @@ resource "aws_lambda_permission" "apigw_read_permission" {
 resource "aws_lambda_permission" "apigw_user_permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = var.lambda_user_arn
+  function_name = var.lambda_user_name
+  # var.lambda_user_arn
   # 許可を与えるAWSサービス
   principal = "apigateway.amazonaws.com"
 
@@ -31,7 +33,8 @@ resource "aws_lambda_permission" "apigw_user_permission" {
 resource "aws_lambda_permission" "apigw_site_permission" {
     statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = var.lambda_site_arn
+  function_name = var.lambda_site_name
+  # var.lambda_site_arn
   # 許可を与えるAWSサービス
   principal = "apigateway.amazonaws.com"
 

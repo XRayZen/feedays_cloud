@@ -14,7 +14,8 @@ dependency "lambda_read"{
     config_path = "../lambda_read"
 
     mock_outputs = {
-        lambda_arn = "arn:aws:lambda:us-east-1:123456789012:function:lambda_read"
+        lambda_function_invoke_arn = "arn:aws:lambda:us-east-1:123456789012:function:lambda_read"
+        lambda_function_name = "lambda_read"
     }
 }
 
@@ -22,7 +23,8 @@ dependency "lambda_site"{
     config_path = "../lambda_site"
 
     mock_outputs = {
-        lambda_arn = "arn:aws:lambda:us-east-1:123456789012:function:lambda_site"
+        lambda_function_invoke_arn = "arn:aws:lambda:us-east-1:123456789012:function:lambda_site"
+        lambda_function_name = "lambda_site"
     }
 }
 
@@ -30,7 +32,8 @@ dependency "lambda_user"{
     config_path = "../lambda_user"
 
     mock_outputs = {
-        lambda_arn = "arn:aws:lambda:us-east-1:123456789012:function:lambda_user"
+        lambda_function_invoke_arn = "arn:aws:lambda:us-east-1:123456789012:function:lambda_user"
+        lambda_function_name = "lambda_user"
     }
 }
 
@@ -46,7 +49,10 @@ inputs = {
     burst_limit = 200
     rate_limit = 100
     # Lambda ARN
-    lambda_read_arn = dependency.lambda_read.outputs.lambda_arn
-    lambda_site_arn = dependency.lambda_site.outputs.lambda_arn
-    lambda_user_arn = dependency.lambda_user.outputs.lambda_arn
+    lambda_read_arn = dependency.lambda_read.outputs.lambda_function_invoke_arn
+    lambda_site_arn = dependency.lambda_site.outputs.lambda_function_invoke_arn
+    lambda_user_arn = dependency.lambda_user.outputs.lambda_function_invoke_arn
+    lambda_read_name = dependency.lambda_read.outputs.lambda_function_name
+    lambda_site_name = dependency.lambda_site.outputs.lambda_function_name
+    lambda_user_name = dependency.lambda_user.outputs.lambda_function_name
 }

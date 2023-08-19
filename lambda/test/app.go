@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	FetchSecret "test/FetchSecret"
-	Internet "test/internet"
-	RDS "test/rds"
+	Internet "test/Internet"
+	RDS "test/RDS"
 	"test/test_lambda_function"
 
 	"github.com/aws/aws-lambda-go/events"

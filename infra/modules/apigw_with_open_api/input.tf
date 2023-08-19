@@ -28,16 +28,16 @@ variable "stage_name" {
 # 時間内に行うことができる最大リクエスト数
 # limit = 1000
 variable "max_request_limit" {
-	type        = number
-	description = "Max Request Limit"
-	default     = 1000
+  type        = number
+  description = "Max Request Limit"
+  default     = 1000
 }
 
 # 制限が適用される時間帯。有効な値は"DAY"、 "WEEK"、または"MONTH"
 variable "limit_period" {
-	type        = string
-	description = "Limit Period"
-	default     = "DAY"
+  type        = string
+  description = "Limit Period"
+  default     = "DAY"
 }
 
 # APIリクエストバースト制限
@@ -69,5 +69,20 @@ variable "lambda_user_arn" {
 variable "lambda_site_arn" {
   type        = string
   description = "Lambda ARN"
+}
+
+variable "lambda_read_name" {
+  type        = string
+  description = "Lambda Read Name"
+}
+
+variable "lambda_site_name" {
+  type        = string
+  description = "Lambda Site Name"
+}
+
+variable "lambda_user_name" {
+  type        = string
+  description = "Lambda User Name"
 }
 

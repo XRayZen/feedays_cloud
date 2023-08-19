@@ -9,6 +9,7 @@ resource "aws_api_gateway_rest_api" "api_gw" {
       apigateway_role_arn = "${aws_iam_role.api_gateway_role.arn}"
   })
   description = var.api_gw_description
+  put_rest_api_mode = "merge"
 
   endpoint_configuration {
     types = var.endpoint_configuration_types
@@ -29,9 +30,9 @@ resource "aws_api_gateway_deployment" "api_gw_deployment" {
   rest_api_id = aws_api_gateway_rest_api.api_gw.id
   stage_name  = var.stage_name
 
-  lifecycle {
-    create_before_destroy = true
-  }
+  # lifecycle {
+  #   create_before_destroy = true
+  # }
 
   triggers = {
     redeployment = "${sha1(file("./OpenAPI/backend_api.yaml"))}"
