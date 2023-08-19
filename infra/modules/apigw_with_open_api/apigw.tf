@@ -1,18 +1,13 @@
 
-data "template_file" "openapi" {
-  template = file("./OpenAPI/backend_api.yaml")
-
-  vars = {
-    lambda_read_arn     = var.lambda_read_arn
-    lambda_user_arn     = var.lambda_user_arn
-    lambda_site_arn     = var.lambda_site_arn
-    apigateway_role_arn = "${aws_iam_role.api_gateway_role.arn}"
-  }
-}
-
 resource "aws_api_gateway_rest_api" "api_gw" {
   name = var.api_gw_name
-  body = data.template_file.openapi.rendered
+  body = templatefile("./OpenAPI/backend_api.yaml",
+    {
+      lambda_read_arn     = var.lambda_read_arn,
+      lambda_user_arn     = var.lambda_user_arn,
+      lambda_site_arn     = var.lambda_site_arn,
+      apigateway_role_arn = "${aws_iam_role.api_gateway_role.arn}"
+  })
   description = var.api_gw_description
 
   endpoint_configuration {

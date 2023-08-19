@@ -39,6 +39,14 @@ dependency "rds" {
         db_password = "mock-db-password"
     }
 }
+# ApiGatewayに依存
+dependency "apigw"{
+    config_path = "../apigw"
+
+    mock_outputs = {
+        api_endpoint = "ffff"
+    }
+}
 
 inputs={
     lambda_function_name = "feedays-cloud-test"
@@ -68,6 +76,7 @@ inputs={
         db_name : local.env.locals.db_name,
         # パスワードはシークレットマネージャーから取得するので、使わない
         secret_stage : local.env.locals.secret_stage,
+        API_ENDPOINT : dependency.apigw.api_endpoint,
     }
 
     managed_policy_arns = [
