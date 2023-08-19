@@ -49,10 +49,10 @@ dependency "apigw"{
 }
 
 inputs={
-    lambda_function_name = "feedays-cloud-test"
+    lambda_function_name = "test"
     lambda_function_description = "feedays-cloud-test-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "feedays-cloud-test"
+    image_tag= "test"
     memory_size = 128
     timeout = 20
     lambda_function_architecture = "arm64"

@@ -41,10 +41,10 @@ dependency "rds" {
 }
 
 inputs={
-    lambda_function_name = "feedays-cloud-site"
+    lambda_function_name = "site"
     lambda_function_description = "feedays-cloud-test-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "feedays-cloud-site"
+    image_tag= "site"
     memory_size = 128
     timeout = 20
     lambda_function_architecture = "arm64"

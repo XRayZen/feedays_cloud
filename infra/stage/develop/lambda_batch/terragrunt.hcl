@@ -40,10 +40,10 @@ dependency "rds" {
 }
 
 inputs={
-    lambda_function_name = "feedays-cloud-batch"
+    lambda_function_name = "batch"
     lambda_function_description = "feedays-cloud-batch-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
-    image_tag= "feedays-cloud-bstch"
+    image_tag= "batch"
     memory_size = 200
     timeout = 10
     lambda_function_architecture = "arm64"

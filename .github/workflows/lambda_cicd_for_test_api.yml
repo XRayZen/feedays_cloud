@@ -35,11 +35,11 @@ jobs:
         strategy:
             matrix:
                 function:
-                - feedays-cloud-batch
-                - feedays-cloud-test
-                - feedays-cloud-site
-                - feedays-cloud-user
-                - feedays-cloud-read
+                - batch
+                - test
+                - site
+                - user
+                - read
 
         steps:
             - name: Checkout code
