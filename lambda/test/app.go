@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	FetchSecret "test/FetchSecret"
-	Internet "test/Internet"
-	RDS "test/RDS"
+
+	"test/FetchSecret"
+	"test/Internet"
+	"test/RDS"
 	"test/test_lambda_function"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -30,28 +31,28 @@ func HandleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 	log.Println("Secret Read Test Start")
 	result, err := FetchSecret.Secret_read_test()
 	if err != nil || !result {
-		return genLambdaResponse("Failed", "Secret Read Test Failed :"+err.Error()),nil
+		return genLambdaResponse("Failed", "Secret Read Test Failed :"+err.Error()), nil
 	}
 	fmt.Println("Secret Read Test Success")
 	// データベース読み書きテスト
 	result, err = RDS.RdsWriteReadTest()
 	if err != nil || !result {
-		return genLambdaResponse("Failed", "RDS Write Read Test Failed :"+err.Error()),nil
+		return genLambdaResponse("Failed", "RDS Write Read Test Failed :"+err.Error()), nil
 	}
 	fmt.Println("RDS Write Read Test Success")
 	fmt.Println("Internet Connection Test Start")
 	// インターネット導通テスト
 	str, err := Internet.GetGIGAZINE()
 	if err != nil || str == "" {
-		return genLambdaResponse("Failed", "Internet Connection Test Failed err : "+err.Error()),nil
+		return genLambdaResponse("Failed", "Internet Connection Test Failed err : "+err.Error()), nil
 	}
 	log.Println("Gigazine RSS Title: " + str)
 	fmt.Println("Internet Connection Test Success")
 	// LambdaAPIのテスト
 	log.Println("Lambda API Test Start")
-	if result ,err := test_lambda_function.LambdaApiTest(); err != nil || !result {
+	if result, err := test_lambda_function.LambdaApiTest(); err != nil || !result {
 		// テスト失敗
-		return genLambdaResponse("Failed", "Lambda API Test Failed err : "+err.Error()),nil
+		return genLambdaResponse("Failed", "Lambda API Test Failed err : "+err.Error()), nil
 	}
 	// 全てのテストが成功したら200を返す
 	return genLambdaResponse("Success", "All Test Success"), nil
