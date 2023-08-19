@@ -52,10 +52,10 @@ func TestApiUserPart1() (bool, Data.UserConfig, error) {
 		log.Println("Failed to report read activity")
 		return false, Data.UserConfig{}, err
 	}
-	// UpdateConfig
+	// UpdateUiConfig
 	result, user_config, err := testUpdateUiConfig(user_Id)
 	if err != nil || !result {
-		log.Println("Failed to update config")
+		log.Println("Failed to update ui config")
 		return false, Data.UserConfig{}, err
 	}
 	// ModifySearchHistory
