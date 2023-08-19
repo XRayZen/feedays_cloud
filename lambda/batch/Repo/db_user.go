@@ -11,7 +11,7 @@ import (
 type User struct {
 	gorm.Model
 	UserName          string
-	UserUniqueID      string `gorm:"uniqueIndex"`
+	UserUniqueID      string `gorm:"uniqueIndex;size:256"`
 	AccountType       string
 	Country           string
 	UiConfig          UiConfig
