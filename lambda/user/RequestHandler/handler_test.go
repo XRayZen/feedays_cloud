@@ -46,7 +46,7 @@ func TestNormalRequestHandler(t *testing.T) {
 		Link:     "test",
 		AccessAt: now_str,
 	})
-	input_user_config := Data.UserConfig{
+	register_user_config := Data.UserConfig{
 		UserName:     "test",
 		UserUniqueID: test_user_id,
 		AccountType:  "Free",
@@ -56,23 +56,24 @@ func TestNormalRequestHandler(t *testing.T) {
 			},
 		},
 	}
-	input_user_config_json, _ := json.Marshal(input_user_config)
+	register_user_config_json, _ := json.Marshal(register_user_config)
 	test_web_site_json, _ := json.Marshal(site)
 	test_article_json, _ := json.Marshal(article)
 
 	// 期待する出力データを定義
-	expected_config_sync_response_json, _ := json.Marshal(Data.ConfigSyncResponse{
-		ResponseType: "accept",
-		UserConfig: Data.UserConfig{
-			UserName:     "test",
-			UserUniqueID: test_user_id,
-			AccountType:  "Free",
-			ClientConfig: Data.ClientConfig{
-				UiConfig: Data.UiConfig{
-					ThemeMode: "light",
-				},
+	updateUiConfigJson, _ := json.Marshal(Data.UserConfig{
+		UserName:     "test",
+		UserUniqueID: test_user_id,
+		AccountType:  "Free",
+		ClientConfig: Data.ClientConfig{
+			UiConfig: Data.UiConfig{
+				ThemeMode: "dark",
 			},
 		},
+	})
+	expected_config_sync_response_json, _ := json.Marshal(Data.ConfigSyncResponse{
+		ResponseType: "accept",
+		UserConfig: register_user_config,
 		Error: "",
 	})
 	expected_config_sync := string(expected_config_sync_response_json)
@@ -109,7 +110,7 @@ func TestNormalRequestHandler(t *testing.T) {
 			args: args{
 				requestType:    "RegisterUser",
 				userId:         test_user_id,
-				argumentJson_1: string(input_user_config_json),
+				argumentJson_1: string(register_user_config_json),
 				argumentJson_2: "",
 			},
 			want: "Success RegisterUser",
@@ -145,20 +146,20 @@ func TestNormalRequestHandler(t *testing.T) {
 			},
 			want: "Success ReportReadActivity",
 		},
-		// UpdateConfig
+		// UpdateUiConfig
 		{
-			name: "UpdateConfig",
+			name: "UpdateUiConfig",
 			fields: fields{
 				repo: db_repo,
 				ip:   "",
 			},
 			args: args{
-				requestType:    "UpdateConfig",
+				requestType:    "UpdateUiConfig",
 				userId:         test_user_id,
-				argumentJson_1: string(input_user_config_json),
+				argumentJson_1: string(updateUiConfigJson),
 				argumentJson_2: "",
 			},
-			want: "Success UpdateConfig",
+			want: "Success UpdateUiConfig",
 		},
 		// ModifySearchHistory
 		{
@@ -238,6 +239,25 @@ func TestNormalRequestHandler(t *testing.T) {
 					return
 				} else {
 					t.Errorf("DeleteUserData failed")
+					return
+				}
+			}
+			// UpdateUiConfigの場合は、ConfigSyncを呼び出して更新されているか確認する
+			if tt.args.requestType == "UpdateUiConfig" {
+				// ConfigSyncを呼び出す
+				config_sync_response_json, err := ParseRequestType(tt.fields.ip, tt.fields.repo,
+					"ConfigSync", tt.args.userId, "", "")
+				if err != nil {
+					t.Errorf("UpdateUiConfig failed")
+					return
+				}
+				config_sync := Data.ConfigSyncResponse{}
+				if err := json.Unmarshal([]byte(config_sync_response_json), &config_sync); err != nil {
+					t.Errorf("UpdateUiConfig failed")
+					return
+				}
+				if config_sync.UserConfig.ClientConfig.UiConfig.ThemeMode != "dark" {
+					t.Errorf("UpdateUiConfig failed")
 					return
 				}
 			}

@@ -210,7 +210,7 @@ func testUpdateUiConfig(userId string) (bool, Data.UserConfig, error) {
 	request_type := "UpdateUiConfig"
 	user_config := genTestUserConfig()
 	user_config.UserUniqueID = userId
-    user_config.ClientConfig.UiConfig.ThemeColorValue = 500
+    user_config.ClientConfig.UiConfig.ThemeMode = "dark"
 	user_config_json, _ := json.Marshal(user_config)
 	user_config_json_str := string(user_config_json)
 	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
@@ -236,7 +236,7 @@ func testUpdateUiConfig(userId string) (bool, Data.UserConfig, error) {
 	// UserConfigをパースする
 	var config_sync_response = Data.ConfigSyncResponse{}
 	err = json.Unmarshal([]byte(result), &config_sync_response)
-	if err != nil || config_sync_response.UserConfig.ClientConfig.UiConfig.ThemeColorValue != 500 {
+	if err != nil || config_sync_response.UserConfig.ClientConfig.UiConfig.ThemeMode != "dark"{
 		log.Println("Failed to update ui config")
 		return false, Data.UserConfig{}, err
 	}
