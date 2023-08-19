@@ -40,6 +40,12 @@ jobs:
                 - site
                 - user
                 - read
+                function_name:
+                - feedays-cloud-batch
+                - feedays-cloud-test
+                - feedays-cloud-site
+                - feedays-cloud-user
+                - feedays-cloud-read
 
         steps:
             - name: Checkout code
@@ -80,7 +86,7 @@ jobs:
             - name: Update Lambda function
               run: |
                 aws lambda update-function-code \
-                --function-name ${{ matrix.function }} \
+                --function-name ${{ matrix.function_name }} \
                 --image-uri ${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_ECR_NAME }}:${{ matrix.function }}
 
 
