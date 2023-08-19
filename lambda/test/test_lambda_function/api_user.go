@@ -349,12 +349,13 @@ func SendUserRequest(request api_gen_code.PostUserJSONRequestBody) (string, erro
 	// リクエストを作ったら、APIエンドポイントにリクエストを送る
 	response, err := SendApiRequest(string(request_post_json), "user")
 	if err != nil {
+		log.Fatalln("Failed to send request: ", err)
 		return "", err
 	}
 	// resをData.APIResponseに変換
 	var res = Data.APIResponse{}
-	err = json.Unmarshal([]byte(*response.ResponseValue), &res)
-	if err != nil {
+	if err := json.Unmarshal([]byte(*response.ResponseValue), &res); err != nil {
+		log.Fatalln("Failed to unmarshal response value: ", err)
 		return "", err
 	}
 	return res.Value, nil

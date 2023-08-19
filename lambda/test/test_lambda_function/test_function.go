@@ -13,7 +13,10 @@ func LambdaApiTest() (bool, error) {
 	// テストを実行する為にサービスを初期化する
 	result, err := ServiceInit()
 	if err != nil || !result {
-		log.Println("ServiceInit: Failed")
+		log.Println("ServiceInit: Failed ")
+		if err != nil {
+			log.Println("ServiceInit: Failed Detail Error :", err)
+		}
 		return false, err
 	}
 	// Userのテスト
@@ -85,6 +88,7 @@ func SendApiRequest(request_post_json string, path string) (api_gen_code.APIResp
 	var response = api_gen_code.APIResponse{}
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
+		log.Println("Failed Decode: ", err)
 		return api_gen_code.APIResponse{}, err
 	}
 	return response, nil
