@@ -57,7 +57,7 @@ paths:
         uri: "${lambda_read_arn}"
         credentials: "${apigateway_role_arn}"
         payloadFormatVersion: "1.0"
-        timeoutInMillis: 300
+        timeoutInMillis: 10000
 
       responses:
         "200":
@@ -121,7 +121,7 @@ paths:
         uri: "${lambda_user_arn}"
         credentials: "${apigateway_role_arn}"
         payloadFormatVersion: "1.0"
-        timeoutInMillis: 300
+        timeoutInMillis: 10000
 
       responses:
         "200":
@@ -185,7 +185,7 @@ paths:
         uri: "${lambda_site_arn}"
         credentials: "${apigateway_role_arn}"
         payloadFormatVersion: "1.0"
-        timeoutInMillis: 3000
+        timeoutInMillis: 10000
 
       responses:
         "200":
