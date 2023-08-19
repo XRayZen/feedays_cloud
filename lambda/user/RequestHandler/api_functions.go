@@ -2,6 +2,7 @@ package RequestHandler
 
 import (
 	"encoding/json"
+	"log"
 	"user/Data"
 	"user/DbRepo"
 )
@@ -140,6 +141,7 @@ func (functions APIFunctions) ModifyAPIRequestLimit(modify_type string, api_requ
 	// APIリクエスト制限をjsonから変換する
 	var api_config Data.ApiConfig
 	if err := json.Unmarshal([]byte(api_request_limit_json), &api_config); err != nil {
+		log.Fatalln("Failed ModifyAPIRequestLimit Unmarshal error : ", err)
 		return "Error ModifyAPIRequestLimit", err
 	}
 	// APIリクエスト制限を変更する

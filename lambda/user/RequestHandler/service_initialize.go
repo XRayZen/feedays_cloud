@@ -10,6 +10,7 @@ func (s APIFunctions) ServiceInitialize() (string, error) {
 	if err := s.db_repo.AutoMigrate(); err != nil {
 		return "Failed ServiceInitialize", err
 	}
+	log.Println("Success AutoMigrate")
 	// APIリクエスト制限を入れておく
 	api_request_configs := []Data.ApiConfig{
 		{
@@ -32,7 +33,7 @@ func (s APIFunctions) ServiceInitialize() (string, error) {
 	for _, api_request_config := range api_request_configs {
 		api_request_config_json, err := json.Marshal(api_request_config)
 		if err != nil {
-			log.Println("Failed api_request_config Unmarshal error : ", err)
+			log.Fatalln("Failed ServiceInitialize Marshal error : ", err)
 			return "Failed ServiceInitialize", err
 		}
 		res, err := s.ModifyAPIRequestLimit("Add", string(api_request_config_json))
@@ -40,6 +41,7 @@ func (s APIFunctions) ServiceInitialize() (string, error) {
 			return "Failed ServiceInitialize", err
 		}
 	}
+	log.Println("Success ModifyAPIRequestLimit")
 	// 後はExploreCategoryを入れておく
 	explore_categories := []Data.ExploreCategory{
 		{
@@ -61,5 +63,7 @@ func (s APIFunctions) ServiceInitialize() (string, error) {
 			return "Failed ServiceInitialize", err
 		}
 	}
+	log.Println("Success ModifyExploreCategory")
+	log.Println("Success ServiceInitialize")
 	return "Success ServiceInitialize", nil
 }
