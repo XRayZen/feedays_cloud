@@ -352,11 +352,5 @@ func SendUserRequest(request api_gen_code.PostUserJSONRequestBody) (string, erro
 		log.Fatalln("Failed to send request: ", err)
 		return "", err
 	}
-	// resをData.APIResponseに変換
-	var res = Data.APIResponse{}
-	if err := json.Unmarshal([]byte(*response.ResponseValue), &res); err != nil {
-		log.Fatalln("Failed to unmarshal response value: ", err)
-		return "", err
-	}
-	return res.Value, nil
+	return *response.ResponseValue, nil
 }
