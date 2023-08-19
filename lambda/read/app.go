@@ -36,10 +36,16 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 }
 
 // リクエストをボディからパース
+// リクエストをボディからパース
 func parseBodyRequest(request events.APIGatewayProxyRequest) (api_gen_code.PostReadJSONRequestBody, error) {
 	var api_req api_gen_code.PostReadJSONRequestBody
 	if err := json.Unmarshal([]byte(request.Body), &api_req); err != nil {
 		return api_gen_code.PostReadJSONRequestBody{}, err
+	}
+	// nullを参照するとエラーになるので、nullの場合は空文字にする
+	if api_req.UserId == nil {
+		api_req.UserId = new(string)
+		*api_req.UserId = ""
 	}
 	return api_req, nil
 }

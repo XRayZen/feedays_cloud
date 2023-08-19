@@ -15,24 +15,6 @@ type APIResponse struct {
 	UserId *string `json:"userId,omitempty"`
 }
 
-// PostHeavyJSONBody defines parameters for PostHeavy.
-type PostHeavyJSONBody struct {
-	// RequestArgumentJson1 API Heavy Request Argument 1 Value
-	RequestArgumentJson1 *string `json:"requestArgumentJson1,omitempty"`
-
-	// RequestArgumentJson2 API Heavy Request Argument 2 Value
-	RequestArgumentJson2 *string `json:"requestArgumentJson2,omitempty"`
-
-	// RequestArgumentJson3 API Heavy Request Argument 3 Value
-	RequestArgumentJson3 *string `json:"requestArgumentJson3,omitempty"`
-
-	// RequestType API Heavy RequestType:(Feed,Search,SubscribeSite)
-	RequestType *string `json:"requestType,omitempty"`
-
-	// UserId ユーザーID
-	UserId *string `json:"userId,omitempty"`
-}
-
 // PostReadJSONBody defines parameters for PostRead.
 type PostReadJSONBody struct {
 	// RequestType API Read RequestType (ExploreCategories, Ranking)
@@ -42,29 +24,41 @@ type PostReadJSONBody struct {
 	UserId *string `json:"userId,omitempty"`
 }
 
-// PostWriteJSONBody defines parameters for PostWrite.
-type PostWriteJSONBody struct {
-	// RequestArgumentJson1 API Write Request Argument 1 Value
+// PostSiteJSONBody defines parameters for PostSite.
+type PostSiteJSONBody struct {
+	// RequestArgumentJson1 API Site Request Argument 1 Value
 	RequestArgumentJson1 *string `json:"requestArgumentJson1,omitempty"`
 
-	// RequestArgumentJson2 API Write Request Argument 2 Value
+	// RequestArgumentJson2 API Site Request Argument 2 Value
 	RequestArgumentJson2 *string `json:"requestArgumentJson2,omitempty"`
 
-	// RequestArgumentJson3 API Write Request Argument 3 Value
-	RequestArgumentJson3 *string `json:"requestArgumentJson3,omitempty"`
-
-	// RequestType API Write RequestType:(Feed,UserRegister,SyncConfig,CodeSync,ReportActivity,Search,SubscribeSite)
+	// RequestType API Site RequestType
 	RequestType *string `json:"requestType,omitempty"`
 
 	// UserId ユーザーID
 	UserId *string `json:"userId,omitempty"`
 }
 
-// PostHeavyJSONRequestBody defines body for PostHeavy for application/json ContentType.
-type PostHeavyJSONRequestBody PostHeavyJSONBody
+// PostUserJSONBody defines parameters for PostUser.
+type PostUserJSONBody struct {
+	// RequestArgumentJson1 API User Request Argument 1 Value
+	RequestArgumentJson1 *string `json:"requestArgumentJson1,omitempty"`
+
+	// RequestArgumentJson2 API User Request Argument 2 Value
+	RequestArgumentJson2 *string `json:"requestArgumentJson2,omitempty"`
+
+	// RequestType API User RequestType
+	RequestType *string `json:"requestType,omitempty"`
+
+	// UserId ユーザーID
+	UserId *string `json:"userId,omitempty"`
+}
 
 // PostReadJSONRequestBody defines body for PostRead for application/json ContentType.
 type PostReadJSONRequestBody PostReadJSONBody
 
-// PostWriteJSONRequestBody defines body for PostWrite for application/json ContentType.
-type PostWriteJSONRequestBody PostWriteJSONBody
+// PostSiteJSONRequestBody defines body for PostSite for application/json ContentType.
+type PostSiteJSONRequestBody PostSiteJSONBody
+
+// PostUserJSONRequestBody defines body for PostUser for application/json ContentType.
+type PostUserJSONRequestBody PostUserJSONBody

@@ -44,7 +44,20 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 func parseBodyRequest(request events.APIGatewayProxyRequest) (api_gen_code.PostSiteJSONRequestBody, error) {
 	var api_req api_gen_code.PostSiteJSONRequestBody
 	if err := json.Unmarshal([]byte(request.Body), &api_req); err != nil {
-		return api_req, err
+		return api_gen_code.PostSiteJSONRequestBody{}, err
+	}
+	// nullを参照するとエラーになるので、nullの場合は空文字にする
+	if api_req.UserId == nil {
+		api_req.UserId = new(string)
+		*api_req.UserId = ""
+	}
+	if api_req.RequestArgumentJson1 == nil {
+		api_req.RequestArgumentJson1 = new(string)
+		*api_req.RequestArgumentJson1 = ""
+	}
+	if api_req.RequestArgumentJson2 == nil {
+		api_req.RequestArgumentJson2 = new(string)
+		*api_req.RequestArgumentJson2 = ""
 	}
 	return api_req, nil
 }
