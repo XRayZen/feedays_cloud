@@ -210,6 +210,7 @@ func testReportReadActivity(userId string) (bool, error) {
 func testUpdateConfig(userId string) (bool, Data.UserConfig, error) {
 	request_type := "UpdateConfig"
 	user_config := genTestUserConfig()
+	user_config.UserUniqueID = userId
 	user_config.AccountType = "premium"
 	user_config_json, _ := json.Marshal(user_config)
 	user_config_json_str := string(user_config_json)
