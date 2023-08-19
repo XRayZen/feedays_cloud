@@ -145,6 +145,7 @@ func genTestUserConfig() Data.UserConfig {
 func testRegisterUser(userId string) (bool, error) {
 	request_type := "RegisterUser"
 	user_config := genTestUserConfig()
+	user_config.UserUniqueID = userId
 	user_config_json, _ := json.Marshal(user_config)
 	user_config_json_str := string(user_config_json)
 	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
