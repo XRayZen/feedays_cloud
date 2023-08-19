@@ -61,11 +61,11 @@ jobs:
               id: login-ecr
               uses: aws-actions/amazon-ecr-login@v1
             # 各Lambdaの前ECRイメージを削除
-            # - name: Delete old docker image
-            #   run: |
-            #     aws ecr batch-delete-image \
-            #     --repository-name ${{ env.REPO_ECR_NAME }} \
-            #     --image-ids imageTag=${{ matrix.function }} || true
+            - name: Delete old docker image
+              run: |
+                aws ecr batch-delete-image \
+                --repository-name ${{ env.REPO_ECR_NAME }} \
+                --image-ids imageTag=${{ matrix.function }} || true
             # 各Lambda関数をビルドしてECRにプッシュ
             - name: Build, tag, and push docker image to Amazon ECR
               env:
@@ -77,10 +77,10 @@ jobs:
                   docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
             # 各Lambda関数を更新
-            # - name: Update Lambda function
-            #   run: |
-            #     aws lambda update-function-code \
-            #     --function-name ${{ matrix.function }} \
-            #     --image-uri ${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_ECR_NAME }}:${{ matrix.function }}
+            - name: Update Lambda function
+              run: |
+                aws lambda update-function-code \
+                --function-name ${{ matrix.function }} \
+                --image-uri ${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_ECR_NAME }}:${{ matrix.function }}
 
 
