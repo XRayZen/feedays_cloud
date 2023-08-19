@@ -64,6 +64,7 @@ func TestApiUserPart1() (bool, Data.UserConfig, error) {
 		log.Println("Failed to modify search history")
 		return false, Data.UserConfig{}, err
 	}
+	log.Println("Success TestApiUserPart1")
 	return true, user_config, nil
 }
 

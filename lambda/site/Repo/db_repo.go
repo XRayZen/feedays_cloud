@@ -168,7 +168,7 @@ func (r DBRepoImpl) SearchSiteByUrl(site_url string) (Data.WebSite, error) {
 
 func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
 	var sites []Site
-	result := DBMS.Where(&Site{SiteName: siteName}).Find(&sites)
+	result := DBMS.Where("site_name LIKE ?", "%"+siteName+"%").Find(&sites)
 	if result.Error != nil {
 		return []Data.WebSite{}, result.Error
 	}
@@ -182,7 +182,7 @@ func (r DBRepoImpl) SearchSiteByName(siteName string) ([]Data.WebSite, error) {
 
 func (r DBRepoImpl) SearchSiteByCategory(category string) ([]Data.WebSite, error) {
 	var sites []Site
-	if err := DBMS.Where(&Site{Category: category}).Find(&sites).Error; err != nil {
+	if err := DBMS.Where("category LIKE ?", "%"+category+"%").Find(&sites).Error; err != nil {
 		return []Data.WebSite{}, err
 	}
 	var result_sites []Data.WebSite

@@ -17,7 +17,7 @@ func TestApiSitePart1(userId string) (bool, []Data.WebSite, error) {
 		Word:       "https://gigazine.net/",
 	}
 	result, err := SendSearchRequest(request, userId)
-	if err != nil || result.Websites[0].SiteName != "GIGAZINE" {
+	if err != nil || result.Websites[0].SiteName != "GIGAZINE（ギガジン）" {
 		log.Println("TestApiSiteUrlSearch: Failed")
 		return false, nil, err
 	}
@@ -25,7 +25,7 @@ func TestApiSitePart1(userId string) (bool, []Data.WebSite, error) {
 	// キーワードで検索してちゃんと登録に成功したかどうかを確かめる
 	request = Data.ApiSearchRequest{
 		SearchType: "Keyword",
-		Word:       "AI",
+		Word:       "ニュース",
 	}
 	result, err = SendSearchRequest(request, userId)
 	// ちゃんと記事が返ってきているかどうかを確かめる
@@ -40,7 +40,7 @@ func TestApiSitePart1(userId string) (bool, []Data.WebSite, error) {
 		Word:       "GIGAZINE",
 	}
 	result, err = SendSearchRequest(request, userId)
-	if err != nil || result.Websites[0].SiteName != "GIGAZINE" {
+	if err != nil || result.Websites[0].SiteName != "GIGAZINE（ギガジン）" {
 		return false, nil, err
 	}
 	log.Println("TestApiSiteSiteNameSearch: Success")
