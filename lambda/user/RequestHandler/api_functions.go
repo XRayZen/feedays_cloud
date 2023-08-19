@@ -56,16 +56,16 @@ func (s APIFunctions) ReportReadActivity(userId string, readActivityJson string)
 	return "Success ReportReadActivity", nil
 }
 
-func (s APIFunctions) UpdateConfig(userId string, userCfgJson string) (string, error) {
+func (s APIFunctions) UpdateUiConfig(userId string, userCfgJson string) (string, error) {
 	// UI設定を変更したらクラウドに送信してクラウドの設定を上書きする
 	var user_config Data.UserConfig
 	if err := json.Unmarshal([]byte(userCfgJson), &user_config); err != nil {
 		return "", err
 	}
-	if err := s.db_repo.UpdateUser(userId, user_config); err != nil {
+	if err := s.db_repo.UpdateUserUiConfig(userId, user_config); err != nil {
 		return "", err
 	}
-	return "Success UpdateConfig", nil
+	return "Success UpdateUiConfig", nil
 }
 
 func (s APIFunctions) ModifySearchHistory(userId string, text string, is_add_or_remove_bool string) (string, error) {

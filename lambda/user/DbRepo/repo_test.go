@@ -123,7 +123,7 @@ func TestDbRepoTest(t *testing.T) {
 		}
 		// Userを更新する
 		user.ClientConfig.UiConfig.DrawerMenuOpacity = 0.6
-		if err := dbRepo.UpdateUser(user.UserUniqueID, user); err != nil {
+		if err := dbRepo.UpdateUserUiConfig(user.UserUniqueID, user); err != nil {
 			t.Errorf("failed to update user: %v", err)
 		}
 		// Userが更新されているか確認する

@@ -22,7 +22,7 @@ type DBRepo interface {
 	SearchUserConfig(user_unique_Id string) (Data.UserConfig, error)
 	RegisterUser(user_info Data.UserConfig) error
 	DeleteUser(user_unique_Id string) error
-	UpdateUser(user_unique_Id string, data_user_config Data.UserConfig) error
+	UpdateUserUiConfig(user_unique_Id string, data_user_config Data.UserConfig) error
 
 	AddReadHistory(user_unique_Id string, activity_info Data.ReadHistory) error
 	SearchReadHistory(user_unique_Id string, limit int) ([]Data.ReadHistory, error)
@@ -149,7 +149,7 @@ func (repo DBRepoImpl) DeleteUser(user_unique_Id string) error {
 	return nil
 }
 
-func (repo DBRepoImpl) UpdateUser(user_unique_Id string, dataUserCfg Data.UserConfig) error {
+func (repo DBRepoImpl) UpdateUserUiConfig(user_unique_Id string, dataUserCfg Data.UserConfig) error {
 	var user User
 	if err := DBMS.Where("user_unique_id = ?", user_unique_Id).Preload("UiConfig").First(&user).Error; err != nil {
 		return err

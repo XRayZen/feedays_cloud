@@ -53,7 +53,7 @@ func TestApiUserPart1() (bool, Data.UserConfig, error) {
 		return false, Data.UserConfig{}, err
 	}
 	// UpdateConfig
-	result, user_config, err := testUpdateConfig(user_Id)
+	result, user_config, err := testUpdateUiConfig(user_Id)
 	if err != nil || !result {
 		log.Println("Failed to update config")
 		return false, Data.UserConfig{}, err
@@ -206,12 +206,11 @@ func testReportReadActivity(userId string) (bool, error) {
 	return true, nil
 }
 
-// UpdateConfig
-func testUpdateConfig(userId string) (bool, Data.UserConfig, error) {
-	request_type := "UpdateConfig"
+func testUpdateUiConfig(userId string) (bool, Data.UserConfig, error) {
+	request_type := "UpdateUiConfig"
 	user_config := genTestUserConfig()
 	user_config.UserUniqueID = userId
-	user_config.AccountType = "premium"
+    user_config.ClientConfig.UiConfig.ThemeColorValue = 500
 	user_config_json, _ := json.Marshal(user_config)
 	user_config_json_str := string(user_config_json)
 	result, err := SendUserRequest(api_gen_code.PostUserJSONRequestBody{
@@ -219,7 +218,7 @@ func testUpdateConfig(userId string) (bool, Data.UserConfig, error) {
 		UserId:               &userId,
 		RequestArgumentJson1: &user_config_json_str,
 	})
-	if err != nil || result != "Success UpdateConfig" {
+	if err != nil || result != "Success UpdateUiConfig" {
 		log.Println("Failed to update config")
 		return false, Data.UserConfig{}, err
 	}
@@ -230,17 +229,18 @@ func testUpdateConfig(userId string) (bool, Data.UserConfig, error) {
 		UserId:      &userId,
 	})
 	if err != nil {
-		log.Println("Failed to (update config):config sync")
+		log.Println("Failed to (update ui config):config sync")
 		return false, Data.UserConfig{}, err
 	}
+	log.Println("Success to (update ui config):config sync")
 	// UserConfigをパースする
 	var config_sync_response = Data.ConfigSyncResponse{}
 	err = json.Unmarshal([]byte(result), &config_sync_response)
-	if err != nil || config_sync_response.UserConfig.AccountType != "premium" {
-		log.Println("Failed to update config")
+	if err != nil || config_sync_response.UserConfig.ClientConfig.UiConfig.ThemeColorValue != 500 {
+		log.Println("Failed to update ui config")
 		return false, Data.UserConfig{}, err
 	}
-	log.Println("Success to update config")
+	log.Println("Success to update ui config")
 	return false, config_sync_response.UserConfig, err
 }
 

@@ -28,8 +28,8 @@ func ParseRequestType(access_ip string, db_repo DbRepo.DBRepo, request_type stri
 		return functions.ConfigSync(user_id)
 	case "ReportReadActivity":
 		return functions.ReportReadActivity(user_id, argument_json_1)
-	case "UpdateConfig":
-		return functions.UpdateConfig(user_id, argument_json_1)
+	case "UpdateUiConfig":
+		return functions.UpdateUiConfig(user_id, argument_json_1)
 	case "ModifySearchHistory":
 		return functions.ModifySearchHistory(user_id, argument_json_1, argument_json_2)
 	case "ModifyFavoriteSite":
