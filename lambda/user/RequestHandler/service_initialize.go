@@ -2,6 +2,7 @@ package RequestHandler
 
 import (
 	"encoding/json"
+	"log"
 	"user/Data"
 )
 
@@ -29,7 +30,11 @@ func (s APIFunctions) ServiceInitialize() (string, error) {
 		},
 	}
 	for _, api_request_config := range api_request_configs {
-		api_request_config_json, _ := json.Marshal(api_request_config)
+		api_request_config_json, err := json.Marshal(api_request_config)
+		if err != nil {
+			log.Println("Failed api_request_config Unmarshal error : ", err)
+			return "Failed ServiceInitialize", err
+		}
 		res, err := s.ModifyAPIRequestLimit("Add", string(api_request_config_json))
 		if err != nil || res != "Success ModifyAPIRequestLimit" {
 			return "Failed ServiceInitialize", err

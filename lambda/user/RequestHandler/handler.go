@@ -2,6 +2,7 @@ package RequestHandler
 
 import (
 	"errors"
+	"log"
 	"user/DbRepo"
 )
 
@@ -13,6 +14,7 @@ func ParseRequestType(access_ip string, db_repo DbRepo.DBRepo, request_type stri
 		ip:      access_ip,
 	}
 	// リクエストタイプに応じて処理を分岐
+	log.Println("Request Type: ", request_type)
 	switch request_type {
 	case "ServiceInitialize":
 		return functions.ServiceInitialize()
