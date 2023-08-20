@@ -2,36 +2,46 @@ package RequestHandler
 
 import (
 	"errors"
-	"user/DBRepo"
+	"log"
+	"user/DbRepo"
 )
 
 // ParseRequestType はリクエストタイプに応じて処理を分岐する
-func ParseRequestType(access_ip string, dbRepo DBRepo.DBRepo, requestType string, userId string,
-	argumentJson_1 string, argumentJson_2 string) (string, error) {
+func ParseRequestType(access_ip string, db_repo DbRepo.DBRepo, request_type string, user_id string,
+	argument_json_1 string, argument_json_2 string) (string, error) {
 	functions := APIFunctions{
-		repo: dbRepo,
-		ip:   access_ip,
+		db_repo: db_repo,
+		ip:      access_ip,
 	}
 	// リクエストタイプに応じて処理を分岐
-	switch requestType {
+	log.Println("Request Type: ", request_type)
+	switch request_type {
+	case "ServiceInitialize":
+		return functions.ServiceInitialize()
+	case "ServiceFinalize":
+		return functions.ServiceFinalize()
 	case "GenUserID":
-		return GenRandomUserID(dbRepo, access_ip)
-	case "ConfigSync":
-		return functions.ConfigSync(userId)
+		return GenRandomUserID()
 	case "RegisterUser":
-		return functions.RegisterUser(userId, argumentJson_1)
+		return functions.RegisterUser(user_id, argument_json_1)
+	case "ConfigSync":
+		return functions.ConfigSync(user_id)
 	case "ReportReadActivity":
-		return functions.ReportReadActivity(userId, argumentJson_1)
-	case "UpdateConfig":
-		return functions.UpdateConfig(userId, argumentJson_1)
+		return functions.ReportReadActivity(user_id, argument_json_1)
+	case "UpdateUiConfig":
+		return functions.UpdateUiConfig(user_id, argument_json_1)
 	case "ModifySearchHistory":
-		return functions.ModifySearchHistory(userId, argumentJson_1, argumentJson_2)
+		return functions.ModifySearchHistory(user_id, argument_json_1, argument_json_2)
 	case "ModifyFavoriteSite":
-		return functions.ModifyFavoriteSite(userId, argumentJson_1, argumentJson_2)
+		return functions.ModifyFavoriteSite(user_id, argument_json_1, argument_json_2)
 	case "ModifyFavoriteArticle":
-		return functions.ModifyFavoriteArticle(userId, argumentJson_1, argumentJson_2)
+		return functions.ModifyFavoriteArticle(user_id, argument_json_1, argument_json_2)
 	case "GetAPIRequestLimit":
-		return functions.GetAPIRequestLimit(userId)
+		return functions.GetAPIRequestLimit(user_id)
+	case "ModifyAPIRequestLimit":
+		return functions.ModifyAPIRequestLimit(argument_json_1, argument_json_2)
+	case "DeleteUserData":
+		return functions.DeleteUserData(user_id, argument_json_1)
 	default:
 		return "", errors.New("invalid request type")
 	}

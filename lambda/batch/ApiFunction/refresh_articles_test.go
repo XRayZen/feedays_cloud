@@ -9,7 +9,7 @@ import (
 
 func TestRefreshArticles(t *testing.T) {
 	// DBRepo
-	mockRepo := Repo.MockDBRepo{}
+	mock_repo := Repo.MockDBRepo{}
 	// implRepo := Repo.DBRepoImpl{}
 	// 考えられるテストケースを網羅する
 	// 更新する記事がない場合
@@ -27,7 +27,7 @@ func TestRefreshArticles(t *testing.T) {
 		{
 			name: "更新する記事がない場合",
 			args: args{
-				repo:                 mockRepo,
+				repo:                 mock_repo,
 				MockSiteLastModified: 10,
 			},
 			want:    "No Update",
@@ -36,7 +36,7 @@ func TestRefreshArticles(t *testing.T) {
 		{
 			name: "更新する記事がある場合",
 			args: args{
-				repo:                 mockRepo,
+				repo:                 mock_repo,
 				MockSiteLastModified: 30,
 			},
 			want:    "BATCH RefreshArticles SUCCESS!",

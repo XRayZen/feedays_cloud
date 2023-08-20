@@ -9,21 +9,21 @@ import (
 
 func GetExploreCategories(DBrepo Repo.DBRepository,userID string) (ExploreJson string, err error) {
 	//DBからデータを取得する
-	resUserInfo, err := DBrepo.SearchUserConfig(userID,false)
+	res_user_info, err := DBrepo.SearchUserConfig(userID,false)
 	if err != nil {
 		return "err", err
 	}
-	resData, err := DBrepo.FetchExploreCategories(resUserInfo.Country)
+	res_data, err := DBrepo.FetchExploreCategories(res_user_info.Country)
 	if err != nil {
 		return "err", err
 	}
 	// ここでresDataをJSONに変換する
-	encodeJson,err := json.Marshal(resData)
+	encode_json,err := json.Marshal(res_data)
 	if err != nil {
 		return "err", err
 	}
 	// ここでJSONを返す
-	return string(encodeJson), nil
+	return string(encode_json), nil
 }
 
 

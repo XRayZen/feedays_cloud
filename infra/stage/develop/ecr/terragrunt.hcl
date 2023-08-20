@@ -13,5 +13,5 @@ terraform{
 
 inputs ={
     project_name = local.env.locals.project_name
-    repository_name = "${local.env.locals.project_name}-repo"
+    repository_name = "${local.env.locals.project_name}_repo"
 }

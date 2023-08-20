@@ -7,26 +7,25 @@ import (
 	"strconv"
 )
 
-func InitDataBase(isTestMode bool) (Repo.DBRepository, int, error) {
-	RefreshInterval := 0
-	DbRepo := Repo.DBRepoImpl{}
-	if isTestMode {
-		RefreshInterval = 15
+func InitDataBase(is_test_mode bool) (Repo.DBRepository, int, error) {
+	refresh_interval := 0
+	db_repo := Repo.DBRepoImpl{}
+	if is_test_mode {
+		refresh_interval = 15
 		// DB初期化処理
-		DbRepo.ConnectDB(true)
-		DbRepo.AutoMigrate()
+		db_repo.ConnectDB(true)
+		db_repo.AutoMigrate()
 	} else {
-		GetEnvRefreshInterval, err := strconv.Atoi(os.Getenv("REFRESH_INTERVAL"))
+		get_env_refresh_interval, err := strconv.Atoi(os.Getenv("REFRESH_INTERVAL"))
 		if err != nil {
 			log.Println("BATCH RefreshArticles ERROR! :", err)
-			return DbRepo, RefreshInterval, err
+			return db_repo, refresh_interval, err
 		}
-		RefreshInterval = GetEnvRefreshInterval
+		refresh_interval = get_env_refresh_interval
 		// DB初期化処理
-		DbRepo.ConnectDB(false)
-		DbRepo.AutoMigrate()
+		db_repo.ConnectDB(false)
 	}
-	return DbRepo, RefreshInterval, nil
+	return db_repo, refresh_interval, nil
 }
 
 func Batch(dbRepo Repo.DBRepository, refreshInterval int) (bool, error) {

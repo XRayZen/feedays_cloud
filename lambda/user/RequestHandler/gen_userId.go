@@ -1,13 +1,12 @@
 package RequestHandler
 
 import (
-	"user/DBRepo"
 
 	// "fmt"
 	"math/rand"
 )
 
-func GenRandomUserID(repo DBRepo.DBRepo,ip string) (string, error) {
+func GenRandomUserID() (string, error) {
 	return RandomString(15), nil
 }
 

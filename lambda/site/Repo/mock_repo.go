@@ -7,7 +7,7 @@ import (
 )
 
 type MockDBRepo struct {
-	articles []Data.Article
+	// articles []Data.Article
 }
 
 // DB接続
@@ -172,6 +172,12 @@ func (s MockDBRepo) SearchSiteByUrl(siteURL string) (Data.WebSite, error) {
 	return Data.WebSite{}, nil
 }
 
+// SearchSiteByCategory(category string) ([]Data.WebSite, error)
+// カテゴリーで検索
+func (s MockDBRepo) SearchSiteByCategory(category string) ([]Data.WebSite, error) {
+	return nil, nil
+}
+
 // SubscribeSite(user_unique_id string, site_url string, is_subscribe bool) error
 // サイトを購読
 func (s MockDBRepo) SubscribeSite(user_unique_id string, site_url string, is_subscribe bool) error {
@@ -193,4 +199,24 @@ func (s MockDBRepo) FetchSiteLastModified(site_url string) (time.Time, error) {
 		return lastModifiedTime, nil
 	}
 	return time.Now(), nil
+}
+
+// ChangeSiteCategory(user_unique_id string, site_url string, category_name string) error
+func (s MockDBRepo) ChangeSiteCategory(user_unique_id string, site_url string, category_name string) error {
+	return nil
+}
+
+// 	DeleteSite(site_url string) error
+func (s MockDBRepo) DeleteSite(site_url string) error {
+	return nil
+}
+
+// DeleteSiteByUnscoped(site_url string) error
+func (s MockDBRepo) DeleteSiteByUnscoped(site_url string) error {
+	return nil
+}
+
+// ModifyExploreCategory(category Data.ExploreCategory, is_add_or_remove bool) error
+func (s MockDBRepo) ModifyExploreCategory(modify_type string, category Data.ExploreCategory) error{
+	return nil
 }

@@ -40,7 +40,7 @@ dependency "rds" {
 }
 
 inputs={
-    lambda_function_name = "feedays-cloud-batch"
+    lambda_function_name = "batch"
     lambda_function_description = "feedays-cloud-batch-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
     image_tag= "batch"

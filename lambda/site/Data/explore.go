@@ -9,6 +9,8 @@ type ExploreCategory struct {
 	CategoryDescription string `json:"categoryDescription"`
 	// カテゴリーのID
 	CategoryID string `json:"categoryID"`
+	// カテゴリー国
+	CategoryCountry string `json:"categoryCountry"`
 	// カテゴリーのURLはない
 	// ユーザーがタップしたら＃カテゴリー名のキーワード検索が走り、その結果を表示する
 }

@@ -40,7 +40,7 @@ dependency "rds" {
 }
 
 inputs={
-    lambda_function_name = "feedays-cloud-read"
+    lambda_function_name = "read"
     lambda_function_description = "feedays-cloud-read-lambda-function"
     repo_url= dependency.ecr.outputs.ecr_repository_url
     image_tag= "read"

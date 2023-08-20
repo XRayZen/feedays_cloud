@@ -1,0 +1,225 @@
+openapi: 3.0.0
+
+info:
+  title: "Backend API"
+  description: "Backend API"
+  version: "1.0.0"
+
+servers:
+  - url: "http://localhost:8080"
+    description: "ローカル環境"
+  - url: "https://example.com"
+    description: "本番環境"
+
+tags:
+  - name: "read"
+    description: "DBを読み出すだけの処理"
+  - name: "user"
+    description: "ユーザー処理"
+  - name: "site"
+    description: "サイト登録・RSS記事取得などの処理"
+
+paths:
+  "/read":
+    post:
+      # メタデータ
+      tags:
+        - "read"
+      description: "DBを読み出すだけの処理"
+      deprecated: false
+      # リクエスト
+      requestBody:
+        description: "リクエストボディ"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: "ユーザーID"
+                  example: "1234567890"
+                requestType:
+                  type: string
+                  description: "API Read RequestType (ExploreCategories, Ranking)"
+                  example: "Search"
+      # OpenAPIでAPI Gatewayの統合設定を定義しておく
+      # https://docs.aws.amazon.com/ja_jp/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        responses:
+          default:
+            statusCode: "200"
+        # aws_proxy (AWS Lambda 関数との統合の場合)
+        type: "aws_proxy"
+        uri: "${lambda_read_arn}"
+        credentials: "${apigateway_role_arn}"
+        payloadFormatVersion: "1.0"
+        timeoutInMillis: 10000
+
+      responses:
+        "200":
+          description: Response of the API Read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "エラーメッセージ"
+                    example: "Bad Request"
+
+  "/user":
+    post:
+      # メタデータ
+      tags:
+        - "user"
+      summary: "リクエストを受け取ってDBに書き込む処理"
+      description: "リクエストを受け取ってDBに書き込む処理"
+      deprecated: false
+      # リクエスト
+      requestBody:
+        description: "リクエストボディ"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: "ユーザーID"
+                  example: "1234567890"
+                requestType:
+                  type: string
+                  description: "API User RequestType"
+                  example: ""
+                # API開発中はしょっちゅう仕様が変わるので引数はJSONで渡して自由度を高めておく
+                requestArgumentJson1:
+                  type: string
+                  description: "API User Request Argument 1 Value"
+                  example: "json 1 arg"
+                requestArgumentJson2:
+                  type: string
+                  description: "API User Request Argument 2 Value"
+                  example: "Json 2 arg"
+
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        # aws_proxy (AWS Lambda 関数との統合の場合)
+        type: "aws_proxy"
+        uri: "${lambda_user_arn}"
+        credentials: "${apigateway_role_arn}"
+        payloadFormatVersion: "1.0"
+        timeoutInMillis: 10000
+
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "エラーメッセージ"
+                    example: "Bad Request"
+
+  "/site":
+    post:
+      # メタデータ
+      tags:
+        - "site"
+      summary: "サイト登録・RSS記事取得などの処理"
+      description: "サイト登録・RSS記事取得などの処理"
+      deprecated: false
+      # リクエスト
+      requestBody:
+        description: "リクエストボディ"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: "ユーザーID"
+                  example: "1234567890"
+                requestType:
+                  type: string
+                  description: "API Site RequestType"
+                  example: "Feed"
+                # API開発中はしょっちゅう仕様が変わるので引数はJSONで渡して自由度を高めておく
+                requestArgumentJson1:
+                  type: string
+                  description: "API Site Request Argument 1 Value"
+                  example: "json 1 arg"
+                requestArgumentJson2:
+                  type: string
+                  description: "API Site Request Argument 2 Value"
+                  example: "Json 2 arg"
+
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        # aws_proxy (AWS Lambda 関数との統合の場合)
+        type: "aws_proxy"
+        uri: "${lambda_site_arn}"
+        credentials: "${apigateway_role_arn}"
+        payloadFormatVersion: "1.0"
+        timeoutInMillis: 10000
+
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIResponse"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "エラーメッセージ"
+                    example: "Bad Request"
+
+components:
+  schemas:
+    APIResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "ユーザーID"
+          example: "1234567890"
+        requestType:
+          type: string
+          description: "API RequestType"
+          example: "ExploreCategories"
+        responseValue:
+          type: string
+          description: "データをjsonにして返してクライアント側で処理をする"
+          example: "ハンバーガー"

@@ -11,10 +11,9 @@ import (
 type User struct {
 	gorm.Model
 	UserName          string
-	UserUniqueID      string `gorm:"uniqueIndex"`
+	UserUniqueID      string `gorm:"uniqueIndex;size:256"`
 	AccountType       string
 	Country           string
-	ApiConfig         ApiConfig
 	UiConfig          UiConfig
 	ReadHistories     []ReadHistory `gorm:"foreignKey:UserID"`
 	FavoriteSites     []FavoriteSite
@@ -60,9 +59,9 @@ type ReadHistory struct {
 	AccessIP       string
 }
 
-type ApiConfig struct {
+type ApiLimitConfig struct {
 	gorm.Model
-	UserID                      uint
+	AccountType                 string
 	RefreshArticleInterval      int
 	FetchArticleRequestInterval int
 	FetchArticleRequestLimit    int
@@ -103,13 +102,6 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 		DrawerMenuOpacity:     dbCfg.UiConfig.DrawerMenuOpacity,
 		ArticleListFontSize:   articleListFontSize,
 		ArticleDetailFontSize: articleDetailFontSize,
-	}
-	apiCfg := Data.ApiConfig{
-		RefreshArticleInterval:      dbCfg.ApiConfig.RefreshArticleInterval,
-		FetchArticleRequestInterval: dbCfg.ApiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit:    dbCfg.ApiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval:   dbCfg.ApiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit:      dbCfg.ApiConfig.FetchTrendRequestLimit,
 	}
 	// 検索履歴をData.SearchHistoryの配列に変換
 	var searchHistory []Data.SearchHistory
@@ -158,8 +150,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 		})
 	}
 	clientConfig := Data.ClientConfig{
-		UiConfig:  uiCfg,
-		ApiConfig: apiCfg,
+		UiConfig: uiCfg,
 	}
 	return Data.UserConfig{
 		UserName:         dbCfg.UserName,
@@ -175,7 +166,7 @@ func ConvertToApiUserConfig(dbCfg User) (resUserCfg Data.UserConfig) {
 }
 
 // ユーザー・API設定の更新時に使用する
-func ConvertToDbApiCfgAndUiCfg(apiCfg Data.UserConfig) (dbApiCfg ApiConfig, dbUiCfg UiConfig) {
+func ConvertToDbUiCfg(apiCfg Data.UserConfig) (dbUiCfg UiConfig) {
 	//フォントサイズをData.UiResponsiveFontSizeからDb.UiResponsiveFontSizeに変換
 	uiCfg := UiConfig{
 		ThemeColorValue:         apiCfg.ClientConfig.UiConfig.ThemeColorValue,
@@ -186,14 +177,7 @@ func ConvertToDbApiCfgAndUiCfg(apiCfg Data.UserConfig) (dbApiCfg ApiConfig, dbUi
 		ArticleDetailMobileSize: apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Mobile,
 		ArticleDetailTabletSize: apiCfg.ClientConfig.UiConfig.ArticleDetailFontSize.Tablet,
 	}
-	apiCfgDb := ApiConfig{
-		RefreshArticleInterval:      apiCfg.ClientConfig.ApiConfig.RefreshArticleInterval,
-		FetchArticleRequestInterval: apiCfg.ClientConfig.ApiConfig.FetchArticleRequestInterval,
-		FetchArticleRequestLimit:    apiCfg.ClientConfig.ApiConfig.FetchArticleRequestLimit,
-		FetchTrendRequestInterval:   apiCfg.ClientConfig.ApiConfig.FetchTrendRequestInterval,
-		FetchTrendRequestLimit:      apiCfg.ClientConfig.ApiConfig.FetchTrendRequestLimit,
-	}
-	return apiCfgDb, uiCfg
+	return uiCfg
 }
 
 // DataのReadHistoryをDbのReadHistoryに変換
@@ -211,7 +195,8 @@ func ConvertToDbReadHistory(readHistory Data.ReadHistory) (ReadHistory, error) {
 	}, nil
 }
 
-func ConvertToApiReadHistory(readHistory ReadHistory) Data.ReadHistory {
+// ConvertToApiReadHistory DataのReadHistoryをApiのReadHistoryに変換
+func ConvertToApiReadHistory(readHistory ReadHistory, user_unique_id string) Data.ReadHistory {
 	return Data.ReadHistory{
 		Link:           readHistory.Link,
 		AccessAt:       readHistory.AccessAt.Format(time.RFC3339),

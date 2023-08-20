@@ -31,7 +31,7 @@ func (s MockDBRepo) SearchUserConfig(user_unique_Id string, isPreloadRelatedTabl
 func (s MockDBRepo) FetchExploreCategories(country string) (resExp []Data.ExploreCategory, err error) {
 	return []Data.ExploreCategory{
 		{
-			CategoryName: "CategoryName",
+			CategoryName: "Test",
 		},
 	}, nil
 }

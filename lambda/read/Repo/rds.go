@@ -67,8 +67,3 @@ func RDS_Connect(DbType, DbName, dbUser, dbPass, dbEndPoint, dbPort string) (*go
 	return DBMS, nil
 }
 
-// DBに使う全ての型をマイグレートする
-func AutoMigrate(db *gorm.DB) {
-	db.AutoMigrate(&Site{})
-	db.AutoMigrate(&User{})
-}

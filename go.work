@@ -4,7 +4,6 @@ use (
 	./lambda/batch
 	./lambda/site
 	./lambda/read
-	./lambda/test
 	./lambda/user
 	./testClient
 )

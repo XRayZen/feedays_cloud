@@ -9,10 +9,12 @@ import (
 
 func TestParseRequestType(t *testing.T) {
 	// 正解のデータを用意する
-	want_Ex, _ := json.Marshal(Data.ExploreCategory{
-		CategoryName: "CategoryName",
+	expected_categories, _ := json.Marshal([]Data.ExploreCategory{
+		{
+			CategoryName: "Test",
+		},
 	})
-	want_ExStr := string(want_Ex)
+	expected_categories_str := string(expected_categories)
 	type args struct {
 		// ここでDIしても良い
 		diDBRepo    Repo.DBRepository
@@ -33,7 +35,7 @@ func TestParseRequestType(t *testing.T) {
 				requestType: "ExploreCategories",
 				userID:      "userID",
 			},
-			want: want_ExStr,
+			want: expected_categories_str,
 		},
 		{
 			name: "異常系 invalid request type",
