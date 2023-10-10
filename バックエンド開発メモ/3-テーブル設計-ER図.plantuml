@@ -1,0 +1,201 @@
+@startuml feedays_db
+
+entity "Site" as site {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * site_name VARCHAR[255]
+    * site_url UNIQUE VARCHAR[255]
+    * rss_url VARCHAR[255]
+    * icon_url VARCHAR[255]
+    * description VARCHAR[255]
+    * explore_category_id INT[10]
+    * subscription_count INT[10]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "Article" as article {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * article_index INT[10]
+    * site_id FOREIGN KEY
+    * title VARCHAR[255]
+    * url UNIQUE VARCHAR[255]
+    * icon_url VARCHAR[255]
+    * description VARCHAR[255]
+    * published_at TIMESTAMP
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "User" as user {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_unique_id UNIQUE VARCHAR[255]
+    * user_name VARCHAR[255]
+    * account_type VARCHAR[25]
+    * country VARCHAR[255]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "ApiLimitConfig" as api_config {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * account_type VARCHAR[25]
+    * refresh_article_interval INT[10]
+    * fetch_feed_request_interval INT[10]
+    * fetch_feed_request_limit INT[10]
+    * fetch_trend_request_interval INT[10]
+    * fetch_trend_request_limit INT[10]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "UiConfig" as ui_config {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_id FOREIGN KEY
+    * theme_color VARCHAR[255]
+    * theme_mode VARCHAR[255]
+    * drawer_menu_opacity DOUBLE
+    * mobile_text_size INT[10]
+    * tablet_text_size INT[10]
+    * article_list_mobile_size INT[10]
+    * article_list_tablet_size INT[10]
+    * article_detail_mobile_size INT[10]
+    * article_detail_tablet_size INT[10]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "SearchHistory" as search_history {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_id FOREIGN KEY
+    * search_word VARCHAR[255]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "ReadHistory" as read_history {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_id FOREIGN KEY
+    * link VARCHAR[255]
+    * access_at TIMESTAMP
+    * access_platform VARCHAR[255]
+    * access_ip VARCHAR[255]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "FavoriteSite" as favorite {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_id  FOREIGN KEY
+    * site_id    FOREIGN KEY
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "FavoriteArticle" as favoriteArticle {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_id INT[10]
+    * article_id INT[10]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "SubscriptionSite" as subscription {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * user_id INT[10]
+    * site_id INT[10]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "Tag" as tag {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * tag_name VARCHAR[255]
+    * site_id INT[10]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+entity "ExploreCategories" as explore_category {
+    * id INT[10] AUTO_INCREMENT [PK]
+    --
+    * category_name VARCHAR[255]
+    * description VARCHAR[255]
+    * country VARCHAR[255]
+    * image_url VARCHAR[255]
+    * created_at TIMESTAMP
+    * updated_at TIMESTAMP
+    * deleted_at TIMESTAMP
+}
+
+
+
+' ここでリレーションを定義する
+' 1対多の関係とは
+' 1つのエンティティ（親）が他の複数のエンティティ
+' （子）と関連付けられる関係
+' 一対一の関係とは
+' 1つのエンティティ（親）が他の1つのエンティティ
+' （子）と関連付けられる関係
+' 多対多の関係はアンチパターン
+
+' サイトとフィードは1対多
+site ||-r-o{ article
+' ユーザーと検索履歴は1対多
+user -l-o{ search_history
+' ユーザーと閲覧履歴は1対多
+user -r-o{ read_history
+' ユーザーとお気に入りは1対多
+user -d-o{ favorite
+' ユーザーとお気に入り記事は1対多
+user -d-o{ favoriteArticle
+' お気に入りとサイトは1対1
+favorite --|| site
+' お気に入り記事と記事は1対1
+favoriteArticle --|| article
+' ユーザーと購読は1対多
+user -d-o{ subscription
+' 購読とサイトは1対1
+subscription --|| site
+' ユーザーとUI設定は1対1
+user -u-o{ ui_config
+' サイトとタグは1対多
+site -d-o{ tag
+' サイトと探索カテゴリは1対1
+site --|| explore_category
+' サイトランキングとサイトは1対多
+' site_ranking -l-o{ site
+' ' フィードランキングとフィードは1対多
+' feed_ranking -d-o{ feed
+' 閲覧履歴とサイトは1対1
+read_history --|| article
+
+
+
+
+
+
+
+
+
