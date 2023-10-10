@@ -1,9 +1,9 @@
 # FeedaysのバックエンドAPI
-このプロジェクトは開発しているRSSリーダーサービスのサーバーレスなバックエンドAPI部分です
-サーバーサイドの言語にGoを採用しており、SQLはGORMを使用しています。
-関数コードをドッカーコンテナにしてECRにプッシュしてLambdaで動かしています
-インフラはAWSを採用しており、APIGW＋Lambda+RDSProxy＋RDS
-IaCはTerraform＋Terragruntを採用しており、開発・運用を見据えて開発環境・本番環境を切り替えることが出来ます
+- このプロジェクトは開発しているRSSリーダーサービスのサーバーレスなバックエンドAPI部分です
+- サーバーサイドの言語にGoを採用しており、SQLはGORMを使用しています。
+- 関数コードをドッカーコンテナにしてECRにプッシュしてLambdaで動かしています
+- インフラはAWSを採用しており、APIGW＋Lambda+RDSProxy＋RDS
+  - IaCはTerraform＋Terragruntを採用しており、開発・運用を見据えて開発環境・本番環境を切り替えることが出来ます
 # クラウド構成
 APIGW->Lambda(Go)->RDSProxy->RDS(MySQL)
 
