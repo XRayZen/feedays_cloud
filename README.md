@@ -15,14 +15,14 @@ APIGW->Lambda(Go)->RDSProxy->RDS(MySQL)
 - データベースアクセス: GORM
 - データベース: MySQL
 
-# Github Actions
+# CI/CD（Github Actions）
 - ラムダ関数のCI/CDはGithub Actionsで行っています
 - サービス全体のCI/CDは実装予定
 
 # 開発環境
 Dockerfileで開発コンテナを記述してVSCodeのRemote Containerで開発環境を構築しています。
 
-# バックエンド開発メモ
+# バックエンド開発に際してのプログラミングノート
 - [技術選定](./バックエンド開発メモ/0-技術選定.md)
 - [開発環境構築](./バックエンド開発メモ/1-開発環境構築.md)
 - [API設計](./バックエンド開発メモ/2-API設計.md)
