@@ -4,6 +4,7 @@
 - 関数コードをドッカーコンテナにしてECRにプッシュしてLambdaで動かしています
 - インフラはAWSを採用しており、APIGW＋Lambda+RDSProxy＋RDS
   - IaCはTerraform＋Terragruntを採用しており、開発・運用を見据えて開発環境・本番環境を切り替えることが出来ます
+
 # AWSクラウド構成
 APIGW->Lambda(Go)->RDSProxy->RDS(MySQL)
 - DBパスワードはIaCでランダム生成してAWS SecretMangerに入れて管理しています
